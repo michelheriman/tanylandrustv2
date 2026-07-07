@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de confidentialité / Privacy Policy — Tany</title>
+    <meta name="description" content="Politique de confidentialité de Tany — marketplace foncière. Privacy Policy for the Tany land marketplace platform.">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:       #10b981;
+            --green-dark:  #047857;
+            --green-light: #d1fae5;
+            --green-faint: #f0fdf4;
+            --blue:        #0891b2;
+            --blue-light:  #e0f2fe;
+            --text:        #1a1a1a;
+            --muted:       #6b7280;
+            --border:      #e5e7eb;
+            --bg:          #ffffff;
+            --radius:      10px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-header {
+            background: linear-gradient(160deg, #0c4a6e 0%, #075985 60%, #0369a1 100%);
+            color: #fff;
+            padding: 3rem 1.5rem 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .logo-row img {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .logo-row span {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem; font-weight: 900;
+            letter-spacing: 0.05em; color: #fff;
+        }
+
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 700; line-height: 1.2;
+            margin-bottom: 0.5rem; position: relative;
+        }
+
+        .page-header .subtitle {
+            font-size: 0.9rem; opacity: 0.7;
+            margin-bottom: 1.25rem; position: relative;
+        }
+
+        .lang-toggle {
+            display: inline-flex;
+            background: rgba(255,255,255,0.12);
+            border-radius: 30px; padding: 4px; gap: 4px; position: relative;
+        }
+
+        .lang-btn {
+            padding: 0.35rem 1.1rem; border-radius: 24px; border: none;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
+            color: rgba(255,255,255,0.7); background: transparent; letter-spacing: 0.04em;
+        }
+
+        .lang-btn.active { background: #fff; color: #075985; }
+
+        .updated-tag {
+            display: inline-block; margin-top: 1rem; font-size: 0.75rem;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px; padding: 0.25rem 0.9rem; color: rgba(255,255,255,0.75); position: relative;
+        }
+
+        .promise-banner {
+            background: linear-gradient(135deg, var(--green-faint), var(--blue-light));
+            border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem; text-align: center;
+        }
+
+        .promise-pills {
+            display: flex; gap: 0.75rem; justify-content: center;
+            flex-wrap: wrap; max-width: 700px; margin: 0 auto;
+        }
+
+        .pill {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: #fff; border: 1px solid var(--border); border-radius: 20px;
+            padding: 0.35rem 0.9rem; font-size: 0.78rem; font-weight: 600; color: var(--text);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .page-body { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+        .term-card {
+            border: 1px solid var(--border); border-radius: var(--radius);
+            margin-bottom: 1.25rem; overflow: hidden; transition: box-shadow 0.18s;
+        }
+
+        .term-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+        .term-card-header {
+            display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.5rem;
+            background: var(--bg); cursor: pointer; user-select: none;
+            border-bottom: 1px solid transparent; transition: background 0.15s;
+        }
+
+        .term-card-header:hover { background: #f0f9ff; }
+        .term-card.open .term-card-header { border-bottom-color: var(--border); background: #f0f9ff; }
+
+        .card-icon {
+            width: 36px; height: 36px; border-radius: 8px; background: var(--blue-light);
+            display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+        }
+
+        .card-title { flex: 1; }
+        .card-title strong { display: block; font-size: 0.95rem; font-weight: 600; color: var(--text); }
+        .card-title span { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
+        .chevron { font-size: 0.75rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+        .term-card.open .chevron { transform: rotate(180deg); }
+
+        .term-card-body {
+            display: none; padding: 1.25rem 1.5rem;
+            font-size: 0.875rem; color: #374151; line-height: 1.75;
+        }
+
+        .term-card.open .term-card-body { display: block; }
+
+        .term-card-body .lang-fr,
+        .term-card-body .lang-en { display: none; }
+        .term-card-body .lang-fr.visible,
+        .term-card-body .lang-en.visible { display: block; }
+
+        .highlight-box {
+            background: #eff6ff; border-left: 3px solid #3b82f6;
+            border-radius: 0 6px 6px 0; padding: 0.7rem 1rem;
+            margin: 0.75rem 0; font-size: 0.82rem; color: #1e40af; font-weight: 500;
+        }
+
+        .highlight-box.green { background: var(--green-faint); border-left-color: var(--green); color: var(--green-dark); }
+        .highlight-box.red { background: #fef2f2; border-left-color: #ef4444; color: #991b1b; }
+
+        .check-list { list-style: none; padding: 0; margin: 0.5rem 0; }
+        .check-list li { padding: 0.3rem 0 0.3rem 1.5rem; position: relative; font-size: 0.875rem; }
+        .check-list li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+
+        .cross-list { list-style: none; padding: 0; margin: 0.5rem 0; }
+        .cross-list li { padding: 0.3rem 0 0.3rem 1.5rem; position: relative; font-size: 0.875rem; }
+        .cross-list li::before { content: '✗'; position: absolute; left: 0; color: #ef4444; font-weight: 700; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.75rem 0; }
+        .data-table th {
+            background: #f8fafc; padding: 0.6rem 0.75rem; text-align: left;
+            font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border);
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .data-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+        .data-table tr:last-child td { border-bottom: none; }
+
+        .section-label {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+            text-transform: uppercase; color: #075985; margin: 2rem 0 0.9rem;
+            padding-bottom: 0.5rem; border-bottom: 2px solid var(--blue-light);
+        }
+
+        .contact-block {
+            background: linear-gradient(135deg, var(--green-faint), var(--blue-light));
+            border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.5rem; margin-top: 2.5rem; text-align: center;
+        }
+
+        .contact-block h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text); }
+        .contact-block p { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; }
+        .contact-block a {
+            display: inline-block; background: var(--green-dark); color: #fff;
+            padding: 0.55rem 1.25rem; border-radius: 6px; text-decoration: none;
+            font-size: 0.85rem; font-weight: 600; transition: opacity 0.15s;
+        }
+        .contact-block a:hover { opacity: 0.88; }
+
+        .page-footer {
+            text-align: center; padding: 2rem 1rem;
+            border-top: 1px solid var(--border); margin-top: 2rem;
+            font-size: 0.8rem; color: var(--muted);
+        }
+        .page-footer a { color: #075985; text-decoration: none; margin: 0 0.5rem; }
+        .page-footer a:hover { text-decoration: underline; }
+
+        /* Global lang visibility */
+        .lang-fr { display: none; }
+        .lang-en { display: none; }
+        .lang-fr.visible { display: inline; }
+        .lang-en.visible { display: inline; }
+        span.lang-fr.visible { display: inline; }
+        span.lang-en.visible { display: inline; }
+
+        @media (max-width: 560px) {
+            .term-card-header { padding: 0.9rem 1rem; }
+            .term-card-body { padding: 1rem; }
+            .data-table { font-size: 0.78rem; }
+            .data-table th, .data-table td { padding: 0.5rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+<header class="page-header">
+    <div class="logo-row">
+        <img src="./logo_.png" alt="Tany">
+        <span>Tany</span>
+    </div>
+    <h1>
+        Politique de confidentialité<br>
+        <small style="font-size:0.6em;opacity:0.8;">Privacy Policy</small>
+    </h1>
+    <p class="subtitle">Plateforme de marketplace foncière · Land Marketplace Platform</p>
+
+    <div class="lang-toggle" role="group" aria-label="Language / Langue">
+        <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">🇫🇷 Français</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 English</button>
+    </div>
+
+    <div class="updated-tag">
+        <span class="lang-fr visible">Mis à jour · Juin 2025</span>
+        <span class="lang-en">Last updated · June 2025</span>
+    </div>
+</header>
+
+<div class="promise-banner">
+    <div class="promise-pills">
+        <span class="pill">🚫 <span class="lang-fr visible">Pas de vente de données</span><span class="lang-en">No data selling</span></span>
+        <span class="pill">🔒 <span class="lang-fr visible">Données chiffrées</span><span class="lang-en">Encrypted data</span></span>
+        <span class="pill">✋ <span class="lang-fr visible">Vous contrôlez vos données</span><span class="lang-en">You control your data</span></span>
+        <span class="pill">🏛️ <span class="lang-fr visible">Conforme au droit malgache</span><span class="lang-en">Malagasy law compliant</span></span>
+    </div>
+</div>
+
+<div class="page-body">
+
+    <p class="section-label">1 · Responsable / Data Controller</p>
+
+    <div class="term-card open">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🏢</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Qui sommes-nous ?</span><span class="lang-en">Who are we?</span></strong>
+                <span>Responsable du traitement · Data Controller</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p><strong>Tany</strong> est une plateforme de marketplace foncière opérant à Madagascar. En tant que responsable du traitement de vos données, nous nous engageons à protéger votre vie privée conformément au droit malgache applicable.</p>
+                <div class="highlight-box green">📍 Siège social : Antananarivo, Madagascar — Contact : <a href="mailto:raherimanantsoa.consult@gmail.com" style="color:var(--green-dark);font-weight:600;">raherimanantsoa.consult@gmail.com</a></div>
+            </div>
+            <div class="lang-en">
+                <p><strong>Tany</strong> is a land marketplace platform operating in Madagascar. As the controller of your data, we are committed to protecting your privacy in accordance with applicable Malagasy law.</p>
+                <div class="highlight-box green">📍 Registered address: Antananarivo, Madagascar — Contact: <a href="mailto:raherimanantsoa.consult@gmail.com" style="color:var(--green-dark);font-weight:600;">raherimanantsoa.consult@gmail.com</a></div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">2 · Collecte / Data We Collect</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">📥</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Données que nous collectons</span><span class="lang-en">Data we collect</span></strong>
+                <span>Types de données · Data types</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Nous collectons les données suivantes lors de votre inscription et utilisation de la plateforme :</p>
+                <table class="data-table">
+                    <thead><tr><th>Donnée</th><th>Pourquoi</th><th>Obligatoire</th></tr></thead>
+                    <tbody>
+                        <tr><td>Nom complet</td><td>Identification du compte</td><td>✓ Oui</td></tr>
+                        <tr><td>Adresse e-mail</td><td>Connexion et communications</td><td>✓ Oui</td></tr>
+                        <tr><td>Nom d'utilisateur</td><td>Profil public</td><td>✓ Oui</td></tr>
+                        <tr><td>Numéro CIN</td><td>Vérification légale (droit foncier)</td><td>✓ Oui</td></tr>
+                        <tr><td>Numéro de téléphone</td><td>Récupération de compte</td><td>Optionnel</td></tr>
+                        <tr><td>Données de navigation</td><td>Amélioration du service</td><td>Automatique</td></tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box">ℹ️ Le numéro CIN est exigé par la loi malgache pour toute transaction immobilière ou foncière.</div>
+            </div>
+            <div class="lang-en">
+                <p>We collect the following data when you register and use the platform:</p>
+                <table class="data-table">
+                    <thead><tr><th>Data</th><th>Purpose</th><th>Required</th></tr></thead>
+                    <tbody>
+                        <tr><td>Full name</td><td>Account identification</td><td>✓ Yes</td></tr>
+                        <tr><td>Email address</td><td>Login and communications</td><td>✓ Yes</td></tr>
+                        <tr><td>Username</td><td>Public profile</td><td>✓ Yes</td></tr>
+                        <tr><td>CIN number</td><td>Legal verification (land law)</td><td>✓ Yes</td></tr>
+                        <tr><td>Phone number</td><td>Account recovery</td><td>Optional</td></tr>
+                        <tr><td>Browsing data</td><td>Service improvement</td><td>Automatic</td></tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box">ℹ️ The CIN number is required by Malagasy law for any real estate or land transaction.</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">3 · Utilisation / How We Use Your Data</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">⚙️</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Comment nous utilisons vos données</span><span class="lang-en">How we use your data</span></strong>
+                <span>Finalités · Purposes</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Vos données sont utilisées <strong>uniquement</strong> pour les finalités suivantes :</p>
+                <ul class="check-list">
+                    <li>Créer et gérer votre compte utilisateur</li>
+                    <li>Afficher et gérer vos annonces foncières</li>
+                    <li>Vérifier votre identité conformément à la loi</li>
+                    <li>Vous envoyer des notifications liées à votre compte</li>
+                    <li>Améliorer la sécurité et les performances de la plateforme</li>
+                    <li>Répondre à vos demandes de support</li>
+                </ul>
+                <div class="highlight-box red">🚫 Nous n'utilisons jamais vos données à des fins publicitaires ou de profilage commercial.</div>
+            </div>
+            <div class="lang-en">
+                <p>Your data is used <strong>exclusively</strong> for the following purposes:</p>
+                <ul class="check-list">
+                    <li>Creating and managing your user account</li>
+                    <li>Displaying and managing your land listings</li>
+                    <li>Verifying your identity as required by law</li>
+                    <li>Sending you account-related notifications</li>
+                    <li>Improving platform security and performance</li>
+                    <li>Responding to your support requests</li>
+                </ul>
+                <div class="highlight-box red">🚫 We never use your data for advertising or commercial profiling purposes.</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">4 · Partage / Data Sharing</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🔗</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Avec qui partageons-nous vos données ?</span><span class="lang-en">Who do we share your data with?</span></strong>
+                <span>Tiers et partenaires · Third parties</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p><strong>Nous ne partageons jamais</strong> vos données avec des tiers à des fins commerciales. Des partages limités peuvent avoir lieu uniquement dans ces cas :</p>
+                <ul class="check-list">
+                    <li><strong>Supabase</strong> — hébergement sécurisé de la base de données</li>
+                    <li><strong>Autorités légales</strong> — uniquement si requis par la loi malgache</li>
+                    <li><strong>Prestataires techniques</strong> — sous contrat strict de confidentialité</li>
+                </ul>
+                <div class="highlight-box red">🚫 Vos données ne sont jamais vendues, louées ou échangées avec des annonceurs.</div>
+            </div>
+            <div class="lang-en">
+                <p><strong>We never share</strong> your data with third parties for commercial purposes. Limited sharing may occur only in these cases:</p>
+                <ul class="check-list">
+                    <li><strong>Supabase</strong> — secure database hosting</li>
+                    <li><strong>Legal authorities</strong> — only when required by Malagasy law</li>
+                    <li><strong>Technical providers</strong> — under strict confidentiality agreements</li>
+                </ul>
+                <div class="highlight-box red">🚫 Your data is never sold, rented, or exchanged with advertisers.</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">5 · Sécurité / Security</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🛡️</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Comment nous protégeons vos données</span><span class="lang-en">How we protect your data</span></strong>
+                <span>Mesures de sécurité · Security measures</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <ul class="check-list">
+                    <li>Chiffrement SSL/TLS pour toutes les transmissions de données</li>
+                    <li>Mots de passe hachés (jamais stockés en clair)</li>
+                    <li>Accès aux données limité au personnel autorisé uniquement</li>
+                    <li>Hébergement sur infrastructure Supabase avec chiffrement au repos</li>
+                    <li>Audits de sécurité réguliers</li>
+                </ul>
+                <div class="highlight-box green">🔒 En cas de violation de données, vous serez notifié dans les 72 heures.</div>
+            </div>
+            <div class="lang-en">
+                <ul class="check-list">
+                    <li>SSL/TLS encryption for all data transmissions</li>
+                    <li>Hashed passwords (never stored in plain text)</li>
+                    <li>Data access limited to authorised personnel only</li>
+                    <li>Hosted on Supabase infrastructure with encryption at rest</li>
+                    <li>Regular security audits</li>
+                </ul>
+                <div class="highlight-box green">🔒 In the event of a data breach, you will be notified within 72 hours.</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">6 · Conservation / Retention</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🗂️</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Durée de conservation</span><span class="lang-en">How long we keep your data</span></strong>
+                <span>Rétention · Retention periods</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <table class="data-table">
+                    <thead><tr><th>Type de données</th><th>Durée de conservation</th></tr></thead>
+                    <tbody>
+                        <tr><td>Données de compte</td><td>Durée du compte + 1 an</td></tr>
+                        <tr><td>Données d'identité (CIN)</td><td>Durée du compte + 5 ans (obligation légale)</td></tr>
+                        <tr><td>Annonces publiées</td><td>Durée de la publication</td></tr>
+                        <tr><td>Journaux de connexion</td><td>90 jours</td></tr>
+                        <tr><td>Données de support</td><td>2 ans après résolution</td></tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box">ℹ️ La conservation des données CIN pour 5 ans après clôture du compte est imposée par la législation foncière malgache.</div>
+            </div>
+            <div class="lang-en">
+                <table class="data-table">
+                    <thead><tr><th>Data type</th><th>Retention period</th></tr></thead>
+                    <tbody>
+                        <tr><td>Account data</td><td>Duration of account + 1 year</td></tr>
+                        <tr><td>Identity data (CIN)</td><td>Duration of account + 5 years (legal obligation)</td></tr>
+                        <tr><td>Published listings</td><td>Duration of listing</td></tr>
+                        <tr><td>Login logs</td><td>90 days</td></tr>
+                        <tr><td>Support data</td><td>2 years after resolution</td></tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box">ℹ️ Retention of CIN data for 5 years after account closure is required by Malagasy land law.</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">7 · Vos droits / Your Rights</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">✋</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Vos droits sur vos données</span><span class="lang-en">Your rights over your data</span></strong>
+                <span>Droits des utilisateurs · User rights</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Vous disposez à tout moment des droits suivants :</p>
+                <ul class="check-list">
+                    <li><strong>Accès</strong> — consulter toutes les données que nous détenons sur vous</li>
+                    <li><strong>Rectification</strong> — corriger des informations inexactes</li>
+                    <li><strong>Suppression</strong> — demander la suppression de votre compte et de vos données</li>
+                    <li><strong>Portabilité</strong> — recevoir vos données dans un format lisible</li>
+                    <li><strong>Opposition</strong> — vous opposer à certains traitements</li>
+                </ul>
+                <div class="highlight-box green">📧 Pour exercer vos droits, contactez-nous à <a href="mailto:raherimanantsoa.consult@gmail.com" style="color:var(--green-dark);font-weight:600;">raherimanantsoa.consult@gmail.com</a>. Nous répondons sous 30 jours.</div>
+            </div>
+            <div class="lang-en">
+                <p>You have the following rights at any time:</p>
+                <ul class="check-list">
+                    <li><strong>Access</strong> — view all data we hold about you</li>
+                    <li><strong>Rectification</strong> — correct inaccurate information</li>
+                    <li><strong>Deletion</strong> — request deletion of your account and data</li>
+                    <li><strong>Portability</strong> — receive your data in a readable format</li>
+                    <li><strong>Objection</strong> — object to certain data processing activities</li>
+                </ul>
+                <div class="highlight-box green">📧 To exercise your rights, contact us at <a href="mailto:raherimanantsoa.consult@gmail.com" style="color:var(--green-dark);font-weight:600;">raherimanantsoa.consult@gmail.com</a>. We respond within 30 days.</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">8 · Cookies</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🍪</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Cookies et traceurs</span><span class="lang-en">Cookies & trackers</span></strong>
+                <span>Cookies essentiels uniquement · Essential cookies only</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Tany utilise uniquement des cookies strictement nécessaires au fonctionnement de la plateforme :</p>
+                <ul class="check-list">
+                    <li>Cookie de session d'authentification (Supabase)</li>
+                    <li>Préférences de langue</li>
+                </ul>
+                <ul class="cross-list" style="margin-top:0.5rem;">
+                    <li>Aucun cookie publicitaire</li>
+                    <li>Aucun cookie de pistage tiers</li>
+                    <li>Aucune intégration Google Analytics ou Meta Pixel</li>
+                </ul>
+            </div>
+            <div class="lang-en">
+                <p>Tany only uses cookies strictly necessary for the platform to function:</p>
+                <ul class="check-list">
+                    <li>Authentication session cookie (Supabase)</li>
+                    <li>Language preferences</li>
+                </ul>
+                <ul class="cross-list" style="margin-top:0.5rem;">
+                    <li>No advertising cookies</li>
+                    <li>No third-party tracking cookies</li>
+                    <li>No Google Analytics or Meta Pixel integration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <p class="section-label">9 · Modifications / Policy Updates</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">📝</div>
+            <div class="card-title">
+                <strong><span class="lang-fr visible">Modifications de cette politique</span><span class="lang-en">Changes to this policy</span></strong>
+                <span>Mises à jour · Updates</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Nous pouvons mettre à jour cette politique de confidentialité. En cas de modification substantielle, vous serez informé par e-mail au moins 14 jours avant l'entrée en vigueur des changements.</p>
+                <div class="highlight-box green">✉️ La poursuite de l'utilisation de Tany après notification vaut acceptation des nouvelles conditions.</div>
+            </div>
+            <div class="lang-en">
+                <p>We may update this privacy policy. In the event of a substantial change, you will be notified by email at least 14 days before the changes take effect.</p>
+                <div class="highlight-box green">✉️ Continued use of Tany after notification constitutes acceptance of the updated policy.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-block">
+        <h3>
+            <span class="lang-fr visible">Une question sur vos données ?</span>
+            <span class="lang-en">Questions about your data?</span>
+        </h3>
+        <p>
+            <span class="lang-fr visible">Notre équipe répond sous 30 jours ouvrables.</span>
+            <span class="lang-en">Our team responds within 30 business days.</span>
+        </p>
+        <a href="mailto:raherimanantsoa.consult@gmail.com">raherimanantsoa.consult@gmail.com</a>
+    </div>
+
+</div>
+
+<footer class="page-footer">
+    <span>© 2025 Tany</span>
+    <a href="./index.html">Accueil / Home</a>
+    <a href="./terms.html">Conditions d'utilisation / Terms of Use</a>
+    <a href="./signin.html">Connexion / Sign In</a>
+</footer>
+
+<script>
+    // Init: show French by default
+    document.querySelectorAll('.lang-fr').forEach(el => el.classList.add('visible'));
+
+    function setLang(lang) {
+        document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+        document.querySelectorAll('.lang-fr').forEach(el => el.classList.toggle('visible', lang === 'fr'));
+        document.querySelectorAll('.lang-en').forEach(el => el.classList.toggle('visible', lang === 'en'));
+        document.documentElement.lang = lang;
+    }
+
+    function toggleCard(header) {
+        header.closest('.term-card').classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esri Parcel Management Map</title>
+    <!--
+    <script src="https://js.arcgis.com/4.31/"></script>
+    <script src="https://unpkg.com/terraformer@1.0.9/terraformer.min.js"></script>
+    <script src="https://unpkg.com/terraformer-wkt-parser@1.2.0/terraformer-wkt-parser.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    -->
+    <script src="https://js.arcgis.com/4.31/"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/terraformer/1.0.7/terraformer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/terraformer-arcgis-parser/1.0.5/terraformer-arcgis-parser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/terraformer-wkt-parser/1.1.2/terraformer-wkt-parser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="./map_manager.js"></script>
+    <script defer src="./export.js"></script>
+    <script defer src="./languages.js"></script>
+
+    <!-- Add this right after your script tags -->
+    <script>
+        window.addEventListener('load', function() {
+            console.log("=== DEBUG: Checking loaded libraries ===");
+            console.log("1. Terraformer:", window.Terraformer);
+            console.log("2. Terraformer.ArcGIS:", window.Terraformer?.ArcGIS);
+            console.log("3. Terraformer.WKT:", window.Terraformer?.WKT);
+            console.log("4. arcgisToGeoJSON function:", window.arcgisToGeoJSON);
+            console.log("5. WktParser object:", window.WktParser);
+            console.log("6. WKT object:", window.WKT);
+            
+            // Test conversion
+            const testGeo = {
+                rings: [[[0,0], [1,0], [1,1], [0,1], [0,0]]],
+                spatialReference: { wkid: 4326 }
+            };
+            
+            console.log("Test geometry:", testGeo);
+            
+            if (window.Terraformer?.ArcGIS?.parse) {
+                console.log("Terraformer.ArcGIS.parse works:", window.Terraformer.ArcGIS.parse(testGeo));
+            }
+            
+            if (window.arcgisToGeoJSON) {
+                console.log("arcgisToGeoJSON works:", window.arcgisToGeoJSON(testGeo));
+            }
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css">
+    
+    <!--script src="https://js.arcgis.com/4.31/"></script-->
+
+    
+
+    <style>
+        /* Small style to prevent FOUC (Flash of Unstyled Content) on the map */
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <div class="relative h-screen w-screen overflow-hidden flex">
+
+        <aside id="asidePanel" class="absolute lg:relative z-20 w-80 md:w-96 bg-white h-full shadow-lg flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+            
+            <header class="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+                <div class="flex items-center space-x-3">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <h2 class="text-xl font-bold text-gray-700">Parcel Manager</h2>
+                </div>
+                <button id="closeBtn" class="lg:hidden text-gray-500 hover:text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </header>
+
+            <div class="flex-1 p-4 overflow-y-auto space-y-6">
+
+                <section >
+                    <h3 class="text-lg font-semibold text-gray-600 mb-3">Parcel Viewer</h3>
+                    <div id = "parcs_but" class="space-y-2">
+                        <!--
+                        <div class="p-3 border rounded-lg hover:bg-gray-100 hover:shadow-sm cursor-pointer transition">
+                            <p class="font-bold text-blue-700">ID: 4421-AB-01</p>
+                            <p class="text-sm text-gray-500">Owner: John Doe</p>
+                            <p class="text-sm text-gray-500">Area: 1.25 Acres</p>
+                        </div>
+                        <div class="p-3 border rounded-lg hover:bg-gray-100 hover:shadow-sm cursor-pointer transition">
+                            <p class="font-bold text-blue-700">ID: 4421-AB-02</p>
+                            <p class="text-sm text-gray-500">Owner: Jane Smith</p>
+                            <p class="text-sm text-gray-500">Area: 2.50 Acres</p>
+                        </div>
+                         <div class="p-3 border rounded-lg hover:bg-gray-100 hover:shadow-sm cursor-pointer transition">
+                            <p class="font-bold text-blue-700">ID: 4422-CD-15</p>
+                            <p class="text-sm text-gray-500">Owner: Acme Corporation</p>
+                            <p class="text-sm text-gray-500">Area: 15.7 Acres</p>
+                        </div>
+                        -->
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-3">Parcel Actions</h3>
+                    <div class="flex flex-col space-y-2">
+                        <button id = "addparcel" class="w-full text-left p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                            <span>Add New Parcel</span>
+                        </button>
+                        <button id = "edit_pa" class="w-full text-left p-3 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors flex items-center space-x-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                            <span>Edit your Parcels</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section id = "enter">
+
+                </section>
+
+                <section>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-3">Data Management</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                         <button id = 'import_kml' class="p-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm">Import Data</button>
+                         <button id = 'export_kml' class="p-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm">Export Data</button>
+                         <button class="col-span-2 p-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm" onclick="location.reload()">Refresh Layer</button>
+                    </div>
+                </section>
+            </div>
+
+        </aside>
+
+        <main class="flex-1 h-full relative">
+            <button id="openBtn" class="lg:hidden absolute top-4 left-4 z-10 p-2 bg-white rounded-md shadow-md text-gray-600 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            
+            <div id="viewDiv"></div>
+        </main>
+        
+    </div>
+    <!--div id = 'table_m'></div-->
+
+    <div id="editModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-full h-4/5 transform transition-all duration-300 scale-100">
+            
+            <div class="flex justify-between items-center pb-4 border-b border-gray-200">
+                <h3 class="text-2xl font-bold text-gray-800">Edit Parcel Properties ✍️</h3>
+                <button id="closeEditModal" class="text-gray-400 hover:text-gray-600 text-3xl leading-none font-semibold">&times;</button>
+            </div>
+
+            <div id = 'table_m' class="h-2/3"></div>
+            <!--div id = 'table_mm' class="h-2/3"></div-->
+
+            
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button id="cancelEditButton" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+                    Cancel
+                </button>
+                <button id="saveChangesButton" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id = "myModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-full h-4/5 transform transition-all duration-300 scale-100">
+    
+            <button class="absolute top-2 right-4 text-gray-500 hover:text-gray-900 text-3xl font-light leading-none" onclick="closeModal()">
+            &times;
+            </button>
+            
+            <h3 class="text-2xl font-semibold mb-4 text-gray-800">Import your kml</h3>
+            <div id = 'table_mm' class="h-2/3"></div>
+            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" onclick="closeModal()">
+            Got It!
+            </button>
+        </div>
+    </div>
+    
+</body>
+<script>
+        // Get all necessary elements
+        const editButton = document.getElementById('edit_pa');
+        const editModal = document.getElementById('editModal');
+        const closeEditModalButton = document.getElementById('closeEditModal');
+        const cancelEditButton = document.getElementById('cancelEditButton');
+
+        // Function to SHOW the modal
+        function openEditModal() {
+            // Replace 'hidden' with 'flex' to make the modal visible and centered
+            editModal.classList.remove('hidden');
+            editModal.classList.add('flex');
+        }
+
+        // Function to HIDE the modal
+        function closeEditModal() {
+            // Replace 'flex' with 'hidden' to hide the modal
+            editModal.classList.remove('flex');
+            editModal.classList.add('hidden');
+        }
+
+        // --- Event Listeners ---
+
+        // 1. Open the modal when the "Edit your Parcels" button is clicked
+        if (editButton) {
+            editButton.addEventListener('click', openEditModal);
+        }
+
+        // 2. Close the modal when the 'X' button is clicked
+        if (closeEditModalButton) {
+            closeEditModalButton.addEventListener('click', closeEditModal);
+        }
+
+        // 3. Close the modal when the 'Cancel' button is clicked
+        if (cancelEditButton) {
+            cancelEditButton.addEventListener('click', closeEditModal);
+        }
+
+        // 4. Close the modal when the user clicks the backdrop (outside the content box)
+        if (editModal) {
+            editModal.addEventListener('click', (event) => {
+                // Check if the click occurred directly on the modal container itself (the dark backdrop)
+                if (event.target === editModal) {
+                    closeEditModal();
+                }
+            });
+        }
+
+
+        //
+        const modal = document.getElementById("myModal");
+        const openBtn = document.getElementById('import_kml');
+
+        // Function to show the modal
+        function openModal() {
+        // Replace the 'hidden' class with 'flex' to display the modal and center its content
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        }
+
+        // Function to hide the modal
+        function closeModal() {
+        // Replace the 'flex' class with 'hidden' to hide the modal
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+        }
+
+        // Attach event listeners
+        openBtn.addEventListener('click', openModal);
+
+        // Close when clicking outside the modal content area
+        window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+        });
+
+// The close button inside the HTML calls closeModal() directly via its onclick attribute.
+        //
+
+        // NOTE: You'll also need to handle the 'Save Changes' button logic (id="saveChangesButton") 
+        // based on what your ArcGIS map_manager.js needs to do!
+    </script>
+</html>

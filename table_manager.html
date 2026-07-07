@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management Table</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="./app.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Property Management</h1>
+            <p class="text-gray-600 mb-6">Manage your property listings</p>
+
+            <!-- Configuration Section -->
+            <div class="mb-8 p-4 bg-gray-100 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Parcel Table Manager</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!--div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Supabase URL</label>
+                        <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+                        <input type="password" id="supabaseKey" placeholder="Your anon/public key"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div-->
+                    <div class="flex items-end">
+                        <button onclick="loadPropertiesTable()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            Load Properties
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="statusMessage" class="hidden mb-4 p-4 rounded-lg text-sm font-medium"></div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden mb-4 flex items-center gap-2 text-blue-600">
+                <div class="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                <span>Loading properties...</span>
+            </div>
+
+            <!-- Table Section -->
+            <div id="tableSection" class="hidden">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Properties List</h2>
+                <div class="overflow-x-auto">
+                    <table id="dataTable" class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Owner</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Parcel Name</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Price/m²</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Price</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Location</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Description</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Sell Category</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-200">
+                            <!-- Rows will be generated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

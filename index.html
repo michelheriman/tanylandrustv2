@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://js.arcgis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="google-site-verification" content="CSh_wdp68Uv7I9-Jcsng6Gh7vR0QDD3pa7Axp7VLLLo" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tany | Landtrust — The Land Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate:  { deep: '#1C2B3A' },
+            meadow: { DEFAULT: '#4A8C5C', light: '#6AAF7A', dark: '#335E3F' },
+            stone:  { warm: '#F5EDD6', mid: '#E2D4B4' },
+            amber:  { land: '#C9873A', soft: '#E4A85A' },
+            mist:   { DEFAULT: '#E8EFF4', dark: '#CDD9E2' },
+          },
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            body:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <script defer src="lp_app.js"></script>
+  <style>
+    .topo-bg { background-color: #1C2B3A; position: relative; overflow: hidden; }
+    .topo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.13; }
+    @keyframes drift {
+      0%   { transform: translate(0,0) scale(1); }
+      50%  { transform: translate(-18px,12px) scale(1.02); }
+      100% { transform: translate(0,0) scale(1); }
+    }
+    .topo-layer   { animation: drift 22s ease-in-out infinite; }
+    .topo-layer-2 { animation: drift 30s ease-in-out infinite reverse; }
+    .reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease,transform .7s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .card-glow { box-shadow: 0 0 0 2px #4A8C5C, 0 12px 40px rgba(74,140,92,.25); }
+    .nav-blur { backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+    .stat-num { font-variant-numeric:tabular-nums; }
+    html { scroll-behavior:smooth; }
+    .icon-ring {
+      background: linear-gradient(135deg,rgba(74,140,92,.18),rgba(201,135,58,.12));
+      border: 1px solid rgba(74,140,92,.3);
+    }
+    /* Lang toggle */
+    #lang-toggle { position:relative; display:inline-flex; align-items:center; background:#f0f4f7; border-radius:999px; padding:3px; gap:2px; border:1px solid #CDD9E2; }
+    #lang-toggle button { font-size:.75rem; font-weight:600; padding:4px 12px; border-radius:999px; border:none; cursor:pointer; transition:all .2s; line-height:1; }
+    #lang-toggle button.active { background:#4A8C5C; color:#fff; box-shadow:0 1px 4px rgba(74,140,92,.35); }
+    #lang-toggle button.inactive { background:transparent; color:#4A8C5C; }
+    /* Smooth text swap */
+    [data-i18n] { transition: opacity .18s ease; }
+    .lang-fade { opacity:0 !important; }
+  </style>
+</head>
+<body class="font-body bg-stone-warm text-slate-deep antialiased">
+
+<!-- ═══════════════════════  NAV  ═══════════════════════ -->
+<header id="navbar" class="fixed top-0 left-0 right-0 z-50 nav-blur bg-white/80 border-b border-mist-dark/60 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5">
+      <span class="w-8 h-8 rounded-md bg-meadow flex items-center justify-center">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5L15.5 5.25V12.75L9 16.5L2.5 12.75V5.25L9 1.5Z" stroke="#F5EDD6" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 1.5V16.5M2.5 5.25L9 9L15.5 5.25" stroke="#F5EDD6" stroke-width="1"/></svg>
+      </span>
+      <span class="font-display font-600 text-xl tracking-tight text-slate-deep">Tany <span class="text-meadow font-300 italic">Landtrust</span></span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-deep/70">
+      <a href="#features"     class="hover:text-meadow transition-colors" data-i18n="nav_features">Features</a>
+      <a href="#gis"          class="hover:text-meadow transition-colors" data-i18n="nav_gis">GIS Platform</a>
+      <a href="#negotiation"  class="hover:text-meadow transition-colors" data-i18n="nav_negotiation">Negotiation</a>
+      <a href="#pricing"      class="hover:text-meadow transition-colors" data-i18n="nav_pricing">Pricing</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <!-- Language toggle -->
+      <div id="lang-toggle" aria-label="Switch language">
+        <button id="btn-en" class="active"   onclick="setLang('en')">EN</button>
+        <button id="btn-fr" class="inactive" onclick="setLang('fr')">FR</button>
+      </div>
+      <a id = "sign_in" href="#" class="hidden md:inline text-sm font-medium text-slate-deep/70 hover:text-slate-deep transition-colors" data-i18n="nav_signin">Sign in</a>
+      <a id = "sign_in_" href="#" class="bg-meadow hover:bg-meadow-dark text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors shadow-sm" data-i18n="nav_cta">Get started</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════  HERO  ═══════════════════════ -->
+<section class="topo-bg min-h-screen flex items-center pt-20">
+  <svg class="topo-canvas topo-layer" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#4A8C5C" stroke-width="1">
+      <ellipse cx="700" cy="400" rx="680" ry="340"/><ellipse cx="700" cy="400" rx="580" ry="280"/>
+      <ellipse cx="700" cy="400" rx="480" ry="220"/><ellipse cx="700" cy="400" rx="380" ry="160"/>
+      <ellipse cx="700" cy="400" rx="280" ry="110"/><ellipse cx="700" cy="400" rx="180" ry="65"/>
+      <ellipse cx="700" cy="400" rx="90"  ry="32"/>
+      <ellipse cx="250" cy="200" rx="400" ry="200"/><ellipse cx="250" cy="200" rx="320" ry="150"/>
+      <ellipse cx="250" cy="200" rx="240" ry="100"/><ellipse cx="250" cy="200" rx="150" ry="60"/>
+      <ellipse cx="1150" cy="600" rx="380" ry="190"/><ellipse cx="1150" cy="600" rx="280" ry="130"/>
+      <ellipse cx="1150" cy="600" rx="180" ry="80"/><ellipse cx="1150" cy="600" rx="90"  ry="40"/>
+    </g>
+  </svg>
+  <svg class="topo-canvas topo-layer-2" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#C9873A" stroke-width="0.8">
+      <ellipse cx="400" cy="600" rx="500" ry="250"/><ellipse cx="400" cy="600" rx="380" ry="180"/>
+      <ellipse cx="400" cy="600" rx="260" ry="120"/><ellipse cx="400" cy="600" rx="150" ry="70"/>
+      <ellipse cx="1000" cy="150" rx="450" ry="220"/><ellipse cx="1000" cy="150" rx="330" ry="160"/>
+      <ellipse cx="1000" cy="150" rx="210" ry="100"/><ellipse cx="1000" cy="150" rx="100" ry="50"/>
+    </g>
+  </svg>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 py-24">
+    <div class="max-w-3xl">
+      <div class="inline-flex items-center gap-2 bg-meadow/20 border border-meadow/40 text-meadow-light text-xs font-semibold px-3 py-1.5 rounded-full mb-8 tracking-wide uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-meadow-light animate-pulse"></span>
+        <span data-i18n="hero_badge">Land marketplace · GIS platform · Secure negotiation</span>
+      </div>
+
+      <h1 class="font-display text-5xl md:text-7xl font-600 text-stone-warm leading-[1.05] tracking-tight mb-6">
+        <span data-i18n="hero_h1_line1">Every parcel</span><br/>
+        <span class="italic font-300 text-amber-soft" data-i18n="hero_h1_line2">deserves a</span><br/>
+        <span data-i18n="hero_h1_line3">trusted owner.</span>
+      </h1>
+
+      <p class="text-mist-dark text-lg md:text-xl font-300 leading-relaxed max-w-xl mb-10" data-i18n="hero_sub">
+        Tany Landtrust is the marketplace where land buyers and sellers meet — backed by geographic intelligence, transparent data, and legally grounded negotiation records.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a href="#pricing" class="inline-flex items-center justify-center gap-2 bg-amber-land hover:bg-amber-soft text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-amber-land/30 hover:-translate-y-0.5">
+          <span data-i18n="hero_cta_primary">Start for free</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#features" class="inline-flex items-center justify-center gap-2 border border-mist-dark/40 text-mist hover:border-meadow hover:text-meadow-light font-medium px-8 py-4 rounded-xl transition-all" data-i18n="hero_cta_secondary">
+          See how it works
+        </a>
+      </div>
+
+      <div class="flex items-center gap-8 mt-14 pt-8 border-t border-white/10">
+        <div class="stat-num">
+          <div class="font-display text-3xl font-600 text-stone-warm" id="stat0">12,400<span class="text-meadow">+</span></div>
+          <div class="text-mist-dark text-sm font-300 mt-0.5" data-i18n="stat0_label">Parcels listed</div>
+        </div>
+        <div class="w-px h-10 bg-white/10"></div>
+        <div class="stat-num">
+          <div class="font-display text-3xl font-600 text-stone-warm" id="stat1">100<span class="text-amber-soft">%</span></div>
+          <div class="text-mist-dark text-sm font-300 mt-0.5" data-i18n="stat1_label"> % Conflict-free transfers</div>
+        </div>
+        <div class="w-px h-10 bg-white/10"></div>
+        <div class="stat-num">
+          <div class="font-display text-3xl font-600 text-stone-warm" id="stat2">24</div>
+          <div class="text-mist-dark text-sm font-300 mt-0.5" data-i18n="stat2_label">Regions covered</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-mist-dark/50 text-xs">
+    <span class="tracking-widest uppercase text-[10px]" data-i18n="scroll_hint">Scroll</span>
+    <span class="w-px h-8 bg-gradient-to-b from-mist-dark/40 to-transparent animate-pulse"></span>
+  </div>
+</section>
+
+<!-- ═══════════════════════  TRUST BAR  ═══════════════════════ -->
+<div class="bg-slate-deep/5 border-y border-mist-dark/40 py-5">
+  <div class="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-center gap-x-12 gap-y-3 text-slate-deep/40 text-sm font-medium tracking-wide">
+    <span data-i18n="trust1">🔒 End-to-end encrypted negotiation</span>
+    <span class="hidden sm:block w-px h-4 bg-slate-deep/20"></span>
+    <span data-i18n="trust2">🗺 Certified geospatial data</span>
+    <span class="hidden sm:block w-px h-4 bg-slate-deep/20"></span>
+    <span data-i18n="trust3">⚖️ Court-admissible records</span>
+    <span class="hidden sm:block w-px h-4 bg-slate-deep/20"></span>
+    <span data-i18n="trust4">📱 Mobile-first design</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════  FEATURES  ═══════════════════════ -->
+<section id="features" class="py-28 bg-stone-warm">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-20">
+      <p class="text-meadow text-sm font-semibold uppercase tracking-widest mb-3" data-i18n="feat_eyebrow">What Tany offers</p>
+      <h2 class="font-display text-4xl md:text-5xl font-600 text-slate-deep leading-tight">
+        <span data-i18n="feat_h2_line1">Three pillars.</span><br/><span class="italic font-300" data-i18n="feat_h2_line2">One platform.</span>
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Marketplace -->
+      <div class="reveal bg-white rounded-2xl p-8 border border-mist-dark/50 hover:border-meadow/40 hover:shadow-xl transition-all">
+        <div class="icon-ring w-14 h-14 rounded-xl flex items-center justify-center mb-6">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="3" y="7" width="22" height="16" rx="2" stroke="#4A8C5C" stroke-width="1.5"/><path d="M9 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" stroke="#4A8C5C" stroke-width="1.5"/><path d="M3 13h22" stroke="#C9873A" stroke-width="1.5"/><circle cx="14" cy="17" r="2" stroke="#4A8C5C" stroke-width="1.5"/></svg>
+        </div>
+        <h3 class="font-display text-2xl font-600 text-slate-deep mb-3" data-i18n="f1_title">Land Marketplace</h3>
+        <p class="text-slate-deep/60 leading-relaxed text-sm mb-6" data-i18n="f1_desc">List, discover, and trade parcels with verified ownership records. Filter by size, location, soil type, and price — all in one place.</p>
+        <ul class="space-y-2 text-sm text-slate-deep/70">
+          <li class="flex items-center gap-2"><span class="text-meadow">✓</span> <span data-i18n="f1_li1">Verified parcel listings</span></li>
+          <li class="flex items-center gap-2"><span class="text-meadow">✓</span> <span data-i18n="f1_li2">Smart price estimates</span></li>
+          <li class="flex items-center gap-2"><span class="text-meadow">✓</span> <span data-i18n="f1_li3">Buyer-seller matching</span></li>
+        </ul>
+      </div>
+
+      <!-- GIS -->
+      <div class="reveal bg-slate-deep rounded-2xl p-8 border border-meadow/30 hover:border-meadow/60 hover:shadow-xl transition-all" style="transition-delay:.1s">
+        <div class="w-14 h-14 rounded-xl bg-meadow/20 border border-meadow/40 flex items-center justify-center mb-6">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#6AAF7A" stroke-width="1.5"/><ellipse cx="14" cy="14" rx="4" ry="10" stroke="#6AAF7A" stroke-width="1"/><path d="M4 14h20M14 4c-3 3-3 7 0 10s3 7 0 10M14 4c3 3 3 7 0 10s-3 7 0 10" stroke="#C9873A" stroke-width="1" opacity=".7"/></svg>
+        </div>
+        <h3 class="font-display text-2xl font-600 text-stone-warm mb-3" data-i18n="f2_title">GIS Intelligence</h3>
+        <p class="text-mist/70 leading-relaxed text-sm mb-6" data-i18n="f2_desc">Access rich geographic data for any parcel — from topographic slopes and soil quality to proximity to hospitals, roads, and public transport.</p>
+        <ul class="space-y-2 text-sm text-mist/80">
+          <li class="flex items-center gap-2"><span class="text-meadow-light">✓</span> <span data-i18n="f2_li1">Topographic analysis</span></li>
+          <li class="flex items-center gap-2"><span class="text-meadow-light">✓</span> <span data-i18n="f2_li2">Soil characteristic reports</span></li>
+          <li class="flex items-center gap-2"><span class="text-meadow-light">✓</span> <span data-i18n="f2_li3">Infrastructure proximity</span></li>
+        </ul>
+      </div>
+
+      <!-- Negotiation -->
+      <div class="reveal bg-white rounded-2xl p-8 border border-mist-dark/50 hover:border-amber-land/40 hover:shadow-xl transition-all" style="transition-delay:.2s">
+        <div class="w-14 h-14 rounded-xl bg-amber-land/10 border border-amber-land/30 flex items-center justify-center mb-6">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 8h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3V8Z" stroke="#C9873A" stroke-width="1.5" stroke-linejoin="round"/><path d="M23 6V18" stroke="#C9873A" stroke-width="1" opacity=".4" stroke-dasharray="2 2"/><path d="M17 6h4a2 2 0 0 1 2 2v5" stroke="#C9873A" stroke-width="1.5"/><circle cx="20" cy="5" r="3" fill="#C9873A" opacity=".3" stroke="#C9873A" stroke-width="1"/></svg>
+        </div>
+        <h3 class="font-display text-2xl font-600 text-slate-deep mb-3" data-i18n="f3_title">Recorded Negotiation</h3>
+        <p class="text-slate-deep/60 leading-relaxed text-sm mb-6" data-i18n="f3_desc">Every offer, counter-offer, and agreement is timestamped and archived. These records are legally structured and can be produced in case of future disputes.</p>
+        <ul class="space-y-2 text-sm text-slate-deep/70">
+          <li class="flex items-center gap-2"><span class="text-amber-land">✓</span> <span data-i18n="f3_li1">Immutable transaction log</span></li>
+          <li class="flex items-center gap-2"><span class="text-amber-land">✓</span> <span data-i18n="f3_li2">Conflict-resolution export</span></li>
+          <li class="flex items-center gap-2"><span class="text-amber-land">✓</span> <span data-i18n="f3_li3">Multi-party signoff</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════  GIS DEEP-DIVE  ═══════════════════════ -->
+<section id="gis" class="py-28 bg-mist">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="reveal">
+        <p class="text-meadow text-sm font-semibold uppercase tracking-widest mb-4" data-i18n="gis_eyebrow">Geo-Information System</p>
+        <h2 class="font-display text-4xl md:text-5xl font-600 text-slate-deep leading-tight mb-6">
+          <span data-i18n="gis_h2_line1">See the land</span><br/>
+          <span class="italic font-300" data-i18n="gis_h2_line2">beyond the parcel.</span>
+        </h2>
+        <p class="text-slate-deep/60 text-lg leading-relaxed mb-8" data-i18n="gis_intro">Our embedded GIS engine layers certified geographic, environmental, and infrastructural data directly onto every listing. No more guessing what surrounds your investment.</p>
+        <div class="space-y-5">
+          <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-lg bg-meadow/15 border border-meadow/30 flex-shrink-0 flex items-center justify-center text-lg">⛰</div>
+            <div>
+              <div class="font-semibold text-slate-deep text-sm mb-1" data-i18n="gis_f1_title">Topographic analysis</div>
+              <div class="text-slate-deep/55 text-sm leading-relaxed" data-i18n="gis_f1_desc">Slope maps, elevation profiles, flood risk assessments, and terrain classification for informed agricultural or construction use.</div>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-lg bg-meadow/15 border border-meadow/30 flex-shrink-0 flex items-center justify-center text-lg">🌱</div>
+            <div>
+              <div class="font-semibold text-slate-deep text-sm mb-1" data-i18n="gis_f2_title">Soil characteristics</div>
+              <div class="text-slate-deep/55 text-sm leading-relaxed" data-i18n="gis_f2_desc">pH levels, organic content, drainage class, and agricultural potential — from certified lab and satellite data.</div>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-lg bg-amber-land/15 border border-amber-land/30 flex-shrink-0 flex items-center justify-center text-lg">🏥</div>
+            <div>
+              <div class="font-semibold text-slate-deep text-sm mb-1" data-i18n="gis_f3_title">Infrastructure &amp; services</div>
+              <div class="text-slate-deep/55 text-sm leading-relaxed" data-i18n="gis_f3_desc">Nearest hospitals, schools, public transport stops, roads, markets, and utilities — all within the parcel view.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GIS mock panel -->
+      <div class="reveal" style="transition-delay:.15s">
+        <div class="bg-slate-deep rounded-2xl p-1 shadow-2xl">
+          <div class="bg-slate-deep/80 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-stone-warm/80 font-display text-sm font-600" data-i18n="gis_panel_title">Parcel #TY-04821 · GeoReport</span>
+              <span class="bg-meadow/20 text-meadow-light text-xs px-2.5 py-1 rounded-full font-medium">Pro</span>
+            </div>
+            <div class="relative bg-slate-deep/60 rounded-lg overflow-hidden h-44 mb-4">
+              <svg class="w-full h-full" viewBox="0 0 320 176" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="320" height="176" fill="#0F1E2C"/>
+                <ellipse cx="160" cy="88" rx="150" ry="80" stroke="#2A5C3A" stroke-width="1"/>
+                <ellipse cx="160" cy="88" rx="120" ry="62" stroke="#2F6B44" stroke-width="1"/>
+                <ellipse cx="160" cy="88" rx="90"  ry="46" stroke="#367A4E" stroke-width="1"/>
+                <ellipse cx="160" cy="88" rx="62"  ry="32" stroke="#3D8A58" stroke-width="1"/>
+                <ellipse cx="160" cy="88" rx="38"  ry="20" stroke="#4A9C66" stroke-width="1.5"/>
+                <ellipse cx="160" cy="88" rx="18"  ry="9"  stroke="#5AAF74" stroke-width="2"/>
+                <polygon points="80,40 240,55 225,135 65,120" stroke="#E4A85A" stroke-width="2" stroke-dasharray="6,3" fill="rgba(228,168,90,.07)"/>
+                <text x="132" y="92" fill="#6AAF7A" font-size="9" font-family="Inter">Peak 1242m</text>
+                <circle cx="160" cy="88" r="3" fill="#6AAF7A"/>
+                <text x="88" y="75" fill="#E4A85A" font-size="8" font-family="Inter" opacity=".9">N</text>
+                <path d="M88 65 L88 55 M88 65 L84 69 M88 65 L92 69" stroke="#E4A85A" stroke-width="1"/>
+              </svg>
+              <div class="absolute bottom-2 right-2 text-xs text-mist/50">Tany GIS © 2025</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <div class="bg-white/5 rounded-lg p-3">
+                <div class="text-mist/50 text-xs mb-1" data-i18n="gis_d1_label">Avg. Slope</div>
+                <div class="text-stone-warm font-semibold text-sm">12.4°</div>
+                <div class="text-meadow-light text-xs" data-i18n="gis_d1_val">Moderate</div>
+              </div>
+              <div class="bg-white/5 rounded-lg p-3">
+                <div class="text-mist/50 text-xs mb-1" data-i18n="gis_d2_label">Soil type</div>
+                <div class="text-stone-warm font-semibold text-sm">Ferralsol</div>
+                <div class="text-amber-soft text-xs">pH 5.8</div>
+              </div>
+              <div class="bg-white/5 rounded-lg p-3">
+                <div class="text-mist/50 text-xs mb-1" data-i18n="gis_d3_label">Nearest hospital</div>
+                <div class="text-stone-warm font-semibold text-sm">3.2 km</div>
+                <div class="text-mist/50 text-xs">Antananarivo</div>
+              </div>
+              <div class="bg-white/5 rounded-lg p-3">
+                <div class="text-mist/50 text-xs mb-1" data-i18n="gis_d4_label">Flood risk</div>
+                <div class="text-stone-warm font-semibold text-sm" data-i18n="gis_d4_val">Low</div>
+                <div class="text-meadow-light text-xs">Zone C</div>
+              </div>
+            </div>
+            <button class="w-full py-2.5 bg-meadow hover:bg-meadow-dark text-white text-sm font-semibold rounded-lg transition-colors" data-i18n="gis_dl_btn">Download full GeoReport →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════  NEGOTIATION  ═══════════════════════ -->
+<section id="negotiation" class="py-28 bg-stone-warm">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <!-- chat mock -->
+      <div class="reveal order-2 lg:order-1">
+        <div class="bg-white rounded-2xl shadow-xl border border-mist-dark/50 overflow-hidden">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-mist-dark/40 bg-mist/50">
+            <div>
+              <div class="font-semibold text-slate-deep text-sm" data-i18n="neg_thread_title">Negotiation Thread · TY-04821</div>
+              <div class="text-slate-deep/50 text-xs mt-0.5" data-i18n="neg_thread_sub">Recorded &amp; timestamped</div>
+            </div>
+            <span class="flex items-center gap-1.5 text-xs font-semibold text-meadow bg-meadow/10 px-2.5 py-1 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-meadow"></span> <span data-i18n="neg_active">Active</span>
+            </span>
+          </div>
+          <div class="p-6 space-y-4 max-h-72 overflow-y-auto">
+            <div class="flex gap-3">
+              <div class="w-8 h-8 rounded-full bg-meadow/20 flex-shrink-0 flex items-center justify-center text-xs font-bold text-meadow" data-i18n="neg_seller_initial">S</div>
+              <div>
+                <div class="text-xs text-slate-deep/40 mb-1" data-i18n="neg_msg1_meta">Seller · Jun 12, 09:14 AM</div>
+                <div class="bg-mist/70 rounded-xl rounded-tl-none px-4 py-3 text-sm text-slate-deep max-w-xs" data-i18n="neg_msg1">Listing parcel at <span class="font-semibold text-meadow">$42,000</span>. Includes access road and water rights.</div>
+              </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+              <div>
+                <div class="text-xs text-slate-deep/40 mb-1 text-right" data-i18n="neg_msg2_meta">Buyer · Jun 12, 11:02 AM</div>
+                <div class="bg-meadow/10 rounded-xl rounded-tr-none px-4 py-3 text-sm text-slate-deep max-w-xs" data-i18n="neg_msg2">Counter-offer: <span class="font-semibold text-slate-deep">$37,500</span>. I'd need a soil analysis included.</div>
+              </div>
+              <div class="w-8 h-8 rounded-full bg-amber-land/20 flex-shrink-0 flex items-center justify-center text-xs font-bold text-amber-land" data-i18n="neg_buyer_initial">B</div>
+            </div>
+            <div class="flex gap-3">
+              <div class="w-8 h-8 rounded-full bg-meadow/20 flex-shrink-0 flex items-center justify-center text-xs font-bold text-meadow" data-i18n="neg_seller_initial2">S</div>
+              <div>
+                <div class="text-xs text-slate-deep/40 mb-1" data-i18n="neg_msg3_meta">Seller · Jun 13, 08:30 AM</div>
+                <div class="bg-mist/70 rounded-xl rounded-tl-none px-4 py-3 text-sm text-slate-deep max-w-xs" data-i18n="neg_msg3">Agreed at <span class="font-semibold text-meadow">$39,000</span>. GeoReport will be provided at signing.</div>
+              </div>
+            </div>
+            <div class="border-t border-mist-dark/40 pt-3 flex items-center gap-2">
+              <span>⚖️</span>
+              <span class="text-xs text-slate-deep/50" data-i18n="neg_seal">This thread is sealed and legally admissible · SHA-256 signed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal order-1 lg:order-2" style="transition-delay:.15s">
+        <p class="text-amber-land text-sm font-semibold uppercase tracking-widest mb-4" data-i18n="neg_eyebrow">Negotiation Platform</p>
+        <h2 class="font-display text-4xl md:text-5xl font-600 text-slate-deep leading-tight mb-6">
+          <span data-i18n="neg_h2_line1">Every word,</span><br/>
+          <span class="italic font-300" data-i18n="neg_h2_line2">on the record.</span>
+        </h2>
+        <p class="text-slate-deep/60 text-lg leading-relaxed mb-8" data-i18n="neg_intro">Land transactions can become disputes years later. Tany's negotiation platform records every proposal, acceptance, and condition — creating an immutable, court-admissible history of the deal.</p>
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="text-amber-land mt-0.5">→</div>
+            <p class="text-slate-deep/70 text-sm leading-relaxed" data-i18n="neg_b1"><span class="font-semibold text-slate-deep">Timestamped threads</span> — every message is cryptographically sealed with date, time, and party identity.</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="text-amber-land mt-0.5">→</div>
+            <p class="text-slate-deep/70 text-sm leading-relaxed" data-i18n="neg_b2"><span class="font-semibold text-slate-deep">Conflict export</span> — download a formatted PDF of the full negotiation for legal proceedings or notarization.</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="text-amber-land mt-0.5">→</div>
+            <p class="text-slate-deep/70 text-sm leading-relaxed" data-i18n="neg_b3"><span class="font-semibold text-slate-deep">Multi-party signoff</span> — both parties digitally acknowledge terms before any status changes.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════  PRICING  ═══════════════════════ -->
+<section id="pricing" class="py-28 bg-slate-deep">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="reveal text-center mb-16">
+      <p class="text-meadow text-sm font-semibold uppercase tracking-widest mb-3" data-i18n="price_eyebrow">Pricing</p>
+      <h2 class="font-display text-4xl md:text-5xl font-600 text-stone-warm leading-tight mb-4">
+        <span data-i18n="price_h2_line1">Start free.</span><br/><span class="italic font-300 text-mist" data-i18n="price_h2_line2">Scale as you grow.</span>
+      </h2>
+      <p class="text-mist/60 text-lg max-w-xl mx-auto" data-i18n="price_sub">From a single parcel to an unlimited portfolio — Tany has a plan that matches how you work with land.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- FREE -->
+      <div class="reveal bg-white/5 border border-white/10 rounded-2xl p-7 flex flex-col hover:border-white/20 transition-all">
+        <div class="mb-6">
+          <div class="text-mist/50 text-xs font-semibold uppercase tracking-widest mb-2" data-i18n="p0_name">Free</div>
+          <div class="font-display text-4xl font-600 text-stone-warm mb-1">$0</div>
+          <div class="text-mist/50 text-sm" data-i18n="p0_tagline">No credit card needed</div>
+        </div>
+        <ul class="space-y-3 flex-1 mb-8">
+          <li class="flex items-start gap-2 text-sm text-mist/70"><span class="text-mist/30 mt-0.5">◆</span> <span data-i18n="p0_li1">Up to <strong class="text-stone-warm">2 parcels</strong></span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/70"><span class="text-mist/30 mt-0.5">◆</span> <span data-i18n="p0_li2">Basic marketplace access</span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/50 line-through"><span>◆</span> <span data-i18n="p0_li3">Cannot erase parcels</span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/50 line-through"><span>◆</span> <span data-i18n="p0_li4">GeoReport</span></li>
+        </ul>
+        <a href="#" class="w-full text-center py-3 border border-white/20 text-mist/80 hover:border-white/40 hover:text-white text-sm font-semibold rounded-xl transition-all" data-i18n="p0_btn">Get started free</a>
+      </div>
+
+      <!-- TIER 1 -->
+      <div class="reveal bg-white/5 border border-white/10 rounded-2xl p-7 flex flex-col hover:border-meadow/30 transition-all" style="transition-delay:.08s">
+        <div class="mb-6">
+          <div class="text-meadow text-xs font-semibold uppercase tracking-widest mb-2" data-i18n="p1_name">Pro · Tier 1</div>
+          <div class="font-display text-4xl font-600 text-stone-warm mb-1">$5<span class="text-mist/50 text-base font-300" data-i18n="per_month">/mo</span></div>
+          <div class="text-mist/50 text-sm" data-i18n="p1_tagline">Individual landowner</div>
+        </div>
+        <ul class="space-y-3 flex-1 mb-8">
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-meadow mt-0.5">✓</span> <span data-i18n="p1_li1">Up to <strong class="text-stone-warm">5 parcels</strong></span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-meadow mt-0.5">✓</span> <span data-i18n="p1_li2">Parcel deletion on demand</span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-meadow mt-0.5">✓</span> <span data-i18n="p1_li3">GeoReport access</span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-meadow mt-0.5">✓</span> <span data-i18n="p1_li4">Recorded negotiation</span></li>
+        </ul>
+        <a href="#" class="w-full text-center py-3 border border-meadow/40 text-meadow hover:bg-meadow hover:text-white text-sm font-semibold rounded-xl transition-all" data-i18n="p1_btn">Choose Tier 1</a>
+      </div>
+
+      <!-- TIER 2 -->
+      <div class="reveal rounded-2xl p-7 flex flex-col card-glow bg-meadow-dark relative overflow-hidden" style="transition-delay:.16s">
+        <div class="absolute top-4 right-4">
+          <span class="bg-amber-land text-white text-xs font-bold px-2.5 py-1 rounded-full" data-i18n="popular_badge">Popular</span>
+        </div>
+        <div class="mb-6">
+          <div class="text-meadow-light text-xs font-semibold uppercase tracking-widest mb-2" data-i18n="p2_name">Pro · Tier 2</div>
+          <div class="font-display text-4xl font-600 text-stone-warm mb-1">$10<span class="text-mist/50 text-base font-300" data-i18n="per_month2">/mo</span></div>
+          <div class="text-mist/60 text-sm" data-i18n="p2_tagline">Growing portfolio</div>
+        </div>
+        <ul class="space-y-3 flex-1 mb-8">
+          <li class="flex items-start gap-2 text-sm text-stone-warm/90"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p2_li1">Up to <strong class="text-stone-warm">10 parcels</strong></span></li>
+          <li class="flex items-start gap-2 text-sm text-stone-warm/90"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p2_li2">Parcel deletion on demand</span></li>
+          <li class="flex items-start gap-2 text-sm text-stone-warm/90"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p2_li3">Full GeoReport suite</span></li>
+          <li class="flex items-start gap-2 text-sm text-stone-warm/90"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p2_li4">Priority support</span></li>
+        </ul>
+        <a href="#" class="w-full text-center py-3 bg-amber-land hover:bg-amber-soft text-white text-sm font-semibold rounded-xl transition-all shadow-lg" data-i18n="p2_btn">Choose Tier 2</a>
+      </div>
+
+      <!-- TIER 3 -->
+      <div class="reveal bg-white/5 border border-white/10 rounded-2xl p-7 flex flex-col hover:border-amber-land/30 transition-all" style="transition-delay:.24s">
+        <div class="mb-6">
+          <div class="text-amber-soft text-xs font-semibold uppercase tracking-widest mb-2" data-i18n="p3_name">Pro · Tier 3</div>
+          <div class="font-display text-4xl font-600 text-stone-warm mb-1">$25<span class="text-mist/50 text-base font-300" data-i18n="per_month3">/mo</span></div>
+          <div class="text-mist/50 text-sm" data-i18n="p3_tagline">Agencies &amp; developers</div>
+        </div>
+        <ul class="space-y-3 flex-1 mb-8">
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p3_li1"><strong class="text-stone-warm">Unlimited</strong> parcels<span class="text-mist/40 text-xs">*</span></span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p3_li2">Parcel deletion on demand</span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p3_li3">Full GeoReport suite</span></li>
+          <li class="flex items-start gap-2 text-sm text-mist/80"><span class="text-amber-soft mt-0.5">✓</span> <span data-i18n="p3_li4">API access + integrations</span></li>
+        </ul>
+        <a href="#" class="w-full text-center py-3 border border-amber-land/40 text-amber-soft hover:bg-amber-land hover:text-white text-sm font-semibold rounded-xl transition-all" data-i18n="p3_btn">Choose Tier 3</a>
+      </div>
+    </div>
+
+    <div class="reveal mt-10 p-5 rounded-xl bg-white/5 border border-white/10 max-w-2xl mx-auto">
+      <p class="text-mist/50 text-xs leading-relaxed mb-2" data-i18n="footnote1"><span class="text-mist/80 font-semibold">* Unlimited parcels:</span> The first 20 parcels are included. Extra parcels listed as "To Sell" are charged at +$1/parcel/month.</p>
+      <p class="text-mist/50 text-xs leading-relaxed" data-i18n="footnote2"><span class="text-mist/80 font-semibold">** GeoReport</span> — geographic intelligence platform including topographic analysis (slopes, elevation), certified soil characteristics, and proximity data for hospitals, public transport, roads, and utilities.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════  CTA  ═══════════════════════ -->
+<section class="py-28 bg-stone-warm">
+  <div class="max-w-4xl mx-auto px-6 text-center reveal">
+    <h2 class="font-display text-4xl md:text-6xl font-600 text-slate-deep leading-tight mb-6">
+      <span data-i18n="cta_h2_line1">Your land.</span><br/><span class="italic font-300 text-meadow" data-i18n="cta_h2_line2">Your record.</span><br/><span data-i18n="cta_h2_line3">Your future.</span>
+    </h2>
+    <p class="text-slate-deep/55 text-xl leading-relaxed mb-10 max-w-xl mx-auto" data-i18n="cta_sub">Join thousands of landowners and buyers who trust Tany to manage, trade, and protect their most valuable asset.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#pricing" class="inline-flex items-center justify-center gap-2 bg-meadow hover:bg-meadow-dark text-white font-semibold px-10 py-4 rounded-xl transition-all shadow-lg hover:-translate-y-0.5" data-i18n="cta_btn1">Create your free account</a>
+      <a href="#" class="inline-flex items-center justify-center gap-2 border-2 border-slate-deep/20 hover:border-meadow text-slate-deep hover:text-meadow font-semibold px-10 py-4 rounded-xl transition-all" data-i18n="cta_btn2">Schedule a demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════  FOOTER  ═══════════════════════ -->
+<footer class="bg-slate-deep border-t border-white/10 py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div>
+        <a href="#" class="flex items-center gap-2.5 mb-4">
+          <span class="w-8 h-8 rounded-md bg-meadow flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5L15.5 5.25V12.75L9 16.5L2.5 12.75V5.25L9 1.5Z" stroke="#F5EDD6" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 1.5V16.5M2.5 5.25L9 9L15.5 5.25" stroke="#F5EDD6" stroke-width="1"/></svg>
+          </span>
+          <span class="font-display font-600 text-lg text-stone-warm">Tany <span class="italic font-300 text-meadow-light">Landtrust</span></span>
+        </a>
+        <p class="text-mist/40 text-sm leading-relaxed" data-i18n="footer_tagline">The land marketplace built for trust, transparency, and the long term.</p>
+      </div>
+      <div>
+        <div class="text-mist/70 text-xs font-semibold uppercase tracking-widest mb-4" data-i18n="footer_col1">Platform</div>
+        <ul class="space-y-2.5 text-sm text-mist/50">
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_marketplace">Marketplace</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_gis">GIS Platform</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_negotiation">Negotiation</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_api">API Access</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-mist/70 text-xs font-semibold uppercase tracking-widest mb-4" data-i18n="footer_col2">Company</div>
+        <ul class="space-y-2.5 text-sm text-mist/50">
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_about">About</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_blog">Blog</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_careers">Careers</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-mist/70 text-xs font-semibold uppercase tracking-widest mb-4" data-i18n="footer_col3">Legal</div>
+        <ul class="space-y-2.5 text-sm text-mist/50">
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_tos">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_privacy">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-mist transition-colors" data-i18n="footer_security">Data Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="text-mist/30 text-sm" data-i18n="footer_copy">© 2025 Tany Landtrust. All rights reserved.</div>
+      <div class="text-mist/30 text-sm" data-i18n="footer_made">Made with care for landowners everywhere.</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════  SCRIPTS  ═══════════════════════ -->
+<script>
+// ── Translations ──────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    nav_features: 'Features',
+    nav_gis: 'GIS Platform',
+    nav_negotiation: 'Negotiation',
+    nav_pricing: 'Pricing',
+    nav_signin: 'Sign in',
+    nav_cta: 'Get started',
+
+    hero_badge: 'Land marketplace · GIS platform · Secure negotiation',
+    hero_h1_line1: 'Every parcel',
+    hero_h1_line2: 'deserves a',
+    hero_h1_line3: 'trusted owner.',
+    hero_sub: 'Tany Landtrust is the marketplace where land buyers and sellers meet — backed by geographic intelligence, transparent data, and legally grounded negotiation records.',
+    hero_cta_primary: 'Start for free',
+    hero_cta_secondary: 'See how it works',
+    stat0_label: 'Parcels listed',
+    stat1_label: 'Conflict-free transfers',
+    stat2_label: 'Regions covered',
+    scroll_hint: 'Scroll',
+
+    trust1: '🔒 End-to-end encrypted negotiation',
+    trust2: '🗺 Certified geospatial data',
+    trust3: '⚖️ Court-admissible records',
+    trust4: '📱 Mobile-first design',
+
+    feat_eyebrow: 'What Tany offers',
+    feat_h2_line1: 'Three pillars.',
+    feat_h2_line2: 'One platform.',
+    f1_title: 'Land Marketplace',
+    f1_desc: 'List, discover, and trade parcels with verified ownership records. Filter by size, location, soil type, and price — all in one place.',
+    f1_li1: 'Verified parcel listings',
+    f1_li2: 'Smart price estimates',
+    f1_li3: 'Buyer-seller matching',
+    f2_title: 'GIS Intelligence',
+    f2_desc: 'Access rich geographic data for any parcel — from topographic slopes and soil quality to proximity to hospitals, roads, and public transport.',
+    f2_li1: 'Topographic analysis',
+    f2_li2: 'Soil characteristic reports',
+    f2_li3: 'Infrastructure proximity',
+    f3_title: 'Recorded Negotiation',
+    f3_desc: 'Every offer, counter-offer, and agreement is timestamped and archived. These records are legally structured and can be produced in case of future disputes.',
+    f3_li1: 'Immutable transaction log',
+    f3_li2: 'Conflict-resolution export',
+    f3_li3: 'Multi-party signoff',
+
+    gis_eyebrow: 'Geo-Information System',
+    gis_h2_line1: 'See the land',
+    gis_h2_line2: 'beyond the parcel.',
+    gis_intro: 'Our embedded GIS engine layers certified geographic, environmental, and infrastructural data directly onto every listing. No more guessing what surrounds your investment.',
+    gis_f1_title: 'Topographic analysis',
+    gis_f1_desc: 'Slope maps, elevation profiles, flood risk assessments, and terrain classification for informed agricultural or construction use.',
+    gis_f2_title: 'Soil characteristics',
+    gis_f2_desc: 'pH levels, organic content, drainage class, and agricultural potential — from certified lab and satellite data.',
+    gis_f3_title: 'Infrastructure & services',
+    gis_f3_desc: 'Nearest hospitals, schools, public transport stops, roads, markets, and utilities — all within the parcel view.',
+    gis_panel_title: 'Parcel #TY-04821 · GeoReport',
+    gis_d1_label: 'Avg. Slope',
+    gis_d1_val: 'Moderate',
+    gis_d2_label: 'Soil type',
+    gis_d3_label: 'Nearest hospital',
+    gis_d4_label: 'Flood risk',
+    gis_d4_val: 'Low',
+    gis_dl_btn: 'Download full GeoReport →',
+
+    neg_eyebrow: 'Negotiation Platform',
+    neg_h2_line1: 'Every word,',
+    neg_h2_line2: 'on the record.',
+    neg_intro: "Land transactions can become disputes years later. Tany's negotiation platform records every proposal, acceptance, and condition — creating an immutable, court-admissible history of the deal.",
+    neg_b1: '<span class="font-semibold text-slate-deep">Timestamped threads</span> — every message is cryptographically sealed with date, time, and party identity.',
+    neg_b2: '<span class="font-semibold text-slate-deep">Conflict export</span> — download a formatted PDF of the full negotiation for legal proceedings or notarization.',
+    neg_b3: '<span class="font-semibold text-slate-deep">Multi-party signoff</span> — both parties digitally acknowledge terms before any status changes.',
+    neg_thread_title: 'Negotiation Thread · TY-04821',
+    neg_thread_sub: 'Recorded & timestamped',
+    neg_active: 'Active',
+    neg_seller_initial: 'S',
+    neg_seller_initial2: 'S',
+    neg_buyer_initial: 'B',
+    neg_msg1_meta: 'Seller · Jun 12, 09:14 AM',
+    neg_msg1: 'Listing parcel at <span class="font-semibold text-meadow">$42,000</span>. Includes access road and water rights.',
+    neg_msg2_meta: 'Buyer · Jun 12, 11:02 AM',
+    neg_msg2: 'Counter-offer: <span class="font-semibold text-slate-deep">$37,500</span>. I\'d need a soil analysis included.',
+    neg_msg3_meta: 'Seller · Jun 13, 08:30 AM',
+    neg_msg3: 'Agreed at <span class="font-semibold text-meadow">$39,000</span>. GeoReport will be provided at signing.',
+    neg_seal: 'This thread is sealed and legally admissible · SHA-256 signed',
+
+    price_eyebrow: 'Pricing',
+    price_h2_line1: 'Start free.',
+    price_h2_line2: 'Scale as you grow.',
+    price_sub: 'From a single parcel to an unlimited portfolio — Tany has a plan that matches how you work with land.',
+    p0_name: 'Free',
+    p0_tagline: 'No credit card needed',
+    p0_li1: 'Up to <strong class="text-stone-warm">2 parcels</strong>',
+    p0_li2: 'Basic marketplace access',
+    p0_li3: 'Cannot erase parcels',
+    p0_li4: 'GeoReport',
+    p0_btn: 'Get started free',
+    p1_name: 'Pro · Tier 1',
+    p1_tagline: 'Individual landowner',
+    p1_li1: 'Up to <strong class="text-stone-warm">5 parcels</strong>',
+    p1_li2: 'Parcel deletion on demand',
+    p1_li3: 'GeoReport access',
+    p1_li4: 'Recorded negotiation',
+    p1_btn: 'Choose Tier 1',
+    p2_name: 'Pro · Tier 2',
+    p2_tagline: 'Growing portfolio',
+    p2_li1: 'Up to <strong class="text-stone-warm">10 parcels</strong>',
+    p2_li2: 'Parcel deletion on demand',
+    p2_li3: 'Full GeoReport suite',
+    p2_li4: 'Priority support',
+    p2_btn: 'Choose Tier 2',
+    p3_name: 'Pro · Tier 3',
+    p3_tagline: 'Agencies & developers',
+    p3_li1: '<strong class="text-stone-warm">Unlimited</strong> parcels<span class="text-mist/40 text-xs">*</span>',
+    p3_li2: 'Parcel deletion on demand',
+    p3_li3: 'Full GeoReport suite',
+    p3_li4: 'API access + integrations',
+    p3_btn: 'Choose Tier 3',
+    per_month: '/mo', per_month2: '/mo', per_month3: '/mo',
+    popular_badge: 'Popular',
+    footnote1: '<span class="text-mist/80 font-semibold">* Unlimited parcels:</span> The first 20 parcels are included. Extra parcels listed as "To Sell" are charged at +$1/parcel/month.',
+    footnote2: '<span class="text-mist/80 font-semibold">** GeoReport</span> — geographic intelligence platform including topographic analysis (slopes, elevation), certified soil characteristics, and proximity data for hospitals, public transport, roads, and utilities.',
+
+    cta_h2_line1: 'Your land.',
+    cta_h2_line2: 'Your record.',
+    cta_h2_line3: 'Your future.',
+    cta_sub: 'Join thousands of landowners and buyers who trust Tany to manage, trade, and protect their most valuable asset.',
+    cta_btn1: 'Create your free account',
+    cta_btn2: 'Schedule a demo',
+
+    footer_tagline: 'The land marketplace built for trust, transparency, and the long term.',
+    footer_col1: 'Platform', footer_col2: 'Company', footer_col3: 'Legal',
+    footer_marketplace: 'Marketplace', footer_gis: 'GIS Platform',
+    footer_negotiation: 'Negotiation', footer_api: 'API Access',
+    footer_about: 'About', footer_blog: 'Blog', footer_careers: 'Careers', footer_contact: 'Contact',
+    footer_tos: 'Terms of Service', footer_privacy: 'Privacy Policy', footer_security: 'Data Security',
+    footer_copy: '© 2025 Tany Landtrust. All rights reserved.',
+    footer_made: 'Made with care for landowners everywhere.',
+  },
+
+  fr: {
+    nav_features: 'Fonctionnalités',
+    nav_gis: 'Plateforme SIG',
+    nav_negotiation: 'Négociation',
+    nav_pricing: 'Tarifs',
+    nav_signin: 'Se connecter',
+    nav_cta: 'Commencer',
+
+    hero_badge: 'Marché foncier · Plateforme SIG · Négociation sécurisée',
+    hero_h1_line1: 'Chaque parcelle',
+    hero_h1_line2: 'mérite un',
+    hero_h1_line3: 'propriétaire de confiance.',
+    hero_sub: 'Tany Landtrust est la marketplace où acheteurs et vendeurs fonciers se retrouvent — soutenue par une intelligence géographique, des données transparentes et des dossiers de négociation à valeur légale.',
+    hero_cta_primary: 'Commencer gratuitement',
+    hero_cta_secondary: 'Découvrir la plateforme',
+    stat0_label: 'Parcelles enregistrées',
+    stat1_label: 'Transferts sans litige',
+    stat2_label: 'Régions couvertes',
+    scroll_hint: 'Défiler',
+
+    trust1: '🔒 Négociation chiffrée de bout en bout',
+    trust2: '🗺 Données géospatiales certifiées',
+    trust3: '⚖️ Dossiers recevables en justice',
+    trust4: '📱 Conçu pour mobile',
+
+    feat_eyebrow: 'Ce que Tany propose',
+    feat_h2_line1: 'Trois piliers.',
+    feat_h2_line2: 'Une seule plateforme.',
+    f1_title: 'Marché Foncier',
+    f1_desc: 'Publiez, découvrez et échangez des parcelles avec des titres de propriété vérifiés. Filtrez par superficie, localisation, type de sol et prix — tout en un seul endroit.',
+    f1_li1: 'Annonces de parcelles vérifiées',
+    f1_li2: 'Estimations de prix intelligentes',
+    f1_li3: 'Mise en relation acheteur-vendeur',
+    f2_title: 'Intelligence SIG',
+    f2_desc: 'Accédez à des données géographiques riches pour n\'importe quelle parcelle — des pentes topographiques à la qualité du sol, en passant par la proximité des hôpitaux et transports.',
+    f2_li1: 'Analyse topographique',
+    f2_li2: 'Rapports sur les caractéristiques du sol',
+    f2_li3: 'Proximité des infrastructures',
+    f3_title: 'Négociation Enregistrée',
+    f3_desc: 'Chaque offre, contre-offre et accord est horodaté et archivé. Ces dossiers sont structurés juridiquement et peuvent être produits en cas de litiges futurs.',
+    f3_li1: 'Journal de transactions immuable',
+    f3_li2: 'Export pour résolution de conflits',
+    f3_li3: 'Validation multi-parties',
+
+    gis_eyebrow: 'Système d\'Information Géographique',
+    gis_h2_line1: 'Voyez la terre',
+    gis_h2_line2: 'au-delà de la parcelle.',
+    gis_intro: 'Notre moteur SIG intégré superpose des données géographiques, environnementales et infrastructurelles certifiées directement sur chaque annonce. Fini les incertitudes sur votre investissement.',
+    gis_f1_title: 'Analyse topographique',
+    gis_f1_desc: 'Cartes de pentes, profils d\'élévation, évaluations des risques d\'inondation et classification du terrain pour un usage agricole ou de construction éclairé.',
+    gis_f2_title: 'Caractéristiques du sol',
+    gis_f2_desc: 'Niveaux de pH, teneur en matières organiques, classe de drainage et potentiel agricole — issus de données de laboratoire certifiées et satellitaires.',
+    gis_f3_title: 'Infrastructures & services',
+    gis_f3_desc: 'Hôpitaux, écoles, arrêts de transport en commun, routes, marchés et réseaux les plus proches — tout dans la vue parcelle.',
+    gis_panel_title: 'Parcelle #TY-04821 · GéoRapport',
+    gis_d1_label: 'Pente moy.',
+    gis_d1_val: 'Modérée',
+    gis_d2_label: 'Type de sol',
+    gis_d3_label: 'Hôpital le plus proche',
+    gis_d4_label: 'Risque inondation',
+    gis_d4_val: 'Faible',
+    gis_dl_btn: 'Télécharger le GéoRapport complet →',
+
+    neg_eyebrow: 'Plateforme de Négociation',
+    neg_h2_line1: 'Chaque mot,',
+    neg_h2_line2: 'consigné au dossier.',
+    neg_intro: 'Les transactions foncières peuvent devenir des litiges des années plus tard. La plateforme de négociation Tany enregistre chaque proposition, acceptation et condition — créant un historique immuable et recevable en justice.',
+    neg_b1: '<span class="font-semibold text-slate-deep">Fils de discussion horodatés</span> — chaque message est cryptographiquement scellé avec la date, l\'heure et l\'identité des parties.',
+    neg_b2: '<span class="font-semibold text-slate-deep">Export pour conflits</span> — téléchargez un PDF formaté de la négociation complète pour des procédures judiciaires ou la notarisation.',
+    neg_b3: '<span class="font-semibold text-slate-deep">Validation multi-parties</span> — les deux parties accusent numériquement réception des conditions avant tout changement de statut.',
+    neg_thread_title: 'Fil de négociation · TY-04821',
+    neg_thread_sub: 'Enregistré & horodaté',
+    neg_active: 'Actif',
+    neg_seller_initial: 'V',
+    neg_seller_initial2: 'V',
+    neg_buyer_initial: 'A',
+    neg_msg1_meta: 'Vendeur · 12 juin, 09h14',
+    neg_msg1: 'Parcelle proposée à <span class="font-semibold text-meadow">42 000 $</span>. Inclut chemin d\'accès et droits sur l\'eau.',
+    neg_msg2_meta: 'Acheteur · 12 juin, 11h02',
+    neg_msg2: 'Contre-offre : <span class="font-semibold text-slate-deep">37 500 $</span>. J\'aurais besoin d\'une analyse de sol incluse.',
+    neg_msg3_meta: 'Vendeur · 13 juin, 08h30',
+    neg_msg3: 'Accord à <span class="font-semibold text-meadow">39 000 $</span>. Le GéoRapport sera fourni à la signature.',
+    neg_seal: 'Ce fil est scellé et recevable en justice · Signé SHA-256',
+
+    price_eyebrow: 'Tarifs',
+    price_h2_line1: 'Commencez gratuitement.',
+    price_h2_line2: 'Évoluez à votre rythme.',
+    price_sub: 'D\'une seule parcelle à un portefeuille illimité — Tany a un forfait adapté à votre activité foncière.',
+    p0_name: 'Gratuit',
+    p0_tagline: 'Sans carte bancaire',
+    p0_li1: 'Jusqu\'à <strong class="text-stone-warm">2 parcelles</strong>',
+    p0_li2: 'Accès basique à la marketplace',
+    p0_li3: 'Suppression de parcelles impossible',
+    p0_li4: 'GéoRapport',
+    p0_btn: 'Démarrer gratuitement',
+    p1_name: 'Pro · Niveau 1',
+    p1_tagline: 'Propriétaire individuel',
+    p1_li1: 'Jusqu\'à <strong class="text-stone-warm">5 parcelles</strong>',
+    p1_li2: 'Suppression de parcelles à la demande',
+    p1_li3: 'Accès GéoRapport',
+    p1_li4: 'Négociation enregistrée',
+    p1_btn: 'Choisir le Niveau 1',
+    p2_name: 'Pro · Niveau 2',
+    p2_tagline: 'Portefeuille en croissance',
+    p2_li1: 'Jusqu\'à <strong class="text-stone-warm">10 parcelles</strong>',
+    p2_li2: 'Suppression de parcelles à la demande',
+    p2_li3: 'Suite GéoRapport complète',
+    p2_li4: 'Support prioritaire',
+    p2_btn: 'Choisir le Niveau 2',
+    p3_name: 'Pro · Niveau 3',
+    p3_tagline: 'Agences & promoteurs',
+    p3_li1: 'Parcelles <strong class="text-stone-warm">illimitées</strong><span class="text-mist/40 text-xs">*</span>',
+    p3_li2: 'Suppression de parcelles à la demande',
+    p3_li3: 'Suite GéoRapport complète',
+    p3_li4: 'Accès API + intégrations',
+    p3_btn: 'Choisir le Niveau 3',
+    per_month: '/mois', per_month2: '/mois', per_month3: '/mois',
+    popular_badge: 'Populaire',
+    footnote1: '<span class="text-mist/80 font-semibold">* Parcelles illimitées :</span> Les 20 premières parcelles sont incluses. Les parcelles supplémentaires en statut « À vendre » sont facturées +1 $/parcelle/mois.',
+    footnote2: '<span class="text-mist/80 font-semibold">** GéoRapport</span> — plateforme d\'intelligence géographique incluant l\'analyse topographique (pentes, élévation), les caractéristiques certifiées du sol et les données de proximité des hôpitaux, transports en commun, routes et services.',
+
+    cta_h2_line1: 'Votre terre.',
+    cta_h2_line2: 'Votre dossier.',
+    cta_h2_line3: 'Votre avenir.',
+    cta_sub: 'Rejoignez des milliers de propriétaires et d\'acheteurs qui font confiance à Tany pour gérer, échanger et protéger leur bien le plus précieux.',
+    cta_btn1: 'Créer votre compte gratuit',
+    cta_btn2: 'Planifier une démo',
+
+    footer_tagline: 'La marketplace foncière construite pour la confiance, la transparence et le long terme.',
+    footer_col1: 'Plateforme', footer_col2: 'Entreprise', footer_col3: 'Légal',
+    footer_marketplace: 'Marketplace', footer_gis: 'Plateforme SIG',
+    footer_negotiation: 'Négociation', footer_api: 'Accès API',
+    footer_about: 'À propos', footer_blog: 'Blog', footer_careers: 'Carrières', footer_contact: 'Contact',
+    footer_tos: 'Conditions d\'utilisation', footer_privacy: 'Politique de confidentialité', footer_security: 'Sécurité des données',
+    footer_copy: '© 2025 Tany Landtrust. Tous droits réservés.',
+    footer_made: 'Conçu avec soin pour les propriétaires fonciers.',
+  }
+};
+
+// ── Lang switcher ─────────────────────────────────────────────────────────────
+let currentLang = 'en';
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+
+  // Fade all translatable elements
+  const els = document.querySelectorAll('[data-i18n]');
+  els.forEach(el => el.classList.add('lang-fade'));
+
+  setTimeout(() => {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+
+    // Update every element
+    els.forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (T[lang][key] !== undefined) {
+        el.innerHTML = T[lang][key];
+      }
+    });
+
+    // Update title
+    document.title = lang === 'fr'
+      ? 'Tany | Landtrust — Le Marché Foncier'
+      : 'Tany | Landtrust — The Land Marketplace';
+
+    // Update toggle buttons
+    document.getElementById('btn-en').className = lang === 'en' ? 'active' : 'inactive';
+    document.getElementById('btn-fr').className = lang === 'fr' ? 'active' : 'inactive';
+
+    // Fade back in
+    els.forEach(el => el.classList.remove('lang-fade'));
+  }, 160);
+}
+
+// ── Scroll reveal ─────────────────────────────────────────────────────────────
+const observer = new IntersectionObserver(
+  entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+  { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+);
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Nav shadow on scroll ──────────────────────────────────────────────────────
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('shadow-lg', window.scrollY > 40);
+});
+
+// ── Animated counters ─────────────────────────────────────────────────────────
+function animateCounter(el, target, suffix = '', duration = 1600) {
+  let start = null;
+  const step = ts => {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.innerHTML = Math.floor(ease * target).toLocaleString() + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+let counted = false;
+const heroObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting && !counted) {
+      counted = true;
+      animateCounter(document.getElementById('stat0'), 12400, '<span class="text-meadow">+</span>');
+      animateCounter(document.getElementById('stat1'), 98,    '<span class="text-amber-soft">%</span>');
+      animateCounter(document.getElementById('stat2'), 34,    '');
+    }
+  });
+}, { threshold: 0.5 });
+const s0 = document.getElementById('stat0');
+if (s0) heroObs.observe(s0);
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload KML File</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="./add_kml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-blue-600 px-6 py-4">
+            <h1 class="text-2xl font-bold text-white">Upload KML File</h1>
+            <p class="text-blue-100 mt-1">Upload your geographic data in KML format</p>
+        </div>
+        <!--start of input-->
+        <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200">
+
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Parcel Information</h2>
+
+            <div class="mb-4">
+                <label for="parcel_name" class="block text-gray-700 font-semibold mb-2">Parcel Name*</label>
+                <input type="text" required id="parcel_name" name="parcel_name" placeholder="e.g., Green Acre" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <div class="mb-4">
+                <label for="parcel_owner" class="block text-gray-700 font-semibold mb-2">Parcel Owner</label>
+                <input type="text" id="parcel_owner" name="parcel_owner" placeholder="e.g., John Doe" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <div class="mb-4">
+                <label for="price_m2" class="block text-gray-700 font-semibold mb-2">Price by m²</label>
+                <input type="number" id="price_m2" name="price_m2" placeholder="e.g., 150" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <div class="mb-4">
+                <label for="currency" class="block text-gray-700 font-semibold mb-2">Currency*</label>
+                <select required id="currency" name="currency" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                    <option value="">Select a currency</option>
+                    
+                    <!-- Major Currencies -->
+                    <option value="USD">USD - US Dollar ($)</option>
+                    <option value="EUR">EUR - Euro (€)</option>
+                    
+                    <!-- East African Currencies -->
+                    <option value="KES">KES - Kenyan Shilling (KSh)</option>
+                    <option value="TZS">TZS - Tanzanian Shilling (TSh)</option>
+                    <option value="UGX">UGX - Ugandan Shilling (USh)</option>
+                    <option value="RWF">RWF - Rwandan Franc (FRw)</option>
+                    <option value="BIF">BIF - Burundian Franc (FBu)</option>
+                    <option value="SOS">SOS - Somali Shilling (Sh.So.)</option>
+                    <option value="ETB">ETB - Ethiopian Birr (Br)</option>
+                    <option value="DJF">DJF - Djiboutian Franc (Fdj)</option>
+                    <option value="EGP">EGP - Egyptian Pound (£E)</option>
+                    <option value="SDG">SDG - Sudanese Pound (SDG)</option>
+                    <option value="SSP">SSP - South Sudanese Pound (SS£)</option>
+                    <option value="MGA">MGA - Malagasy Ariary (Ar)</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="sell_category" class="block text-gray-700 font-semibold mb-2">Category*</label>
+                <select required id="sell_category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                    <option value="">Select an option</option>
+                    <option value="to_sell">A vendre</option>
+                    <option value="vendu">Vendue</option>
+                    <option value="autre">Autre</option>
+                    <option value="na">#NA</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="status_category" class="block text-gray-700 font-semibold mb-2">Status of Land*</label>
+                <select required id="status_category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                    <option value="">Select an option</option>
+                    <option value="titre">Titre</option>
+                    <option value="titre_borne">Titre et borne</option>
+                    <option value="kt">Karan-tany</option>
+                    <option value="na">#NA</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="price" class="block text-gray-700 font-semibold mb-2">Price Total*</label>
+                <input type="number" required id="price" name="price" placeholder="e.g., 150" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <div class="mb-4">
+                <label for="location_name" class="block text-gray-700 font-semibold mb-2">Location Name</label>
+                <input type="text" id="location_name" name="location_name" placeholder="e.g., Sunnyvale Heights" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 font-semibold mb-2">Description</label>
+                <textarea id="description" name="description" rows="4" placeholder="Briefly describe the parcel..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"></textarea>
+            </div>
+
+        </div>
+        <!-- Main Content -->
+        <div class="p-6">
+            <!-- Upload Area -->
+            <div id="upload-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-300 hover:border-blue-400 hover:bg-blue-50">
+                <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Drag & Drop your KML file</h3>
+                <p class="text-gray-500 mb-4">or click to browse</p>
+                <input type="file" id="file-input" class="hidden" accept=".kml">
+                <button id="browse-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300">
+                    Browse Files
+                </button>
+                <p class="text-xs text-gray-400 mt-4">Supported format: .kml (max 10MB)</p>
+            </div>
+            
+            <!-- Selected File Info -->
+            <div id="file-info" class="mt-6 hidden">
+                <div class="flex items-center justify-between bg-gray-100 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-file text-blue-500 text-xl mr-3"></i>
+                        <div>
+                            <p id="file-name" class="font-medium text-gray-800">example.kml</p>
+                            <p id="file-size" class="text-sm text-gray-500">0 KB</p>
+                        </div>
+                    </div>
+                    <button id="remove-file" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Upload Button -->
+                <button id="upload-btn" class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload KML File
+                </button>
+                
+                <!-- Progress Bar -->
+                <div id="progress-container" class="mt-4 hidden">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Uploading...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Status Message -->
+                <div id="status-message" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 class="font-medium text-yellow-800 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    About KML Files
+                </h3>
+                <p class="text-yellow-700 text-sm mt-2">
+                    KML (Keyhole Markup Language) is a file format used to display geographic data in applications like Google Earth. It contains placemarks, paths, and polygons.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

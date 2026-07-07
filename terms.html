@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conditions d'utilisation / Terms of Use — Tany</title>
+    <meta name="description" content="Conditions d'utilisation de la plateforme Tany — marketplace foncière. Terms of Use for the Tany land marketplace platform.">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+
+    <!-- QR code library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green:       #10b981;
+            --green-dark:  #047857;
+            --green-light: #d1fae5;
+            --green-faint: #f0fdf4;
+            --earth:       #78350f;
+            --earth-light: #fef3c7;
+            --text:        #1a1a1a;
+            --muted:       #6b7280;
+            --border:      #e5e7eb;
+            --bg:          #ffffff;
+            --radius:      10px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── HEADER ── */
+        .page-header {
+            background: linear-gradient(160deg, #064e3b 0%, #065f46 60%, #0f766e 100%);
+            color: #fff;
+            padding: 3rem 1.5rem 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-row img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .logo-row span {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            color: #fff;
+        }
+
+        .page-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 1.25rem;
+        }
+
+        .lang-toggle {
+            display: inline-flex;
+            background: rgba(255,255,255,0.12);
+            border-radius: 30px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .lang-btn {
+            padding: 0.35rem 1.1rem;
+            border-radius: 24px;
+            border: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: rgba(255,255,255,0.7);
+            background: transparent;
+            letter-spacing: 0.04em;
+        }
+
+        .lang-btn.active {
+            background: #fff;
+            color: var(--green-dark);
+        }
+
+        .updated-tag {
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 0.25rem 0.9rem;
+            color: rgba(255,255,255,0.75);
+        }
+
+        /* ── LAYOUT ── */
+        .page-body {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        /* ── QR SECTION ── */
+        .doc-banner {
+            background: var(--green-faint);
+            border: 1.5px solid #bbf7d0;
+            border-radius: var(--radius);
+            padding: 1.75rem 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .qr-box {
+            flex-shrink: 0;
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        #qrcode canvas, #qrcode img {
+            display: block;
+            border-radius: 4px;
+        }
+
+        .doc-text h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--green-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .doc-text p { font-size: 0.875rem; color: var(--muted); margin-bottom: 0.75rem; }
+
+        .doc-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--green-dark);
+            background: #fff;
+            border: 1.5px solid var(--green);
+            border-radius: 6px;
+            padding: 0.45rem 0.9rem;
+            text-decoration: none;
+            transition: all 0.18s;
+            word-break: break-all;
+        }
+
+        .doc-link:hover { background: var(--green); color: #fff; }
+
+        /* ── SECTION CARD ── */
+        .term-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: box-shadow 0.18s;
+        }
+
+        .term-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+        .term-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem 1.5rem;
+            background: var(--bg);
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid transparent;
+            transition: background 0.15s;
+        }
+
+        .term-card-header:hover { background: var(--green-faint); }
+        .term-card.open .term-card-header { border-bottom-color: var(--border); background: var(--green-faint); }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--green-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            flex: 1;
+        }
+
+        .card-title strong {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-title span {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .chevron {
+            font-size: 0.75rem;
+            color: var(--muted);
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .term-card.open .chevron { transform: rotate(180deg); }
+
+        .term-card-body {
+            display: none;
+            padding: 1.25rem 1.5rem;
+            font-size: 0.875rem;
+            color: #374151;
+            line-height: 1.75;
+        }
+
+        .term-card.open .term-card-body { display: block; }
+
+        .term-card-body .lang-fr,
+        .term-card-body .lang-en { display: none; }
+        .term-card-body .lang-fr.visible,
+        .term-card-body .lang-en.visible { display: block; }
+
+        .highlight-box {
+            background: var(--earth-light);
+            border-left: 3px solid #d97706;
+            border-radius: 0 6px 6px 0;
+            padding: 0.7rem 1rem;
+            margin: 0.75rem 0;
+            font-size: 0.82rem;
+            color: var(--earth);
+            font-weight: 500;
+        }
+
+        .check-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0;
+        }
+
+        .check-list li {
+            padding: 0.3rem 0 0.3rem 1.5rem;
+            position: relative;
+            font-size: 0.875rem;
+        }
+
+        .check-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        /* ── FOOTER ── */
+        .page-footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .page-footer a {
+            color: var(--green-dark);
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .page-footer a:hover { text-decoration: underline; }
+
+        /* ── SECTION DIVIDER ── */
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--green-dark);
+            margin: 2rem 0 0.9rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--green-light);
+        }
+
+        @media (max-width: 560px) {
+            .doc-banner { flex-direction: column; text-align: center; }
+            .doc-link { justify-content: center; }
+            .term-card-header { padding: 0.9rem 1rem; }
+            .term-card-body { padding: 1rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="page-header">
+    <div class="logo-row">
+        <img src="./logo_.png" alt="Tany">
+        <span>Tany</span>
+    </div>
+    <h1 id="main-heading">
+        Conditions d'utilisation<br>
+        <small style="font-size:0.6em;opacity:0.8;">Terms of Use</small>
+    </h1>
+    <p class="subtitle" id="header-subtitle">Plateforme de marketplace foncière · Land Marketplace Platform</p>
+
+    <div class="lang-toggle" role="group" aria-label="Language / Langue">
+        <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">🇫🇷 Français</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 English</button>
+    </div>
+
+    <div class="updated-tag">
+        <span class="lang-fr visible">Mis à jour · Juin 2025</span>
+        <span class="lang-en">Last updated · June 2025</span>
+    </div>
+</header>
+
+<!-- BODY -->
+<div class="page-body">
+
+    <!-- QR / Doc Banner -->
+    <div class="doc-banner">
+        <div class="qr-box">
+            <div id="qrcode"></div>
+        </div>
+        <div class="doc-text">
+            <h2 id="doc-title">📄 Document officiel complet</h2>
+            <p id="doc-desc">Le document juridique intégral est disponible via le lien ci-dessous ou en scannant le QR code. / The full legal document is available at the link below or by scanning the QR code.</p>
+            <a href="https://docs.google.com/document/d/1hLNnbp23wgGmEWPV6tTbKW-1cdJOZL1h/edit?usp=sharing" target="_blank" rel="noopener" class="doc-link">
+                ↗ Ouvrir le document / Open document
+            </a>
+        </div>
+    </div>
+
+    <!-- SECTION 1: Acceptance -->
+    <p class="section-label" id="section1-label">1 · Acceptation / Acceptance</p>
+
+    <div class="term-card open">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">📋</div>
+            <div class="card-title">
+                <strong id="c1-title">Acceptation des conditions</strong>
+                <span>Acceptance of Terms</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>En créant un compte sur Tany, vous acceptez les présentes conditions d'utilisation dans leur intégralité. Si vous n'acceptez pas ces conditions, vous ne pouvez pas utiliser la plateforme.</p>
+                <div class="highlight-box">⚠️ L'utilisation de Tany implique votre accord avec toutes les conditions décrites dans le document officiel.</div>
+            </div>
+            <div class="lang-en">
+                <p>By creating an account on Tany, you agree to these terms of use in their entirety. If you do not accept these terms, you may not use the platform.</p>
+                <div class="highlight-box">⚠️ Using Tany implies your agreement with all conditions described in the official document.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 2: Platform purpose -->
+    <p class="section-label" id="section2-label">2 · Objet / Purpose</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🌍</div>
+            <div class="card-title">
+                <strong id="c2-title">Objet de la plateforme</strong>
+                <span>Purpose of the platform</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Tany est une plateforme de marketplace foncière permettant aux utilisateurs de :</p>
+                <ul class="check-list">
+                    <li>Publier des annonces de vente ou de location de terrains</li>
+                    <li>Rechercher et consulter des propriétés foncières disponibles</li>
+                    <li>Mettre en relation acheteurs, vendeurs et agents immobiliers</li>
+                    <li>Accéder à des informations cadastrales et géographiques</li>
+                </ul>
+                <div class="highlight-box">📌 Tany agit en tant qu'intermédiaire. Les transactions légales restent sous la responsabilité des parties concernées.</div>
+            </div>
+            <div class="lang-en">
+                <p>Tany is a land marketplace platform allowing users to:</p>
+                <ul class="check-list">
+                    <li>Post listings for the sale or rental of land</li>
+                    <li>Search and view available land properties</li>
+                    <li>Connect buyers, sellers, and real estate agents</li>
+                    <li>Access cadastral and geographic information</li>
+                </ul>
+                <div class="highlight-box">📌 Tany acts as an intermediary. Legal transactions remain the responsibility of the parties involved.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: Identity verification -->
+    <p class="section-label" id="section3-label">3 · Identité / Identity</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🪪</div>
+            <div class="card-title">
+                <strong id="c3-title">Vérification d'identité</strong>
+                <span>Identity verification</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Conformément à la législation malgache sur les transactions foncières, Tany est tenu de vérifier l'identité de chaque utilisateur avant toute transaction. Vous acceptez de :</p>
+                <ul class="check-list">
+                    <li>Fournir un numéro de carte nationale d'identité (CIN) valide</li>
+                    <li>Soumettre une copie de votre pièce d'identité lors de la vérification</li>
+                    <li>Garantir l'exactitude des informations fournies</li>
+                </ul>
+                <div class="highlight-box">🔒 Vos données d'identité sont chiffrées et ne sont jamais partagées sans votre consentement explicite.</div>
+            </div>
+            <div class="lang-en">
+                <p>In accordance with Malagasy legislation on land transactions, Tany is required to verify the identity of each user before any transaction. You agree to:</p>
+                <ul class="check-list">
+                    <li>Provide a valid national identity card (CIN) number</li>
+                    <li>Submit a copy of your ID during the verification process</li>
+                    <li>Guarantee the accuracy of all provided information</li>
+                </ul>
+                <div class="highlight-box">🔒 Your identity data is encrypted and never shared without your explicit consent.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: User obligations -->
+    <p class="section-label" id="section4-label">4 · Obligations / User Obligations</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">📜</div>
+            <div class="card-title">
+                <strong id="c4-title">Obligations des utilisateurs</strong>
+                <span>User obligations</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>En utilisant Tany, vous vous engagez à :</p>
+                <ul class="check-list">
+                    <li>Publier uniquement des annonces légitimes et véridiques</li>
+                    <li>Ne pas usurper l'identité d'un tiers</li>
+                    <li>Ne pas publier de contenu illicite, frauduleux ou trompeur</li>
+                    <li>Respecter les droits de propriété d'autrui</li>
+                    <li>Signaler toute activité suspecte à notre équipe</li>
+                </ul>
+            </div>
+            <div class="lang-en">
+                <p>By using Tany, you agree to:</p>
+                <ul class="check-list">
+                    <li>Post only legitimate and truthful listings</li>
+                    <li>Not impersonate any third party</li>
+                    <li>Not post unlawful, fraudulent, or misleading content</li>
+                    <li>Respect the property rights of others</li>
+                    <li>Report any suspicious activity to our team</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 5: Data & privacy -->
+    <p class="section-label" id="section5-label">5 · Données / Data & Privacy</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🔐</div>
+            <div class="card-title">
+                <strong id="c5-title">Protection des données personnelles</strong>
+                <span>Personal data protection</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Tany collecte et traite vos données personnelles conformément à notre <a href="./privacy.html" style="color:var(--green-dark);font-weight:600;">Politique de confidentialité</a>. Vos données sont utilisées uniquement pour :</p>
+                <ul class="check-list">
+                    <li>La gestion de votre compte et de vos annonces</li>
+                    <li>La vérification d'identité légalement requise</li>
+                    <li>L'amélioration de nos services</li>
+                    <li>La communication relative à votre compte</li>
+                </ul>
+                <div class="highlight-box">🚫 Tany ne vend jamais vos données à des tiers à des fins publicitaires.</div>
+            </div>
+            <div class="lang-en">
+                <p>Tany collects and processes your personal data in accordance with our <a href="./privacy.html" style="color:var(--green-dark);font-weight:600;">Privacy Policy</a>. Your data is used only for:</p>
+                <ul class="check-list">
+                    <li>Managing your account and listings</li>
+                    <li>Legally required identity verification</li>
+                    <li>Improving our services</li>
+                    <li>Account-related communications</li>
+                </ul>
+                <div class="highlight-box">🚫 Tany never sells your data to third parties for advertising purposes.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 6: Liability -->
+    <p class="section-label" id="section6-label">6 · Responsabilité / Liability</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">⚖️</div>
+            <div class="card-title">
+                <strong id="c6-title">Limitation de responsabilité</strong>
+                <span>Limitation of liability</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Tany s'efforce de garantir la fiabilité des annonces publiées, mais ne peut être tenu responsable de :</p>
+                <ul class="check-list">
+                    <li>L'exactitude des informations fournies par les utilisateurs</li>
+                    <li>Les litiges entre acheteurs et vendeurs</li>
+                    <li>Les pertes financières découlant de transactions</li>
+                    <li>Les interruptions de service pour maintenance</li>
+                </ul>
+                <div class="highlight-box">💡 Nous vous recommandons de faire appel à un notaire pour toute transaction foncière officielle.</div>
+            </div>
+            <div class="lang-en">
+                <p>Tany strives to ensure the reliability of published listings, but cannot be held responsible for:</p>
+                <ul class="check-list">
+                    <li>The accuracy of information provided by users</li>
+                    <li>Disputes between buyers and sellers</li>
+                    <li>Financial losses arising from transactions</li>
+                    <li>Service interruptions for maintenance</li>
+                </ul>
+                <div class="highlight-box">💡 We recommend consulting a notary for any official land transaction.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 7: Termination -->
+    <p class="section-label" id="section7-label">7 · Résiliation / Termination</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🚪</div>
+            <div class="card-title">
+                <strong id="c7-title">Suspension et résiliation de compte</strong>
+                <span>Account suspension & termination</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Tany se réserve le droit de suspendre ou supprimer tout compte en cas de :</p>
+                <ul class="check-list">
+                    <li>Violation des présentes conditions d'utilisation</li>
+                    <li>Fraude ou usurpation d'identité avérée</li>
+                    <li>Publication d'annonces mensongères ou illicites</li>
+                    <li>Inactivité prolongée du compte</li>
+                </ul>
+            </div>
+            <div class="lang-en">
+                <p>Tany reserves the right to suspend or delete any account in cases of:</p>
+                <ul class="check-list">
+                    <li>Violation of these terms of use</li>
+                    <li>Proven fraud or identity theft</li>
+                    <li>Posting of false or unlawful listings</li>
+                    <li>Prolonged account inactivity</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 8: Governing law -->
+    <p class="section-label" id="section8-label">8 · Droit applicable / Governing Law</p>
+
+    <div class="term-card">
+        <div class="term-card-header" onclick="toggleCard(this)">
+            <div class="card-icon">🏛️</div>
+            <div class="card-title">
+                <strong id="c8-title">Droit applicable et juridiction</strong>
+                <span>Governing law & jurisdiction</span>
+            </div>
+            <span class="chevron">▼</span>
+        </div>
+        <div class="term-card-body">
+            <div class="lang-fr visible">
+                <p>Les présentes conditions sont régies par le droit malgache. Tout litige relatif à l'utilisation de Tany sera soumis à la juridiction compétente d'Antananarivo, Madagascar.</p>
+                <div class="highlight-box">📌 En cas de divergence entre la version française et anglaise, la version française prévaut.</div>
+            </div>
+            <div class="lang-en">
+                <p>These terms are governed by Malagasy law. Any dispute relating to the use of Tany shall be subject to the competent jurisdiction of Antananarivo, Madagascar.</p>
+                <div class="highlight-box">📌 In the event of a discrepancy between the French and English versions, the French version shall prevail.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full document reminder -->
+    <div style="margin-top:2.5rem;padding:1.5rem;background:var(--green-faint);border-radius:var(--radius);border:1px solid #bbf7d0;text-align:center;">
+        <p style="font-size:0.85rem;color:var(--green-dark);font-weight:600;margin-bottom:0.5rem;" class="lang-fr visible">
+            📄 Ce résumé ne remplace pas le document juridique complet.
+        </p>
+        <p style="font-size:0.85rem;color:var(--green-dark);font-weight:600;margin-bottom:0.5rem;" class="lang-en">
+            📄 This summary does not replace the full legal document.
+        </p>
+        <a href="https://docs.google.com/document/d/1hLNnbp23wgGmEWPV6tTbKW-1cdJOZL1h/edit?usp=sharing" target="_blank" rel="noopener" class="doc-link" style="margin:0 auto;">
+            ↗ <span class="lang-fr visible">Lire le document complet</span><span class="lang-en">Read the full document</span>
+        </a>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="page-footer">
+    <span>© 2025 Tany</span>
+    <a href="./index.html">Accueil / Home</a>
+    <a href="./privacy.html">Politique de confidentialité / Privacy Policy</a>
+    <a href="./signin.html">Connexion / Sign In</a>
+</footer>
+
+<script>
+    // ── Generate QR code ──
+    new QRCode(document.getElementById("qrcode"), {
+        text: "https://docs.google.com/document/d/1hLNnbp23wgGmEWPV6tTbKW-1cdJOZL1h/edit?usp=sharing",
+        width: 120,
+        height: 120,
+        colorDark: "#047857",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // ── Language switcher ──
+    let currentLang = 'fr';
+
+    function setLang(lang) {
+        currentLang = lang;
+
+        document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+        document.querySelectorAll('.lang-fr').forEach(el => el.classList.toggle('visible', lang === 'fr'));
+        document.querySelectorAll('.lang-en').forEach(el => el.classList.toggle('visible', lang === 'en'));
+
+        document.documentElement.lang = lang;
+    }
+
+    // ── Accordion ──
+    function toggleCard(header) {
+        const card = header.closest('.term-card');
+        card.classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="zxosmUXs5ZRYm2IqHwz64x2xRiHBOAOaUszd2em9ols" />
+    <title>Tany — Farm Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green-dark: #1a3a2a;
+            --green-mid: #2d5a3d;
+            --green-accent: #3d8c5c;
+            --green-light: #5aab77;
+            --green-pale: #e8f5ee;
+            --amber: #e8a838;
+            --amber-light: #fef3d7;
+            --sky: #3b82f6;
+            --sky-light: #eff6ff;
+            --red: #e05252;
+            --red-light: #fef2f2;
+            --text-primary: #0f1f16;
+            --text-secondary: #4a6358;
+            --text-muted: #8fa99a;
+            --border: #d4e4da;
+            --surface: #ffffff;
+            --bg: #f4f8f5;
+            --shadow-sm: 0 1px 3px rgba(26,58,42,0.07), 0 1px 2px rgba(26,58,42,0.04);
+            --shadow-md: 0 4px 12px rgba(26,58,42,0.08), 0 2px 6px rgba(26,58,42,0.05);
+            --shadow-lg: 0 10px 30px rgba(26,58,42,0.1), 0 4px 12px rgba(26,58,42,0.06);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── HEADER ── */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .brand img {
+            height: 30px;
+            width: auto;
+        }
+        .brand-name {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.35rem;
+            color: var(--green-dark);
+            letter-spacing: -0.01em;
+        }
+        .brand-tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--green-accent);
+            background: var(--green-pale);
+            padding: 2px 7px;
+            border-radius: 99px;
+            align-self: flex-end;
+            margin-bottom: 3px;
+        }
+
+        /* Desktop nav */
+        nav.desk-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            height: 100%;
+        }
+        @media (max-width: 640px) { nav.desk-nav { display: none; } }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            height: 64px;
+            padding: 0 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: color 0.15s, border-color 0.15s;
+            gap: 0.45rem;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .nav-item i { font-size: 0.8rem; opacity: 0.75; }
+        .nav-item:hover { color: var(--green-dark); }
+        .nav-item.active {
+            color: var(--green-accent);
+            border-bottom-color: var(--green-accent);
+            font-weight: 600;
+        }
+
+        /* Header right */
+        .header-right { display: flex; align-items: center; gap: 0.75rem; }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.825rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            letter-spacing: 0.01em;
+        }
+        .btn-logout:hover { background: #c94040; transform: translateY(-1px); }
+        .btn-logout:active { transform: translateY(0); }
+        @media (max-width: 400px) { .btn-logout span { display: none; } }
+
+        /* ── MOBILE NAV ── */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 20px rgba(26,58,42,0.08);
+            z-index: 200;
+        }
+        @media (max-width: 640px) { .mobile-nav { display: flex; } }
+
+        .mobile-nav-inner {
+            display: flex;
+            width: 100%;
+            padding: 0.5rem 0 0.75rem;
+        }
+
+        .mob-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.15s;
+            padding: 0.35rem 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+        .mob-item .mobile-icon { font-size: 1.1rem; transition: transform 0.15s; }
+        .mob-item:hover { color: var(--green-accent); }
+        .mob-item.active { color: var(--green-accent); }
+        .mob-item.active .mobile-icon { transform: scale(1.15); }
+
+        /* ── MAIN ── */
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 5rem;
+        }
+        @media (max-width: 640px) { main { padding: 1.25rem 1rem 6rem; } }
+
+        /* ── CONTENT SECTIONS ── */
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeUp 0.3s ease both; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── PAGE TITLE ── */
+        .page-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+        }
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        /* ── STAT CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .dashboard-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem 1.25rem 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.25s, transform 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .dashboard-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+
+        .card-header { display: flex; align-items: flex-start; justify-content: space-between; }
+
+        .card-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .card-value {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.1rem;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+        .card-footer { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.6rem; }
+
+        .card-icon {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* Card color themes */
+        .card-blue::before { background: var(--sky); }
+        .card-blue .card-value { color: var(--sky); }
+        .card-blue .card-icon { background: var(--sky-light); color: var(--sky); }
+
+        .card-green::before { background: var(--green-accent); }
+        .card-green .card-value { color: var(--green-accent); }
+        .card-green .card-icon { background: var(--green-pale); color: var(--green-accent); }
+
+        .card-amber::before { background: var(--amber); }
+        .card-amber .card-value { color: var(--amber); }
+        .card-amber .card-icon { background: var(--amber-light); color: var(--amber); }
+
+        .card-red::before { background: var(--red); }
+        .card-red .card-value { color: var(--red); }
+        .card-red .card-icon { background: var(--red-light); color: var(--red); }
+
+        /* ── MAP SECTION ── */
+        .map-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .map-card-header {
+            padding: 1.1rem 1.4rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .map-card-title {
+            font-size: 0.975rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .map-card-title i { color: var(--green-accent); }
+        .map-card-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--green-pale);
+            color: var(--green-accent);
+            padding: 3px 9px;
+            border-radius: 99px;
+            letter-spacing: 0.04em;
+        }
+        .map-iframe {
+            width: 100%;
+            height: 420px;
+            border: none;
+            display: block;
+        }
+        @media (max-width: 640px) { .map-iframe { height: 320px; } }
+
+        /* ── IFRAME SECTIONS ── */
+        .section-iframe {
+            width: 100%;
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            display: block;
+            min-height: 500px;
+            height: calc(100vh - 11rem);
+            background: var(--surface);
+        }
+        @media (max-width: 640px) { .section-iframe { height: calc(100vh - 9rem); } }
+
+    </style>
+    
+    <script>
+        function isTokenExpired(token) {
+            try {
+                // JWT is made of 3 parts: header.payload.signature
+                const payload = token.split('.')[1];
+                
+                // Decode the base64 payload
+                const decoded = JSON.parse(atob(payload));
+                
+                // 'exp' is in seconds, Date.now() is in milliseconds
+                const currentTime = Math.floor(Date.now() / 1000);
+                
+                return decoded.exp < currentTime; // true if expired
+            } catch (e) {
+                return true; // if token is malformed, treat as expired
+            }
+        }
+
+        async function checker() {
+            const userToken = localStorage.getItem('auth_token');
+
+            if (!userToken) {
+                alert("Please sign in");
+                window.location.href = './signin.html';
+                return;
+            }
+
+            if (isTokenExpired(userToken)) {
+                alert("Session expired, please sign in again");
+                localStorage.removeItem('auth_token'); // clean up the expired token
+                window.location.href = './signin.html';
+                return;
+            }
+
+            console.log(userToken);
+            return userToken;
+        }
+
+        let garde_fou = checker();
+        console.log(garde_fou);
+    </script>
+    <script defer src = './index.js'></script>
+    <script defer src="./app.js"></script>
+    <script defer src="./languages.js"></script>
+    
+</head>
+<body>
+
+    <!-- ── HEADER ── -->
+    <header>
+        <div class="header-inner">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <a href="#" class="brand">
+                    <img src="./logo_.png" alt="Tany Logo">
+                    <span class="brand-name">Tany</span>
+                </a>
+                <span class="brand-tag">Real estate OS</span>
+
+                <nav class="desk-nav">
+                    <a class="nav-item" data-target="dashboard">
+                        <i class="fas fa-chart-pie"></i> 
+                        <span data-i18n="nav-dashboard">Dashboard</span>
+                    </a>
+
+                    <a class="nav-item" data-target="crops">
+                        <i class="fas fa-store"></i> 
+                        <span data-i18n="nav-market">Market Place</span>
+                    </a>
+                    <a class="nav-item" data-target="tasks">
+                        <i class="fas fa-comment-dots"></i> 
+                        <span data-i18n="nav-messages">Private Message</span>
+                    </a>
+                    <a class="nav-item" data-target="yields">
+                        <i class="fas fa-headset"></i> Land law
+                    </a>
+                </nav>
+            </div>
+
+            <div class="header-right">
+                <button id="logout" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── MOBILE NAV ── -->
+    <div class="mobile-nav">
+        <div class="mobile-nav-inner">
+            <a class="mob-item nav-item active" data-target="dashboard">
+                <i class="fas fa-chart-pie mobile-icon"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="mob-item nav-item" data-target="crops">
+                <i class="fas fa-store mobile-icon"></i>
+                <span>Market</span>
+            </a>
+            <a class="mob-item nav-item" data-target="tasks">
+                <i class="fas fa-comment-dots mobile-icon"></i>
+                <span>Messages</span>
+            </a>
+            <a class="mob-item nav-item" data-target="yields">
+                <i class="fas fa-headset mobile-icon"></i>
+                <span>Land law</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="content-section active">
+            <h1 class="page-title" data-i18n="page-title-dashboard">Parcel Operations</h1>        
+            <p class="page-subtitle" data-i18n="page-subtitle-dashboard">Live overview of your Parcels, tasks, and overviews.</p>
+
+            
+
+            <!--start-->
+            <div id = "publicity"></div>
+
+            <div class="map-card">
+                <div class="map-card-header">
+                    <span class="map-card-title" data-i18n="map-title">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Field Data Manager
+                    </span>
+                    <span class="map-card-badge">Live</span>
+                </div>
+                <iframe class="map-iframe" src="./map_manager.html" frameborder="0" loading="lazy" style="height: 600px; width: 100%; display: block;"></iframe>
+            </div>
+        </div>
+
+        <!-- MARKET PLACE -->
+        <div id="crops" class="content-section">
+            <h1 class="page-title" data-i18n="page-title-market">Market Place</h1>
+            <p class="page-subtitle" data-i18n="page-subtitle-market">Browse listings, buy, and sell produce directly.</p>
+            <iframe class="section-iframe" src="./main_market.html" loading="lazy"></iframe>
+        </div>
+
+        <!-- PRIVATE MESSAGE -->
+        <div id="tasks" class="content-section">
+            <h1 class="page-title" data-i18n="page-title-messages">Private Message</h1>
+            <p class="page-subtitle" data-i18n="page-subtitle-messages">Communicate securely with your network.</p>
+            <iframe class="section-iframe" src="./chat.html" loading="lazy"></iframe>
+        </div>
+
+        <!-- CONTACT ADMIN -->
+        <div id="yields" class="content-section">
+            <h1 class="page-title" data-i18n="page-title-legal">Land Law</h1>
+            <iframe class="section-iframe" src="./legal.html" loading="lazy"></iframe>
+
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navItems = document.querySelectorAll('.nav-item');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function switchTab(targetId) {
+                navItems.forEach(item => {
+                    const isTarget = item.getAttribute('data-target') === targetId;
+                    item.classList.toggle('active', isTarget);
+                });
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+            }
+
+            const initialHash = window.location.hash.replace('#', '') || 'dashboard';
+            switchTab(initialHash);
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target');
+                    history.pushState(null, null, targetId === 'dashboard' ? window.location.pathname : '#' + targetId);
+                    switchTab(targetId);
+                });
+            });
+
+            window.addEventListener('popstate', () => {
+                const hash = window.location.hash.replace('#', '') || 'dashboard';
+                switchTab(hash);
+            });
+        });
+    </script>
+</body>
+</html>

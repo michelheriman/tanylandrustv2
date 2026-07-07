@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — Tany</title>
+
+    <!-- SEO + Trust signals for Google Safe Browsing -->
+    <meta name="description" content="Sign in to your Tany account to manage your listings and connect with your community.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta property="og:title" content="Sign In — Tany">
+    <meta property="og:description" content="Sign in to your Tany account.">
+    <meta property="og:type" content="website">
+
+    <!-- Security headers via meta (also add these in vercel.json) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #10b981;
+            --primary-dark: #047857;
+            --primary-light: #d1fae5;
+            --secondary: #0891b2;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-light: #e5e7eb;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2f1 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Site context bar — tells scanners this is a real product */
+        .site-context {
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .site-context p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .site-context a {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .site-context a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .signin-card {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+        }
+
+        .signin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo {
+            height: 44px;
+            width: 44px;
+            margin: 0 auto 1rem;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .brand-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--primary-dark);
+            margin-bottom: 0.75rem;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.4rem;
+        }
+
+        .signin-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.45rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 0.8rem;
+            color: var(--primary-dark);
+            text-decoration: none;
+            margin-top: 0.4rem;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-signin {
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-signin:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-signin:active {
+            transform: translateY(0);
+        }
+
+        .btn-signin:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .signin-message {
+            text-align: center;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .signin-message.show { display: block; }
+        .signin-message.success { background: #d1fae5; color: #047857; }
+        .signin-message.error { background: #fee2e2; color: #991b1b; }
+
+        .signin-footer {
+            text-align: center;
+            margin-top: 1.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .signin-footer a {
+            color: var(--primary-dark);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .signin-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Page footer with policy links — critical trust signal */
+        .page-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .page-footer a {
+            color: var(--text-muted);
+            text-decoration: underline;
+            margin: 0 0.5rem;
+        }
+
+        .page-footer a:hover {
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 480px) {
+            .signin-card { padding: 2rem 1.5rem; }
+            h1 { font-size: 1.4rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+
+    <script defer src="./signin.js"></script>
+</head>
+<body>
+
+    <!-- Breadcrumb context: helps scanners understand this is part of a real site -->
+    <nav class="site-context" aria-label="Site navigation">
+        <p><a href="./index.html">← Back to Tany</a></p>
+    </nav>
+
+    <main>
+        <div class="signin-card">
+            <header class="signin-header">
+                <img src="./logo_.png" alt="Tany" class="brand-logo">
+                <p class="brand-name">Tany | LandTrust</p>
+                <h1>Welcome back</h1>
+                <p class="signin-subtitle">Sign in to your account to continue</p>
+            </header>
+
+            <form id="signin-form" novalidate>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        spellcheck="false"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                    >
+                    <a href="./forgot-password.html" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn-signin" id="signin-btn">
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    Sign in
+                </button>
+            </form>
+
+            <div id="message" class="signin-message" role="alert" aria-live="polite"></div>
+
+            <div class="signin-footer">
+                Don't have an account? <a href="./signup.html">Create one</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <span>© 2025 Tany | LandTrust</span>
+        <a href="./privacy.html">Privacy Policy</a>
+        <a href="./terms.html">Terms of Use</a>
+    </footer>
+
+</body>
+</html>

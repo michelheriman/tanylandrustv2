@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.arcgis.com https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://js.arcgis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://mtk.pythonanywhere.com https://*.supabase.co https://js.arcgis.com https://*.arcgis.com https://*.arcgisonline.com; frame-src 'self'; base-uri 'self'; object-src 'none'">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload KML File</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script defer src="./test.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-blue-600 px-6 py-4">
+            <h1 class="text-2xl font-bold text-white">Upload Land Parcel KML</h1>
+            <p class="text-blue-100 mt-1">Upload land parcel boundaries and property information</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-6">
+            <!-- Property Information Form -->
+            <div id="property-info" class="mb-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="owner" class="block text-sm font-medium text-gray-700 mb-1">Owner Name *</label>
+                        <input type="text" id="owner" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter owner's full name">
+                    </div>
+                    <!--div>
+                        <label for="owner_uuid" class="block text-sm font-medium text-gray-700 mb-1">Owner UUID *</label>
+                        <input type="text" id="owner_uuid" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter owner UUID">
+                    </div-->
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="sell_category" class="block text-gray-700 font-semibold mb-2">Category*</label>
+                            <select required id="sell_category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                                <option value="">Select an option</option>
+                                <option value="to_sell">A vendre</option>
+                                <option value="vendu">Vendue</option>
+                                <option value="autre">Autre</option>
+                                <option value="na">#NA</option>
+                            </select>
+                    </div>
+                    <div>
+                        <label for="status_category" class="block text-gray-700 font-semibold mb-2">Status of Land*</label>
+                            <select required id="status_category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                                <option value="">Select an option</option>
+                                <option value="titre">Titre</option>
+                                <option value="titre_borne">Titre et borne</option>
+                                <option value="kt">Karan-tany</option>
+                                <option value="na">#NA</option>
+                            </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="parcel_name" class="block text-sm font-medium text-gray-700 mb-1">Parcel Name *</label>
+                        <input type="text" id="parcel_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter parcel name">
+                    </div>
+                    <div>
+                        <label for="location_name" class="block text-sm font-medium text-gray-700 mb-1">Location Name *</label>
+                        <input type="text" id="location_name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter location name">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="price_m2" class="block text-sm font-medium text-gray-700 mb-1">Price per m²</label>
+                        <input type="number" id="price_m2" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Total Price</label>
+                        <input type="number" id="price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="currency" class="block text-gray-700 font-semibold mb-2">Currency*</label>
+                    <select required id="currency" name="currency" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                        <option value="">Select a currency</option>
+                        
+                        <!-- Major Currencies -->
+                        <option value="USD">USD - US Dollar ($)</option>
+                        <option value="EUR">EUR - Euro (€)</option>
+                        
+                        <!-- East African Currencies -->
+                        <option value="KES">KES - Kenyan Shilling (KSh)</option>
+                        <option value="TZS">TZS - Tanzanian Shilling (TSh)</option>
+                        <option value="UGX">UGX - Ugandan Shilling (USh)</option>
+                        <option value="RWF">RWF - Rwandan Franc (FRw)</option>
+                        <option value="BIF">BIF - Burundian Franc (FBu)</option>
+                        <option value="SOS">SOS - Somali Shilling (Sh.So.)</option>
+                        <option value="ETB">ETB - Ethiopian Birr (Br)</option>
+                        <option value="DJF">DJF - Djiboutian Franc (Fdj)</option>
+                        <option value="EGP">EGP - Egyptian Pound (£E)</option>
+                        <option value="SDG">SDG - Sudanese Pound (SDG)</option>
+                        <option value="SSP">SSP - South Sudanese Pound (SS£)</option>
+                        <option value="MGA">MGA - Malagasy Ariary (Ar)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter parcel description..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Upload Area -->
+            <div id="upload-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-300 hover:border-blue-400 hover:bg-blue-50">
+                <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Drag & Drop your KML file</h3>
+                <p class="text-gray-500 mb-4">Upload land parcel boundaries in KML format</p>
+                <input type="file" id="file-input" class="hidden" accept=".kml">
+                <button id="browse-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300">
+                    Browse Files
+                </button>
+                <p class="text-xs text-gray-400 mt-4">Supported format: .kml (max 10MB)</p>
+            </div>
+            
+            <!-- Selected File Info -->
+            <div id="file-info" class="mt-6 hidden">
+                <div class="flex items-center justify-between bg-gray-100 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-file text-blue-500 text-xl mr-3"></i>
+                        <div>
+                            <p id="file-name" class="font-medium text-gray-800">example.kml</p>
+                            <p id="file-size" class="text-sm text-gray-500">0 KB</p>
+                        </div>
+                    </div>
+                    <button id="remove-file" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Upload Button -->
+                <button id="upload-btn" class="w-full mt-4 bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload Parcel Data
+                </button>
+                
+                <!-- Progress Bar -->
+                <div id="progress-container" class="mt-4 hidden">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Uploading...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Status Message -->
+                <div id="status-message" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>
