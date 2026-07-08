@@ -9,8 +9,6 @@ async function checker() {
         window.location.href = './signin.html';
         return null;
     }
-    
-    console.log('Token being sent:', userToken);
     return userToken;
 }
 
