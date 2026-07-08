@@ -19,7 +19,6 @@ async function checker() {
             window.location.href = './signin.html'
         }
         else{
-            console.log(userToken);
             return userToken
         }
     };
@@ -130,9 +129,7 @@ async function get_infos(productID) {
             }
         )
         const result = await response.json();
-        console.log(result);
         const coords = {"longitude" : result.data[0].longitude, "latitude" : result.data[0].latitude}
-        console.log(coords);
         return coords
     }
     catch (error){
@@ -248,18 +245,16 @@ async function get_parcels_info() {
 let API_RESPONSE;
 get_parcels_info().then(res =>{
     API_RESPONSE = res;
-    console.log(res.success);
     if (res.success === false) { 
         alert("please upgrade your account for the service georeport");
         window.history.back();
         console.log(res.message)
     }
     else{
-        console.log(res);
         //debut\\
-        console.log(API_RESPONSE);
+        //console.log(API_RESPONSE);
         const D = JSON.parse(res.data[0].geoinfos)
-        console.log(D)
+        //console.log(D)
         const FLOOD = D.flood;
         const CLIM = D.climates;
         const PROX = D.proximity;
