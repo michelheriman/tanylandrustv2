@@ -23,8 +23,6 @@ async function checker() {
             window.location.href = './signin.html'
         }
         else{
-            //return {'token' : userToken, 'user' : JSON.parse(user)};
-            console.log(userToken);
             return userToken
         }
     };
@@ -163,16 +161,8 @@ async function loadProduct() {
     return;
     }
 
-    /*
-    const { data: product, error } = await supabase_
-    .from("main_parcels")
-    .select("*")
-    .eq("uuid", productId)
-    .single();
-    */
 
     let product = await get_(productId);
-    console.log(product)
 
     if (!product) {
     document.getElementById("product-detail").innerText = "Product not found.";
