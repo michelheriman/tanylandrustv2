@@ -38,8 +38,6 @@ require([
             window.location.href = './signin.html'
         }
         else{
-            //return {'token' : userToken, 'user' : JSON.parse(user)};
-            console.log(userToken);
             return userToken
         }
     }
@@ -66,7 +64,6 @@ require([
                 alert("Please sign in")
                 window.location.href = './signin.html'
             }
-            console.log(result.data)
             let geojson = {
             type: "FeatureCollection",
             features: result.data.map(row => {
@@ -227,9 +224,6 @@ function displaySampleParcels() {
 function displayParcels(parcels) {
     const parcelList = document.getElementById('parcelList');
     parcelList.innerHTML = '';
-
-    console.log(parcels);
-
     parcels.features.forEach(parcel => {
         const parcelCard = createParcelCard(parcel);
         parcelList.appendChild(parcelCard);
