@@ -71,8 +71,6 @@ require([
             const result = await response.json();
 
             if (result.success) {
-                console.log('Map Data Received:', result.data);
-                //fetcher2 here
                 let geojson = {
         type: "FeatureCollection",
         features: result.data.map(row => {
@@ -126,8 +124,6 @@ require([
             window.location.href = './signin.html'
         }
         else{
-            //return {'token' : userToken, 'user' : JSON.parse(user)};
-            console.log(userToken);
             return userToken
         }
     };
@@ -182,7 +178,6 @@ require([
 
      // Function to zoom to a feature
     function zoomToFeature(feature) {
-      console.log(feature);
       view.goTo({
           //target : feature,
           target: feature,
@@ -385,7 +380,6 @@ require([
             });
             const result = await response.json();
             const count = result.data ? result.data.length : 0;
-            console.log(count);
             return count;
 
         }
@@ -414,9 +408,6 @@ require([
             });
 
             const result = await response.json();
-            //console.log(JSON.parse(result.data));
-            console.log(result)
-            //console.dir(result.data, { depth: null, colors: true });
 
             // Check for errors or no data
             if (!result.data || result.data.length === 0) {
@@ -427,7 +418,6 @@ require([
             
                 // Access the first element of the array
                 const profile = result.data[0];
-                console.log(profile);
                 
                 if (profile.account === 'free' && numberd >= 2) {
                     alert(`You have reached the number limit of your free account (${numberd}) parcels already registered! contact us if you want to add more parcels!`);
@@ -654,7 +644,6 @@ require([
             
             // Get current user
             const userData = await getCurrentUserWithRefresh();
-            console.log(userData);
             if (!userData || !userData.data || !userData.data.email) {
                 alert("User authentication failed. Please log in again.");
                 return;
@@ -764,7 +753,7 @@ require([
                 //wkt: wkt || ""  // Optional: include WKT if available
             };
             
-            console.log("Submitting data:", formData);
+            console.log("Submitting data!");
             
             // Send to server
             try {
