@@ -102,7 +102,6 @@ async function checker() {
         return null;
     }
     
-    console.log('Token being sent:', userToken);
     return userToken;
 }
 
