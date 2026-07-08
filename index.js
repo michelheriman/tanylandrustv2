@@ -8,14 +8,11 @@ async function checker() {
             window.location.href = './signin.html'
         }
         else{
-            //return {'token' : userToken, 'user' : JSON.parse(user)};
-            console.log(userToken);
             return userToken
         }
     };
 
 let garde_fou_ = checker();
-console.log(garde_fou_);
 
 async function logout() {
     const token = localStorage.getItem('auth_token'); // or wherever you store it
