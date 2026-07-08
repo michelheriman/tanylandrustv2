@@ -21,8 +21,6 @@ async function checker() {
             window.location.href = './signin.html'
         }
         else{
-            //return {'token' : userToken, 'user' : JSON.parse(user)};
-            console.log(userToken);
             return userToken
         }
     };
@@ -132,9 +130,7 @@ async function load(objt, uuid) {
     let uuid_d = document.getElementById("uuid_post");
     //console.log(uuid);
     //console.log(uuid_d);
-    uuid_d.value = uuid;
-    console.log(uuid_d);
-    
+    uuid_d.value = uuid;    
     let main_me = document.getElementById("main_mess");
     main_me.innerHTML = '';
     let token = await checker();
@@ -252,8 +248,7 @@ async function mail_launcher() {
   try {
     let token = await checker();
     let API = '/api/load_object';
-    let session = await getCurrentUserWithRefresh()//await supabase_.auth.getSession();
-    console.log(session);
+    let session = await getCurrentUserWithRefresh()
     let user = session.data.email;
     const sent = {"data" : user};
     const result = await fetch(
