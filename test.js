@@ -95,14 +95,11 @@ async function getCurrentUserWithRefresh() {
     };
 async function checker() {
         const userToken = localStorage.getItem('auth_token');
-        //const user = localStorage.getItem('user');
         if (userToken === undefined) {
             alert("Please sign in")
             window.location.href = './signin.html'
         }
         else{
-            //return {'token' : userToken, 'user' : JSON.parse(user)};
-            console.log(userToken);
             return userToken
         }
     };
