@@ -10,14 +10,11 @@ async function checker() {
             window.location.href = './signin.html'
         }
         else{
-            console.log(userToken);
             return userToken
         }
     };
 
 let garde_fou = checker();
-console.log(garde_fou);
-
 
 async function getCurrentUserWithRefresh() {
         try {
