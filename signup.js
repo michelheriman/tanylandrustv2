@@ -49,7 +49,6 @@ signupForm.addEventListener('submit', async (event) => {
         });
         
         const data = await response.json();
-        console.log('Response body:', data); 
         
         // Note: Flask returns status 201 for success, or check data.message
         if (response.ok) {
