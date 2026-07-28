@@ -38,7 +38,7 @@ signinForm.addEventListener('submit', async (event) => {
             showMessage(data.message + ' Redirecting...', 'success');
             
             setTimeout(() => {
-                window.location.href = './main.html'; //change here 
+                window.location.href = './main.html'; 
             }, 1000);
         } else {
             showMessage(data.message, 'error');
@@ -49,7 +49,6 @@ signinForm.addEventListener('submit', async (event) => {
     }
 });
 
-// Check if already logged in
 window.addEventListener('load', async () => {
     const token = localStorage.getItem('auth_token');
     if (token) {
