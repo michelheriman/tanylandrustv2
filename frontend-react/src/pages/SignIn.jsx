@@ -51,7 +51,7 @@ export default function SignIn() {
         <button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
         <p className="message error" role="alert" tabIndex={-1} ref={errorRef} hidden={!error}>{error}</p>
       </form>
-      <p className="signup-prompt">Don't have an account? <a href="#create-account">Create one</a></p>
+      <p className="signup-prompt">Don't have an account? <a href="/signup">Create one</a></p>
       {sessionError && !error && <p className="message" role="status">{sessionError.message}</p>}
     </>
   )

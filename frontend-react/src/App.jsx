@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useAuth } from './auth/useAuth.js'
 import SignIn from './pages/SignIn.jsx'
+import SignUp from './pages/SignUp.jsx'
 import './App.css'
 
 function AccountPage() {
@@ -25,10 +26,11 @@ function AccountPage() {
 
 function App() {
   const { status, error, restore } = useAuth()
+  const isSignUp = window.location.pathname.replace(/\/+$/, '') === '/signup'
 
   useEffect(() => {
-    document.title = status === 'authenticated' ? 'Dashboard | Tany LandTrust' : 'Login | Tany LandTrust'
-  }, [status])
+    document.title = status === 'authenticated' ? 'Dashboard | Tany LandTrust' : `${isSignUp ? 'Sign up' : 'Login'} | Tany LandTrust`
+  }, [isSignUp, status])
 
   if (status === 'restoring') {
     return <main className="status-screen" role="status" aria-live="polite">Restoring your session…</main>
@@ -49,16 +51,16 @@ function App() {
 
   return (
     <main className="auth-scene">
-      <section className="auth-card" aria-label="Tany LandTrust login">
+      <section className="auth-card" aria-label={isSignUp ? 'Tany LandTrust sign up' : 'Tany LandTrust login'}>
         <aside className="brand-panel">
           <p className="brand-name">Tany | LandTrust</p>
           <div className="brand-copy">
-            <h1>Access your LandTrust Dashboard</h1>
-            <p>Manage your land, documents, and transactions with confidence, all in one place.</p>
+            <h1>{isSignUp ? 'Create your LandTrust account' : 'Access your LandTrust Dashboard'}</h1>
+            <p>{isSignUp ? 'Join Tany to manage your land, documents, and transactions with confidence.' : 'Manage your land, documents, and transactions with confidence, all in one place.'}</p>
           </div>
         </aside>
-        <section className="form-panel" aria-label="Sign in">
-          {status === 'authenticated' || status === 'signingOut' ? <AccountPage /> : <SignIn />}
+        <section className="form-panel" aria-label={isSignUp ? 'Create account' : 'Sign in'}>
+          {status === 'authenticated' || status === 'signingOut' ? <AccountPage /> : isSignUp ? <SignUp /> : <SignIn />}
         </section>
       </section>
     </main>

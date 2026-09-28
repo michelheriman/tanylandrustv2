@@ -114,6 +114,9 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
     initialized = true
     publish({ status: 'authenticated', user, error: null })
   }
+  async function register(details) {
+    return api('/register', { method: 'POST', body: JSON.stringify(details) })
+  }
   async function logout() {
     const token = session?.accessToken
     generation += 1 // Pending refreshes must never recreate a logged-out session.
@@ -130,7 +133,7 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
   return {
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener) },
     getSnapshot: () => state,
-    login, logout, restore, request,
+    login, register, logout, restore, request,
   }
 }
 
