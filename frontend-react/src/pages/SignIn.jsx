@@ -30,23 +30,28 @@ export default function SignIn() {
 
   return (
     <>
+      <a className="back-link" href="/">
+        <span aria-hidden="true">←</span> Back to home
+      </a>
       <header className="card-heading">
-        <p className="eyebrow">Tany | LandTrust</p>
-        <h1>Accédez à votre espace LandTrust</h1>
-        <p>Connectez-vous pour gérer vos annonces, documents et transactions foncières à Madagascar.</p>
+        <h1>Login</h1>
       </header>
       <form onSubmit={handleSubmit} aria-busy={pending}>
         <div className="form-field">
-          <label htmlFor="email">Adresse e-mail</label>
-          <input id="email" name="email" type="email" autoComplete="email" required spellCheck="false" placeholder="vous@exemple.com" readOnly={pending} />
+          <label className="sr-only" htmlFor="email">Email</label>
+          <input id="email" name="email" type="email" autoComplete="email" required spellCheck="false" placeholder="Email address" readOnly={pending} />
         </div>
         <div className="form-field">
-          <label htmlFor="password">Mot de passe</label>
-          <input id="password" name="password" type="password" autoComplete="current-password" required readOnly={pending} />
+          <label className="sr-only" htmlFor="password">Password</label>
+          <input id="password" name="password" type="password" autoComplete="current-password" required placeholder="Password" readOnly={pending} />
         </div>
-        <button type="submit" disabled={pending}>{pending ? 'Connexion en cours…' : 'Se connecter'}</button>
+        <div className="login-options">
+          <a href="#forgot-password">Forgot password?</a>
+        </div>
+        <button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
         <p className="message error" role="alert" tabIndex={-1} ref={errorRef} hidden={!error}>{error}</p>
       </form>
+      <p className="signup-prompt">Don't have an account? <a href="#create-account">Create one</a></p>
       {sessionError && !error && <p className="message" role="status">{sessionError.message}</p>}
     </>
   )
