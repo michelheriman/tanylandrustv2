@@ -29,7 +29,7 @@ require([
     SimpleFillSymbol, LabelClass) {
 
     //const API_URL = 'http://127.0.0.1:5000';
-    const API_URL = 'https://mtk.pythonanywhere.com/';
+    const API_URL = 'http://127.0.0.1:5000/';
     
 
     projection.load().then(() => {
@@ -457,7 +457,7 @@ require([
             }
             
             // First attempt with current token
-            let response = await fetch('https://mtk.pythonanywhere.com/api/current_user', { // change link in production
+            let response = await fetch('http://127.0.0.1:5000/api/current_user', { // change link in production
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -471,7 +471,7 @@ require([
                 
                 try {
                     // Try to refresh the token
-                    const refreshResponse = await fetch('https://mtk.pythonanywhere.com/api/refresh-token', {// change link in production
+                    const refreshResponse = await fetch('http://127.0.0.1:5000/api/refresh-token', {// change link in production
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -493,7 +493,7 @@ require([
                         console.log('Token refreshed successfully');
                         
                         // Retry with new token
-                        response = await fetch('https://mtk.pythonanywhere.com/api/current_user', {// change link in production
+                        response = await fetch('http://127.0.0.1:5000/api/current_user', {// change link in production
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${refreshData.token}`,

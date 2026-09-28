@@ -1,5 +1,5 @@
 localStorage.clear();
-const API_URL = 'https://mtk.pythonanywhere.com/api';
+const API_URL = 'http://127.0.0.1:5000/api';
 const signinForm = document.getElementById('signin-form');
 const messageDiv = document.getElementById('message');
 

@@ -15,7 +15,7 @@ require([
     let map, view, graphicsLayer;
     const interestedParcels = [];
     // Supabase Configuration
-    const API_URL = 'https://mtk.pythonanywhere.com/';
+    const API_URL = 'http://127.0.0.1:5000/';
 
     // Security: escape any untrusted/user-supplied text before it is ever
     // inserted into innerHTML, to prevent stored XSS from listing data

@@ -1,4 +1,4 @@
-const API_URL = 'https://mtk.pythonanywhere.com/';
+const API_URL = 'http://127.0.0.1:5000/';
 
 const columns = ['owner', 'parcel_name', 'price_m2', 'price', 'location_name', 'description', 'sell_category', 'status_category'];
 
@@ -29,7 +29,7 @@ async function getCurrentUserWithRefresh() {
                 };
             }
             
-            let response = await fetch('https://mtk.pythonanywhere.com/api/current_user', { 
+            let response = await fetch('http://127.0.0.1:5000/api/current_user', { 
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -41,7 +41,7 @@ async function getCurrentUserWithRefresh() {
                 console.log('Token expired, attempting refresh...');
                 
                 try {
-                    const refreshResponse = await fetch('https://mtk.pythonanywhere.com/api/refresh-token', {// change link in production
+                    const refreshResponse = await fetch('http://127.0.0.1:5000/api/refresh-token', {// change link in production
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -61,7 +61,7 @@ async function getCurrentUserWithRefresh() {
                         
                         console.log('Token refreshed successfully');
                         
-                        response = await fetch('https://mtk.pythonanywhere.com/api/current_user', {// change link in production
+                        response = await fetch('http://127.0.0.1:5000/api/current_user', {// change link in production
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${refreshData.token}`,

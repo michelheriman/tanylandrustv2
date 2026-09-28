@@ -1,4 +1,4 @@
-const API_URL = 'https://mtk.pythonanywhere.com/';
+const API_URL = 'http://127.0.0.1:5000/';
 async function getCurrentUserWithRefresh() {
         try {
             const token = localStorage.getItem('auth_token');
@@ -13,7 +13,7 @@ async function getCurrentUserWithRefresh() {
             }
             
             // First attempt with current token
-            let response = await fetch('https://mtk.pythonanywhere.com/api/current_user', { // change link in production
+            let response = await fetch('http://127.0.0.1:5000/api/current_user', { // change link in production
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -27,7 +27,7 @@ async function getCurrentUserWithRefresh() {
                 
                 try {
                     // Try to refresh the token
-                    const refreshResponse = await fetch('https://mtk.pythonanywhere.com/api/refresh-token', {// change link in production
+                    const refreshResponse = await fetch('http://127.0.0.1:5000/api/refresh-token', {// change link in production
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ async function getCurrentUserWithRefresh() {
                         console.log('Token refreshed successfully');
                         
                         // Retry with new token
-                        response = await fetch('https://mtk.pythonanywhere.com/api/current_user', {// change link in production
+                        response = await fetch('http://127.0.0.1:5000/api/current_user', {// change link in production
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${refreshData.token}`,
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
         //console.log(formData.entries())
         
         // Configure your API endpoint here
-        const apiEndpoint = 'https://mtk.pythonanywhere.com//api/upload-kml'; //change in production
+        const apiEndpoint = 'http://127.0.0.1:5000/api/upload-kml'; //change in production
         
         // Create XMLHttpRequest for progress tracking
         const xhr = new XMLHttpRequest();

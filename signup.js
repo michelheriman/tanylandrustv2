@@ -1,4 +1,4 @@
-const API_URL = 'https://mtk.pythonanywhere.com/api';
+const API_URL = 'http://127.0.0.1:5000/api';
 const signupForm = document.getElementById('signupForm');
 const messageDiv = document.getElementById('message');
 const submitBtn = document.getElementById('submitBtn');
