@@ -16,31 +16,56 @@
             height: 100%; /* Changed from 100vh to 100% to work with container constraints */
         }
         /* Custom scrollbar to make the list look a bit cleaner (optional) */
-        #parcelListContainer::-webkit-scrollbar {
-            width: 8px;
-        }
-        #parcelListContainer::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; /* gray-300 */
-            border-radius: 4px;
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
+        body { color: #f8f7ef; font-family: 'DM Sans', 'Segoe UI', sans-serif; font-size: 11px; }
+        .market-shell { display: grid; height: 100%; min-height: 420px; grid-template-rows: 36px minmax(0, 1fr); overflow: hidden; border: 1px solid rgb(225 226 212 / 80%); border-radius: 7px; background: rgb(5 48 34 / 89%); box-shadow: 0 8px 26px rgb(1 25 17 / 18%); }
+        .market-heading { display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgb(222 234 221 / 45%); font-size: 10px; font-weight: 500; }
+        .market-layout { display: grid; min-height: 0; grid-template-columns: minmax(230px, 33%) minmax(0, 1fr); gap: 12px; padding: 8px 12px 12px; }
+        .market-sidebar { display: flex; min-width: 0; min-height: 0; flex-direction: column; padding: 2px 0 0 8px; }
+        .market-label { margin: 0 0 10px; font-size: 10px; font-weight: 500; }
+        .market-search { display: block; margin: 0 0 7px; }
+        .market-search input { width: 100%; height: 25px; box-sizing: border-box; padding: 4px 10px; border: 1px solid rgb(238 243 233 / 78%); border-radius: 14px; color: #fff; background: rgb(255 255 255 / 8%); font: inherit; font-size: 10px; }
+        .market-search input::placeholder { color: rgb(240 242 231 / 65%); }
+        .market-filters { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #e8e7d9; font-size: 10px; }
+        .market-filters button { min-width: 49px; padding: 3px 8px; border: 1px solid rgb(238 243 233 / 60%); border-radius: 12px; color: #fff; background: transparent; font: inherit; font-size: 9px; cursor: pointer; }
+        .market-filters button.is-active { border-color: #e0c05f; }
+        .market-filters button:disabled { opacity: .45; cursor: not-allowed; }
+        #parcelList { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: 8px; overflow: auto; padding: 3px 5px 4px 0; scrollbar-color: rgb(222 229 215 / 70%) transparent; scrollbar-width: thin; }
+        #parcelList::-webkit-scrollbar { width: 8px; }
+        #parcelList::-webkit-scrollbar-thumb { border-radius: 4px; background: rgb(222 229 215 / 70%); }
+        .market-parcel-card { padding: 9px 8px 7px; border: 1px solid rgb(231 238 225 / 75%); border-radius: 8px; background: rgb(4 48 34 / 27%); }
+        .market-parcel-top, .market-parcel-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+        .market-parcel-top strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 8px; font-weight: 600; }
+        .market-parcel-top span, .market-parcel-location, .market-parcel-reference { font-size: 7px; }
+        .market-parcel-location { margin: 7px 0 2px; }
+        .market-parcel-reference { overflow: hidden; margin: 0 0 6px; color: #cdd8cd; text-overflow: ellipsis; white-space: nowrap; }
+        .market-parcel-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+        .market-parcel-actions a { display: inline-flex; min-height: 19px; align-items: center; justify-content: center; gap: 3px; padding: 2px 4px; border: 1px solid rgb(238 243 233 / 76%); border-radius: 4px; color: #f8f7ef; text-align: center; text-decoration: none; white-space: nowrap; font-size: 7px; }
+        .market-parcel-actions a:hover { color: #173b2d; background: #f1ead0; }
+        .market-map { position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 2px solid #e4e3d6; background: #dce4dc; }
+        #mapView { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .market-empty, .market-error { margin: 4px 0; padding: 9px; border: 1px solid rgb(226 235 224 / 35%); border-radius: 7px; font-size: 9px; line-height: 1.45; }
+        .market-error { color: #ffddd7; background: rgb(117 35 28 / 24%); }
+        .market-error button { margin-top: 7px; padding: 4px 9px; border: 1px solid #f2c3b4; border-radius: 12px; color: #fff; background: transparent; cursor: pointer; }
+        @media (max-width: 700px) {
+            .market-shell { min-height: 670px; grid-template-rows: 36px minmax(0, 1fr); }
+            .market-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: 245px minmax(350px, 1fr); gap: 8px; padding: 8px; }
+            .market-sidebar { padding: 0 3px; }
+            .market-map { min-height: 350px; }
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="flex flex-col h-screen md:flex-row">
-        
-        <div id="parcelListContainer" class="w-full h-1/2 bg-white shadow-lg overflow-y-auto md:h-full md:w-1/3">
-            <div class="p-4 md:p-6">
-                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">Parcel Marketplace</h1>
-                <div id="parcelList" class="space-y-4">
-                    <p class="text-gray-500">Parcel list goes here...</p>
-                    <p class="text-gray-500">Scroll down to see more...</p>
-                  
-                </div>
-            </div>
-        </div>
-
-        <div class="w-full h-1/2 relative md:h-full md:w-2/3">
-            <div id="mapView"></div>
+<body>
+    <div class="market-shell">
+        <header class="market-heading">Field Data Manager</header>
+        <div class="market-layout">
+            <aside class="market-sidebar" aria-label="Marketplace parcels">
+                <h2 class="market-label">Parcel add</h2>
+                <label class="market-search"><span class="sr-only">Search parcels</span><input id="marketSearch" type="search" placeholder="research" autocomplete="off"></label>
+                <div class="market-filters"><span>filter:</span><button id="marketDateSort" type="button" disabled>Date ↑</button><button id="marketNameSort" type="button" class="is-active" aria-pressed="true">A-Z ↑</button></div>
+                <div id="parcelList" aria-live="polite" aria-busy="true"><p class="market-empty">Loading marketplace parcels…</p></div>
+            </aside>
+            <div class="market-map" aria-label="Marketplace map"><div id="mapView"></div></div>
         </div>
     </div>
 </body>

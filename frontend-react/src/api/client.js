@@ -10,7 +10,7 @@ export class ApiError extends Error {
 // Backend exceptions may contain authentication data; never display them.
 export async function requestJson(path, { token, ...options } = {}, fetchImpl = globalThis.fetch) {
   const headers = new Headers(options.headers)
-  if (options.body) headers.set('Content-Type', 'application/json')
+  if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
   let response
   try {

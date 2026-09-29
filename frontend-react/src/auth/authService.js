@@ -50,7 +50,9 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
         checkGeneration(expected)
         save(sessionFrom(data, session.user))
       } catch (error) {
-        if (generation === expected && error.kind === 'auth') clear(error)
+        // Any failed refresh leaves this client without a usable session. Clear only
+        // authentication keys; unrelated browser data remains untouched.
+        if (generation === expected) clear(error)
         throw error
       }
     })()
@@ -75,6 +77,43 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
       const data = await api(path, { ...options, token: session.accessToken })
       checkGeneration(expected)
       return data
+    } catch (error) {
+      if (generation === expected && error.kind === 'auth') clear(error)
+      throw error
+    }
+  }
+  async function downloadKml() {
+    const expected = generation
+    const token = session?.accessToken
+    if (!token) throw new ApiError('auth', 'Connectez-vous pour continuer.', 401)
+    async function send(accessToken) {
+      let response
+      try {
+        response = await (fetchImpl ?? globalThis.fetch)('/export/kml', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+      } catch {
+        throw new ApiError('network', 'Connexion au serveur impossible. Vérifiez votre connexion puis réessayez.')
+      }
+      if (response.status === 401) throw new ApiError('auth', 'Authentification refusée. Connectez-vous à nouveau.', 401)
+      if (response.status >= 500) throw new ApiError('server', 'Le serveur rencontre un problème. Réessayez plus tard.', response.status)
+      if (!response.ok) throw new ApiError('request', 'La demande a été refusée par le serveur.', response.status)
+      return response.blob()
+    }
+    try {
+      const file = await send(token)
+      checkGeneration(expected)
+      return file
+    } catch (error) {
+      checkGeneration(expected)
+      if (error.kind !== 'auth') throw error
+    }
+    await refresh(expected, token)
+    checkGeneration(expected)
+    try {
+      const file = await send(session.accessToken)
+      checkGeneration(expected)
+      return file
     } catch (error) {
       if (generation === expected && error.kind === 'auth') clear(error)
       throw error
@@ -133,7 +172,7 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
   return {
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener) },
     getSnapshot: () => state,
-    login, register, logout, restore, request,
+    login, register, logout, restore, request, downloadKml,
   }
 }
 

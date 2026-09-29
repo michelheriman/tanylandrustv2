@@ -2,35 +2,30 @@ import { useEffect } from 'react'
 import { useAuth } from './auth/useAuth.js'
 import SignIn from './pages/SignIn.jsx'
 import SignUp from './pages/SignUp.jsx'
+import Home from './pages/Home.jsx'
+import Main from './pages/Main.jsx'
 import './App.css'
-
-function AccountPage() {
-  const { user, logout, status, error } = useAuth()
-
-  return (
-    <section className="account-panel" aria-labelledby="account-title">
-      <p className="account-kicker">Tany | LandTrust</p>
-      <h1 id="account-title">Welcome{user.name ? `, ${user.name}` : ''}</h1>
-      <p className="account-email">{user.email}</p>
-      <div className="account-details">
-        <span className="status-mark" aria-hidden="true" />
-        <p>You are signed in to your LandTrust dashboard.</p>
-      </div>
-      <button className="signout-button" type="button" onClick={() => void logout()} disabled={status === 'signingOut'}>
-        {status === 'signingOut' ? 'Signing out…' : 'Sign out'}
-      </button>
-      {error && <p className="message" role="status">{error.message}</p>}
-    </section>
-  )
-}
 
 function App() {
   const { status, error, restore } = useAuth()
-  const isSignUp = window.location.pathname.replace(/\/+$/, '') === '/signup'
+  const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
+  const isHome = pathname === '/'
+  const isMain = pathname === '/main' || pathname === '/main.html'
+  const isSignUp = pathname === '/signup'
 
   useEffect(() => {
+    if (isHome || status === 'authenticated') return
     document.title = status === 'authenticated' ? 'Dashboard | Tany LandTrust' : `${isSignUp ? 'Sign up' : 'Login'} | Tany LandTrust`
-  }, [isSignUp, status])
+  }, [isHome, isSignUp, status])
+
+  useEffect(() => {
+    if (isHome) return
+    if (status === 'authenticated' && !isMain) window.history.replaceState(null, '', '/main')
+    if (status === 'anonymous' && isMain) window.location.replace('/signin')
+  }, [isHome, isMain, status])
+
+  // Keep the landing page public even when restoring a saved session is unavailable.
+  if (isHome) return <Home />
 
   if (status === 'restoring') {
     return <main className="status-screen" role="status" aria-live="polite">Restoring your session…</main>
@@ -49,6 +44,10 @@ function App() {
     )
   }
 
+  if (status === 'authenticated' || status === 'signingOut') return <Main />
+
+  if (isMain) return <main className="status-screen" role="status">Redirecting to sign in…</main>
+
   return (
     <main className="auth-scene">
       <section className="auth-card" aria-label={isSignUp ? 'Tany LandTrust sign up' : 'Tany LandTrust login'}>
@@ -60,7 +59,7 @@ function App() {
           </div>
         </aside>
         <section className="form-panel" aria-label={isSignUp ? 'Create account' : 'Sign in'}>
-          {status === 'authenticated' || status === 'signingOut' ? <AccountPage /> : isSignUp ? <SignUp /> : <SignIn />}
+          {isSignUp ? <SignUp /> : <SignIn />}
         </section>
       </section>
     </main>

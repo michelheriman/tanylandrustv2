@@ -14,8 +14,10 @@ require([
      Expand, BasemapGallery, Print, Search) {
     let map, view, graphicsLayer;
     const interestedParcels = [];
+    let marketFeatures = [];
+    let marketSort = 'name';
+    let marketNameDescending = false;
     // Supabase Configuration
-    const API_URL = 'http://127.0.0.1:5000/';
 
     // Security: escape any untrusted/user-supplied text before it is ever
     // inserted into innerHTML, to prevent stored XSS from listing data
@@ -30,43 +32,79 @@ require([
         }[c]));
     }
 
-    async function checker() {
-        const userToken = localStorage.getItem('auth_token');
-        //const user = localStorage.getItem('user');
-        if (userToken === undefined) {
-            alert("Please sign in")
-            window.location.href = './signin.html'
-        }
-        else{
-            return userToken
-        }
+    function parcelDate(properties) {
+        const field = ['updated_at', 'updatedAt', 'created_at', 'createdAt'].find((key) => properties?.[key] != null);
+        return field ? Date.parse(properties[field]) || 0 : 0;
     }
 
+    function renderMarketplaceCards() {
+        const list = document.getElementById('parcelList');
+        if (!list) return;
+        const query = document.getElementById('marketSearch')?.value.trim().toLocaleLowerCase() || '';
+        const rows = marketFeatures.filter((feature) => {
+            const properties = feature.properties || {};
+            return !query || ['parcel_name', 'owner', 'location_name', 'description', 'price', 'price_m2', 'uuid']
+                .some((key) => String(properties[key] ?? '').toLocaleLowerCase().includes(query));
+        }).sort((a, b) => marketSort === 'date'
+            ? parcelDate(b.properties) - parcelDate(a.properties)
+            : String(a.properties.parcel_name ?? '').localeCompare(String(b.properties.parcel_name ?? ''), undefined, { sensitivity: 'base' }) * (marketNameDescending ? -1 : 1));
+        list.replaceChildren();
+        if (rows.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'market-empty';
+            empty.textContent = query ? 'No parcels match this search.' : 'No parcels are currently available in the marketplace.';
+            list.appendChild(empty);
+            return;
+        }
+        rows.forEach((feature) => list.appendChild(createParcelCard(feature)));
+    }
+
+    document.getElementById('marketSearch')?.addEventListener('input', renderMarketplaceCards);
+    document.getElementById('marketNameSort')?.addEventListener('click', (event) => {
+        marketSort = 'name';
+        marketNameDescending = !marketNameDescending;
+        event.currentTarget.setAttribute('aria-pressed', 'true');
+        event.currentTarget.classList.add('is-active');
+        const dateButton = document.getElementById('marketDateSort');
+        dateButton?.classList.remove('is-active');
+        dateButton?.setAttribute('aria-pressed', 'false');
+        event.currentTarget.textContent = marketNameDescending ? 'A-Z ↓' : 'A-Z ↑';
+        renderMarketplaceCards();
+    });
+    document.getElementById('marketDateSort')?.addEventListener('click', (event) => {
+        marketSort = 'date';
+        event.currentTarget.setAttribute('aria-pressed', 'true');
+        event.currentTarget.classList.add('is-active');
+        const nameButton = document.getElementById('marketNameSort');
+        nameButton?.classList.remove('is-active');
+        nameButton?.setAttribute('aria-pressed', 'false');
+        renderMarketplaceCards();
+    });
 
     async function fetchParcelsFromSupabase() {
-        const API = '/api/market';
-        let token = await checker();
-        
-        try {
-
-             const response = await fetch(`${API_URL}${API}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // This is the crucial part for @token_required
-                    'Authorization': `Bearer ${token}` 
-                },
-                //body : JSON.stringify({user})
-            });
-
-            const result = await response.json();
-            if (!result.success){
-                alert("Please sign in")
-                window.location.href = './signin.html'
-            }
-            let geojson = {
+        const response = await fetch('/api/market', { method: 'GET' });
+        if (!response.ok) {
+            const error = new Error(response.status === 401
+                ? 'Your session has expired. Sign in again, then retry loading the marketplace.'
+                : response.status >= 500
+                    ? 'The marketplace service is unavailable. Please try again.'
+                    : 'Marketplace parcels could not be loaded. Please try again.');
+            error.status = response.status;
+            throw error;
+        }
+        const result = await response.json();
+        if (result?.success !== true || !Array.isArray(result.data)) {
+            throw new Error('The marketplace returned an unexpected parcel list. Please retry.');
+        }
+        return {
             type: "FeatureCollection",
             features: result.data.map(row => {
+                let geometry;
+                try { geometry = typeof row.geojson === 'string' ? JSON.parse(row.geojson) : row.geojson; }
+                catch { throw new Error('The marketplace returned invalid parcel geometry. Please retry.'); }
+                if (!geometry || !['Polygon', 'MultiPolygon'].includes(geometry.type) || !Array.isArray(geometry.coordinates)) {
+                    throw new Error('The marketplace returned invalid parcel geometry. Please retry.');
+                }
                 // Construct the properties for each feature without the `geojson` key
                 let properties = { ...row };
                 delete properties.geojson;
@@ -74,17 +112,10 @@ require([
                 return {
                 type: "Feature",
                 properties: properties,
-                geometry: JSON.parse(row.geojson)
+                geometry
                 };
             })
         };
-            return geojson
-        }
-        
-
-        catch(error) {
-            console.log(error);
-        }
     };
 
 
@@ -146,140 +177,74 @@ require([
 
     // Load parcels from Supabase
 async function loadParcels() {
+    const parcelList = document.getElementById('parcelList');
+    if (!parcelList) return;
+    parcelList.setAttribute('aria-busy', 'true');
+    parcelList.innerHTML = '<p role="status" class="market-empty">Loading marketplace parcels…</p>';
     try {
-        // Sample data - Replace with actual Supabase fetch
         const parcels = await fetchParcelsFromSupabase();
         displayParcels(parcels);
     } catch (error) {
-        console.error('Error loading parcels:', error);
-        displaySampleParcels();
+        parcelList.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'market-error';
+        message.setAttribute('role', 'alert');
+        message.textContent = error.status === 401
+            ? 'Your session has expired. Sign in again, then retry loading the marketplace.'
+            : error.status >= 500
+                ? 'The marketplace service is unavailable. Please try again.'
+                : error.name === 'TypeError'
+                    ? 'Could not reach the marketplace service. Check your connection and retry.'
+                    : error.message || 'Marketplace parcels could not be loaded.';
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'market-retry';
+        retry.textContent = 'Retry';
+        retry.addEventListener('click', () => { void loadParcels(); });
+        parcelList.append(message, retry);
+    } finally {
+        parcelList.removeAttribute('aria-busy');
     }
 }
 
 
 
-// Display sample parcels (fallback)
-function displaySampleParcels() {
-    const sampleParcels = [
-        {
-            id: 1,
-            parcel_name: "Parcel A - Urban Land",
-            price_m2: 50,
-            price: 125000,
-            location_name: "Antananarivo Center",
-            description: "Prime urban land in the heart of Antananarivo, perfect for commercial or residential development.",
-            geojson: {
-                type: "Polygon",
-                coordinates: [[
-                    [47.52, -18.91],
-                    [47.525, -18.91],
-                    [47.525, -18.915],
-                    [47.52, -18.915],
-                    [47.52, -18.91]
-                ]]
-            }
-        },
-        {
-            id: 2,
-            parcel_name: "Parcel B - Agricultural",
-            price_m2: 17,
-            price: 85000,
-            location_name: "Analamanga Region",
-            description: "Spacious agricultural land with fertile soil, ideal for farming or eco-tourism projects.",
-            geojson: {
-                type: "Polygon",
-                coordinates: [[
-                    [47.51, -18.92],
-                    [47.515, -18.92],
-                    [47.515, -18.925],
-                    [47.51, -18.925],
-                    [47.51, -18.92]
-                ]]
-            }
-        },
-        {
-            id: 3,
-            parcel_name: "Parcel C - Commercial",
-            price_m2: 108,
-            price: 195000,
-            location_name: "Avenue de l'Indépendance",
-            description: "Premium commercial location on major avenue, high foot traffic area with excellent visibility.",
-            geojson: {
-                type: "Polygon",
-                coordinates: [[
-                    [47.53, -18.905],
-                    [47.535, -18.905],
-                    [47.535, -18.91],
-                    [47.53, -18.91],
-                    [47.53, -18.905]
-                ]]
-            }
-        }
-    ];
-    
-    displayParcels(sampleParcels);
-}
-
 // Display parcels in the list
 function displayParcels(parcels) {
     const parcelList = document.getElementById('parcelList');
-    parcelList.innerHTML = '';
-    parcels.features.forEach(parcel => {
-        const parcelCard = createParcelCard(parcel);
-        parcelList.appendChild(parcelCard);
-        addParcelToMap(parcel);
-    });
+    if (!parcelList || parcels?.type !== 'FeatureCollection' || !Array.isArray(parcels.features)) {
+        throw new Error('Marketplace parcels are unavailable or malformed.');
+    }
+    marketFeatures = parcels.features;
+    const dateButton = document.getElementById('marketDateSort');
+    if (dateButton) dateButton.disabled = !marketFeatures.some((feature) => parcelDate(feature.properties) > 0);
+    renderMarketplaceCards();
+    marketFeatures.forEach(addParcelToMap);
 }
 
 // Create parcel card HTML
 function createParcelCard(parcel) {
     const card = document.createElement('div');
-    card.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow';
-
-    const formattedPrice = new Intl.NumberFormat('en-US').format(parcel.properties.price);
-    const formattedPriceM2 = new Intl.NumberFormat('en-US').format(parcel.properties.price_m2);
-    
+    card.className = 'market-parcel-card';
+    const properties = parcel.properties || {};
+    const formattedPriceM2 = new Intl.NumberFormat('en-US').format(Number(properties.price_m2) || 0);
+    const uuid = String(properties.uuid ?? '');
     card.innerHTML = `
-        <div class="mb-3">
-            <h3 class="text-lg font-semibold text-gray-800">${escapeHTML(parcel.properties.parcel_name)}</h3>
+        <div class="market-parcel-top">
+            <strong>${escapeHTML(properties.parcel_name || 'Unnamed parcel')}</strong>
+            <span>Price per m²: ${formattedPriceM2}</span>
         </div>
-        <div class="space-y-2 text-sm text-gray-600 mb-3">
-            <p><span class="font-medium">Location:</span> ${escapeHTML(parcel.properties.location_name)}</p>
-            <p><span class="font-medium">Price per m²:</span> ${formattedPriceM2}</p>
-            <p><span class="font-medium">Reference:</span> ${escapeHTML(parcel.properties.uuid)}</p>
-            <p class="text-gray-700">${escapeHTML(parcel.properties.description)}</p>
-            
-        </div>
-        <div class="mb-4">
-            <p class="text-2xl font-bold text-blue-600">${formattedPrice}</p>
-        </div>
-        <div class="mb-4">
-            <p class="text-2xl font-bold text-blue-600">${parcel.properties.currency}</p>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="zoomToParcel(${parcel.properties.id})" 
-                    class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors">
-                View on Map
-            </button>
-            <!--button onclick="toggleInterest(${parcel.properties.id}, this)" 
-                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded transition-colors interest-btn">
-                Mark Interest
-            </button-->
-            <button onclick="window.location.href='products_details.html?id=${parcel.properties.uuid}'" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded transition-colors interest-btn">
-                Mark Interest
-            
-            </button>
-
-            <button onclick="window.location.href='details_parcel.html?id=${parcel.properties.uuid}'" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded transition-colors interest-btn">
-            greport
-            
-            </button>
+        <p class="market-parcel-location">Location: ${escapeHTML(properties.location_name || '—')}</p>
+        <p class="market-parcel-reference">Reference: ${escapeHTML(uuid || '—')}</p>
+        <div class="market-parcel-actions">
+            <button type="button" data-action="zoom">⌖ View on Map</button>
+            <a href="products_details.html?id=${encodeURIComponent(uuid)}">♡ Mark Interest</a>
+            <a href="details_parcel.html?id=${encodeURIComponent(uuid)}">Greport</a>
         </div>
     `;
-    
+    card.querySelector('[data-action="zoom"]')?.addEventListener('click', () => zoomToParcel(properties.id));
     return card;
 }
-
     function addParcelToMap(parcel) {
         if (!parcel.geometry || !window.Graphic) return;
 
@@ -426,7 +391,7 @@ function createParcelCard(parcel) {
 // Zoom to specific parcel
     function zoomToParcel(parcelId) {
         const graphics = window.graphicsLayer.graphics.items;
-        const graphic = graphics.find(g => g.attributes.parcelId === parcelId);
+        const graphic = graphics.find(g => String(g.attributes.parcelId) === String(parcelId));
         
         if (graphic && window.mapView) {
             window.mapView.goTo({
