@@ -4,6 +4,7 @@ import SignIn from './pages/SignIn.jsx'
 import SignUp from './pages/SignUp.jsx'
 import Home from './pages/Home.jsx'
 import Main from './pages/Main.jsx'
+import GeoReport from './pages/GeoReport.jsx'
 import './App.css'
 
 function App() {
@@ -12,17 +13,23 @@ function App() {
   const isHome = pathname === '/'
   const isMain = pathname === '/main' || pathname === '/main.html'
   const isSignUp = pathname === '/signup'
+  const reportMatch = pathname.match(/^\/georeport\/([^/]+)$/)
+  let parcelUuid = null
+  if (reportMatch) {
+    try { parcelUuid = decodeURIComponent(reportMatch[1]) } catch { parcelUuid = null }
+  }
+  const isGeoReport = Boolean(reportMatch && parcelUuid)
 
   useEffect(() => {
     if (isHome || status === 'authenticated') return
-    document.title = status === 'authenticated' ? 'Dashboard | Tany LandTrust' : `${isSignUp ? 'Sign up' : 'Login'} | Tany LandTrust`
+    document.title = `${isSignUp ? 'Sign up' : 'Login'} | Tany LandTrust`
   }, [isHome, isSignUp, status])
 
   useEffect(() => {
     if (isHome) return
-    if (status === 'authenticated' && !isMain) window.history.replaceState(null, '', '/main')
-    if (status === 'anonymous' && isMain) window.location.replace('/signin')
-  }, [isHome, isMain, status])
+    if (status === 'authenticated' && !isMain && !isGeoReport) window.history.replaceState(null, '', '/main')
+    if (status === 'anonymous' && (isMain || isGeoReport)) window.location.replace('/signin')
+  }, [isHome, isMain, isGeoReport, status])
 
   // Keep the landing page public even when restoring a saved session is unavailable.
   if (isHome) return <Home />
@@ -44,9 +51,11 @@ function App() {
     )
   }
 
+  if ((status === 'authenticated' || status === 'signingOut') && isGeoReport) return <GeoReport parcelUuid={parcelUuid} />
+
   if (status === 'authenticated' || status === 'signingOut') return <Main />
 
-  if (isMain) return <main className="status-screen" role="status">Redirecting to sign in…</main>
+  if (isMain || isGeoReport) return <main className="status-screen" role="status">Redirecting to sign in…</main>
 
   return (
     <main className="auth-scene">

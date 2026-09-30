@@ -55,6 +55,8 @@ function bootMarket(responseOrError) {
   const context = {
     document,
     window: {},
+    API_URL: 'http://127.0.0.1:5000/',
+    localStorage: { getItem(key) { return key === 'auth_token' ? 'market-test-token' : null } },
     fetch: async (...args) => {
       requests.push(args)
       if (responseOrError instanceof Error) throw responseOrError
@@ -73,16 +75,18 @@ const marketRows = [
   { id: 2, uuid: 'beta-id', parcel_name: 'Beta land', location_name: 'South', price_m2: 25, updated_at: '2025-02-02', geojson: parcelGeometry },
 ]
 
-test('marketplace requests the relative bridged URL and renders the successful response', async () => {
+test('legacy marketplace requests the Flask URL with its stored bearer token', async () => {
   const run = await bootMarket({ ok: true, status: 200, json: async () => ({ success: true, data: [] }) })
-  assert.equal(run.requests[0][0], '/api/market')
+  assert.equal(run.requests[0][0], 'http://127.0.0.1:5000/api/market')
+  assert.equal(run.requests[0][1].headers.Authorization, 'Bearer market-test-token')
   assert.match(run.parcelList.children[0].textContent, /No parcels are currently available/)
   assert.equal(run.parcelList.attrs['aria-busy'], undefined)
 })
 
 test('marketplace 401 renders a retryable error and never displays fallback parcels', async () => {
   const run = await bootMarket({ ok: false, status: 401, json: async () => ({ success: false }) })
-  assert.equal(run.requests[0][0], '/api/market')
+  assert.equal(run.requests[0][0], 'http://127.0.0.1:5000/api/market')
+  assert.equal(run.requests[0][1].headers.Authorization, 'Bearer market-test-token')
   assert.match(run.parcelList.children[0].textContent, /session has expired/i)
   assert.equal(run.parcelList.children[0].attrs.role, 'alert')
   assert.equal(run.parcelList.children[1].tag, 'button')

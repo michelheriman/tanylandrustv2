@@ -3,6 +3,12 @@
 (() => {
   const getItem = Storage.prototype.getItem
   const originalFetch = window.fetch.bind(window)
+  const apiOrigins = new Set([
+    window.location.origin,
+    'http://127.0.0.1:5000',
+    'http://localhost:5000',
+    'https://mtk.pythonanywhere.com',
+  ])
   let nextId = 0
   const pending = new Map()
 
@@ -32,7 +38,7 @@
   window.fetch = (input, init = {}) => {
     const url = new URL(typeof input === 'string' ? input : input.url, window.location.href)
     if (!(url.pathname.startsWith('/api/') || url.pathname === '/export/kml') ||
-        ![window.location.origin, 'http://127.0.0.1:5000', 'http://localhost:5000'].includes(url.origin) ||
+        !apiOrigins.has(url.origin) ||
         window.top === window) return originalFetch(input, init)
 
     const id = ++nextId

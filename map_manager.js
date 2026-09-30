@@ -53,13 +53,6 @@ require([
         zoom: 4                     // Zoom level
     });
 
-    // React's main dashboard addresses map graphics by the database keys, not by parcel name.
-    const parcelGraphicsById = new window.Map();
-    const focusedParcelLayer = new GraphicsLayer();
-    map.add(focusedParcelLayer);
-    let mapDataReady = false;
-    let pendingParcelFocus = null;
-
     async function fetchMapData(token) {
         const API = '/api/map-data';
         //const cleanToken = token.replace('Bearer ', '');
@@ -77,38 +70,30 @@ require([
 
             const result = await response.json();
 
-            if (result.success && Array.isArray(result.data)) {
-                parcelGraphicsById.clear();
-                mapDataReady = false;
+            if (result.success) {
                 let geojson = {
         type: "FeatureCollection",
         features: result.data.map(row => {
           // Construct the properties for each feature without the `geojson` key
           let properties = { ...row };
           delete properties.geojson;
-          const storedGeometry = JSON.parse(row.geojson);
-          const geometry = storedGeometry.type === "Feature" ? storedGeometry.geometry : storedGeometry;
+  
           return {
             type: "Feature",
             properties: properties,
-            geometry
+            geometry: JSON.parse(row.geojson)
           };
         })
       };
       let buttonContainer = document.getElementById("parcs_but");
         //console.log(geojsonLayer);
         geojson.features.forEach(feature => {
-            const graphic = new Graphic({
+          const graphic = new Graphic({
             geometry: {
               type: "polygon",
-              rings: feature.geometry.type === "MultiPolygon"
-                ? feature.geometry.coordinates.flat()
-                : feature.geometry.coordinates // Esri uses rings instead of GeoJSON coordinates
+              rings: feature.geometry.coordinates[0] // Esri uses "rings" instead of "coordinates"
             },
             attributes: feature.properties});
-            [feature.properties.uuid, feature.properties.id].forEach((key) => {
-              if (key !== null && key !== undefined) parcelGraphicsById.set(String(key), graphic);
-            });
             let button = document.createElement("button");
             button.innerText = feature.properties.parcel_name;//feature.properties.uuid; // Change this field based on GeoJSON
             button.className = "w-full bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition";
@@ -117,33 +102,17 @@ require([
                 };
                 buttonContainer.appendChild(button);
         });
-      mapDataReady = true;
-      if (pendingParcelFocus) {
-        const pending = pendingParcelFocus;
-        pendingParcelFocus = null;
-        focusParcelOnMap(pending, window.location.origin);
-      }
       return geojson; // Return the geojson object
                 //return result.data;
             } else {
-                mapDataReady = true;
-                if (pendingParcelFocus) {
-                    const pending = pendingParcelFocus;
-                    pendingParcelFocus = null;
-                    focusParcelOnMap(pending, window.location.origin);
-                }
-                console.error('Map data request failed:', response.status, result.message);
+                console.error('API Error:', result.message);
+                alert(`Error: ${result.message}`);
+                window.location.href = "./signin.html";
             }
 
         } 
         catch (error) {
-            mapDataReady = true;
             console.error('Network or Server Error:', error);
-            if (pendingParcelFocus) {
-                const pending = pendingParcelFocus;
-                pendingParcelFocus = null;
-                focusParcelOnMap(pending, window.location.origin);
-            }
         }
     }
 
@@ -209,157 +178,13 @@ require([
 
      // Function to zoom to a feature
     function zoomToFeature(feature) {
-      return view.goTo({
+      view.goTo({
           //target : feature,
           target: feature,
 
           zoom: 18
       });
   };
-
-    function parseParcelFocusGeometry(value) {
-      if (value === null || value === undefined || value === '') {
-        return { reason: 'missing-geometry' };
-      }
-
-      let storedGeometry = value;
-      if (typeof storedGeometry === 'string') {
-        try {
-          storedGeometry = JSON.parse(storedGeometry);
-        } catch (_error) {
-          return { reason: 'invalid-geojson' };
-        }
-      }
-
-      if (!storedGeometry || typeof storedGeometry !== 'object') {
-        return { reason: 'invalid-geojson' };
-      }
-
-      const geometry = storedGeometry.type === 'Feature' ? storedGeometry.geometry : storedGeometry;
-      if (!geometry) return { reason: 'missing-geometry' };
-      if (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon') {
-        return { reason: 'unsupported-geometry' };
-      }
-      if (!Array.isArray(geometry.coordinates)) return { reason: 'invalid-geojson' };
-
-      const rings = geometry.type === 'MultiPolygon'
-        ? geometry.coordinates.flat()
-        : geometry.coordinates;
-      if (!rings.length || !rings.every((ring) => Array.isArray(ring) && ring.length >= 4)) {
-        return { reason: 'invalid-geojson' };
-      }
-
-      return {
-        rings
-      };
-    }
-
-    async function focusParcelOnMap(message, origin) {
-      const keys = [message.uuid, message.id].filter((key) => key !== null && key !== undefined).map(String);
-      let graphic = keys.map((key) => parcelGraphicsById.get(key)).find(Boolean);
-      if (!graphic) {
-        const parsed = parseParcelFocusGeometry(message.geojson);
-        if (!parsed.rings) {
-          window.parent.postMessage({
-            type: 'tany:map-focus-result', success: false,
-            id: message.id, uuid: message.uuid, reason: parsed.reason
-          }, origin);
-          return;
-        }
-        graphic = new Graphic({
-          geometry: { type: 'polygon', rings: parsed.rings },
-          attributes: { id: message.id, uuid: message.uuid, parcel_name: message.parcel_name }
-        });
-      }
-
-      if (typeof view.when !== 'function') {
-        window.parent.postMessage({
-          type: 'tany:map-focus-result', success: false,
-          id: message.id, uuid: message.uuid, reason: 'view-readiness-unavailable'
-        }, origin);
-        return;
-      }
-
-      try {
-        await view.when();
-      } catch (_error) {
-        window.parent.postMessage({
-          type: 'tany:map-focus-result', success: false,
-          id: message.id, uuid: message.uuid, reason: 'view-not-ready'
-        }, origin);
-        return;
-      }
-
-      try {
-        focusedParcelLayer.removeAll();
-        focusedParcelLayer.add(new Graphic({
-          geometry: graphic.geometry,
-          attributes: graphic.attributes,
-          symbol: new SimpleFillSymbol({
-            color: [0, 255, 0, 0.2],
-            outline: { color: [0, 0, 0, 1], width: 1 }
-          })
-        }));
-        const parcelName = graphic.attributes?.parcel_name;
-        let parcelCentroid = null;
-        try {
-          parcelCentroid = centroidOperator?.execute(graphic.geometry);
-        } catch (_error) {
-          // The polygon overlay still renders if its label point cannot be calculated.
-        }
-        if (parcelName && parcelCentroid) focusedParcelLayer.add(new Graphic({
-          geometry: parcelCentroid,
-          attributes: graphic.attributes,
-          symbol: {
-            type: 'text',
-            text: parcelName,
-            color: 'blue',
-            haloColor: 'white',
-            haloSize: '1px',
-            horizontalAlignment: 'center',
-            verticalAlignment: 'middle',
-            font: { size: 12, family: 'Arial', weight: 'bold' }
-          }
-        }));
-      } catch (error) {
-        console.error('Unable to draw focused parcel:', error);
-      }
-
-      try {
-        await zoomToFeature(graphic);
-        window.parent.postMessage({ type: 'tany:map-focus-result', success: true, id: message.id, uuid: message.uuid }, origin);
-      } catch (_error) {
-        window.parent.postMessage({
-          type: 'tany:map-focus-result', success: false,
-          id: message.id, uuid: message.uuid, reason: 'zoom-failed'
-        }, origin);
-      }
-    }
-
-    window.addEventListener('message', (event) => {
-      if (event.source !== window.parent || event.origin !== window.location.origin) return;
-      const message = event.data;
-      if (message?.type === 'tany:main-map-focus') {
-        if (!mapDataReady) pendingParcelFocus = message;
-        else focusParcelOnMap(message, event.origin);
-        return;
-      }
-      if (message?.type !== 'tany:main-map-action') return;
-      if (message.action === 'add') {
-        document.body.dataset.mapDrawer = 'add';
-        document.getElementById('asidePanel')?.classList.remove('-translate-x-full');
-        document.getElementById('addparcel')?.click();
-      } else if (message.action === 'export') {
-        document.getElementById('export_kml')?.click();
-      }
-    });
-
-    document.getElementById('closeBtn')?.addEventListener('click', () => {
-      delete document.body.dataset.mapDrawer;
-    });
-
-    // Contract shared with the React main page: focus by uuid/id and proxy Add/Export to the legacy map.
-    window.parent.postMessage({ type: 'tany:map-ready' }, window.location.origin);
     
 
     //this is for showing the parcels 
@@ -630,33 +455,6 @@ require([
                     data: null
                 };
             }
-
-            // In the Vite iframe the parent React auth service owns refresh and storage.
-            // Let its request wrapper handle 401s instead of refreshing the placeholder
-            // token exposed by the legacy storage bridge.
-            if (token === 'react-managed-session') {
-                const response = await fetch('/api/current_user', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                return response.ok ? data : {
-                    success: false,
-                    status: response.status,
-                    message: data.message || 'Failed to fetch user data',
-                    data: null
-                };
-            }
-
-            const clearExpiredLegacySession = () => {
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('token');
-                localStorage.removeItem('refresh_token');
-                window.location.href = '/signin.html';
-            };
             
             // First attempt with current token
             let response = await fetch('http://127.0.0.1:5000/api/current_user', { // change link in production
@@ -683,38 +481,38 @@ require([
                         })
                     });
                     
-                    if (!refreshResponse.ok) throw new Error('Refresh was refused');
-                    const refreshData = await refreshResponse.json();
-                    if (!refreshData.token || !refreshData.refresh_token) throw new Error('Refresh response is incomplete');
-
-                    // Keep the canonical legacy access token key in sync.
-                    localStorage.setItem('auth_token', refreshData.token);
-                    localStorage.setItem('refresh_token', refreshData.refresh_token);
+                    if (refreshResponse.ok) {
+                        const refreshData = await refreshResponse.json();
                         
-                    console.log('Token refreshed successfully');
-                        
-                    // Retry with new token
-                    response = await fetch('http://127.0.0.1:5000/api/current_user', {// change link in production
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${refreshData.token}`,
-                            'Content-Type': 'application/json'
+                        // Update tokens in localStorage
+                        localStorage.setItem('token', refreshData.token);
+                        if (refreshData.refresh_token) {
+                            localStorage.setItem('refresh_token', refreshData.refresh_token);
                         }
-                    });
+                        
+                        console.log('Token refreshed successfully');
+                        
+                        // Retry with new token
+                        response = await fetch('http://127.0.0.1:5000/api/current_user', {// change link in production
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${refreshData.token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    }
                 } catch (refreshError) {
                     console.error('Token refresh failed:', refreshError);
-                    clearExpiredLegacySession();
+                    // Clear tokens and redirect to login
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refresh_token');
+                    window.location.href = '/signin.html';
                     return {
                         success: false,
                         message: 'Session expired. Please login again.',
                         data: null
                     };
                 }
-            }
-
-            if (response.status === 401) {
-                clearExpiredLegacySession();
-                return { success: false, message: 'Session expired. Please login again.', data: null };
             }
             
             const data = await response.json();
@@ -979,7 +777,6 @@ require([
                 
                 if (data.success) {
                     alert(`Parcel registered successfully!`);
-                    window.parent.postMessage({ type: 'tany:map-parcel-created' }, window.location.origin);
                     // Optionally clear form or refresh data
                     window.location.reload();
                 } else {

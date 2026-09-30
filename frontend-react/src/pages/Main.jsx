@@ -3,6 +3,7 @@ import { useAuth } from '../auth/useAuth.js'
 import { loadParcels, saveParcelField } from './mainData.js'
 import { checkParcelLimit, makeParcelPayload } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
+import Marketplace from './Marketplace.jsx'
 import './Main.css'
 
 const tabs = [
@@ -317,8 +318,14 @@ export default function Main() {
   useEffect(() => {
     function answerLegacyRequest(event) {
       const message = event.data
+      const source = event.source
       if (event.origin !== window.location.origin || message?.type !== 'tany:legacy-api' ||
-          typeof message.path !== 'string' || !message.path.startsWith('/') || !event.source) return
+          typeof message.path !== 'string' || !message.path.startsWith('/') || !source) return
+      const respond = (payload) => {
+        const activeFrame = document.querySelector('.main-legacy-frame iframe')
+        if (!activeFrame?.isConnected || activeFrame.contentWindow !== source) return
+        try { source.postMessage(payload, event.origin) } catch { /* The iframe may have navigated during the request. */ }
+      }
       const body = message.body?.kind === 'form'
         ? (() => { const form = new FormData(); for (const [key, value] of message.body.entries) form.append(key, value); return form })()
         : message.body?.value
@@ -326,8 +333,10 @@ export default function Main() {
         ? downloadKml().then(async (file) => ({ binary: true, body: await file.arrayBuffer() }))
         : request(message.path, { method: message.method, ...(body == null ? {} : { body }) }).then((data) => ({ data }))
       action
-        .then((result) => event.source.postMessage({ type: 'tany:legacy-api-result', id: message.id, status: 200, ...result }, event.origin))
-        .catch((failure) => event.source.postMessage({ type: 'tany:legacy-api-result', id: message.id, status: failure.status || 503, data: { success: false, message: failure.message } }, event.origin))
+        .then(
+          (result) => respond({ type: 'tany:legacy-api-result', id: message.id, status: 200, ...result }),
+          (failure) => respond({ type: 'tany:legacy-api-result', id: message.id, status: failure.status || 503, data: { success: false, message: failure.message } }),
+        )
     }
     window.addEventListener('message', answerLegacyRequest)
     return () => window.removeEventListener('message', answerLegacyRequest)
@@ -347,7 +356,7 @@ export default function Main() {
   const nav = () => tabs.map((item) => <a key={item.id} href={item.id === 'dashboard' ? '/main' : `/main#${item.id}`} aria-current={tab === item.id ? 'page' : undefined} className={tab === item.id ? 'is-active' : ''} onClick={(event) => switchTab(event, item.id)}><span className="main-nav-icon" aria-hidden="true">{item.icon}</span><span>{item[lang]}</span></a>)
   const page = pages[tab]
 
-  return <div className="main-page">
+  return <div className={`main-page${tab === 'crops' ? ' main-page-marketplace' : ''}`}>
     <header className="main-header"><div className="main-header-inner">
       <a className="main-brand" href="/" aria-label="Tany Landtrust, home"><span className="main-brand-name">tany Landtrust</span></a>
       <nav className="main-desktop-nav" aria-label={lang === 'fr' ? 'Navigation principale' : 'Main navigation'}>{nav()}</nav>
@@ -364,7 +373,7 @@ export default function Main() {
         </details>
       </div>
     </div></header>
-    <main className="main-content">{tab === 'dashboard' ? <Dashboard lang={lang} /> : <section className={`main-section${tab === 'crops' ? ' main-market-section' : ''}`} aria-labelledby="main-legacy-title">{tab === 'crops' ? <div className="main-title-card"><h1 id="main-legacy-title">{page[lang][0]}</h1><p>{page[lang][1]}</p></div> : <><h1 id="main-legacy-title">{page[lang][0]}</h1>{page[lang][1] && <p className="main-subtitle">{page[lang][1]}</p>}</>}<div className={`main-legacy-frame${tab === 'crops' ? ' main-market-frame' : ''}`}><iframe title={page[lang][0]} src={legacyUrl(page.file)} loading="lazy" /></div></section>}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
+    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : <section className="main-section" aria-labelledby="main-legacy-title"><h1 id="main-legacy-title">{page[lang][0]}</h1>{page[lang][1] && <p className="main-subtitle">{page[lang][1]}</p>}<div className="main-legacy-frame"><iframe title={page[lang][0]} src={legacyUrl(page.file)} loading="lazy" /></div></section>}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
     <nav className="main-mobile-nav" aria-label={lang === 'fr' ? 'Navigation mobile' : 'Mobile navigation'}>{nav()}</nav>
   </div>
 }

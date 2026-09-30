@@ -1,4 +1,4 @@
-import { ApiError, requestJson } from '../api/client.js'
+import { ApiError, apiUrl, requestJson } from '../api/client.js'
 import { createSessionStorage } from './storage.js'
 
 export function normalizeUser(user) {
@@ -89,7 +89,7 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
     async function send(accessToken) {
       let response
       try {
-        response = await (fetchImpl ?? globalThis.fetch)('/export/kml', {
+        response = await (fetchImpl ?? globalThis.fetch)(apiUrl('/export/kml'), {
           headers: { Authorization: `Bearer ${accessToken}` },
         })
       } catch {

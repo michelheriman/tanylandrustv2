@@ -7,6 +7,7 @@
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
   font-size: 13px;
 }
+.main-page-marketplace { background-image: url('../assets/main.jpeg'); }
 .main-page button, .main-page input, .main-page select { font: inherit; }
 .main-page .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .main-page a { color: inherit; text-decoration: none; }

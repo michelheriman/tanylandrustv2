@@ -131,6 +131,14 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
   useEffect(() => {
     if (!ready || !mapRef.current) return undefined
     const collection = parcelsToFeatureCollection(parcels)
+    // ArcGIS cannot build a useful 2D layer from the empty collection shown
+    // while Marketplace is loading or after an API error. Wait for real features.
+    if (collection.features.length === 0) {
+      const previous = layerRef.current
+      layerRef.current = null
+      if (previous) mapRef.current.remove(previous)
+      return undefined
+    }
     const blob = new Blob([JSON.stringify(collection)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     let live = true
