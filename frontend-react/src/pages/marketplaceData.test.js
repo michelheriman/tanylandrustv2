@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import { apiUrl } from '../api/client.js'
 import { createAuthService } from '../auth/authService.js'
-import { geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
+import { filterMarketplaceRows, geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
 
 const viteConfig = await readFile(fileURLToPath(new URL('../../vite.config.js', import.meta.url)), 'utf8')
 
@@ -93,6 +93,59 @@ test('Marketplace rows require real identity and supported polygon geometry', ()
   const rows = normalizeMarketplaceRows([{ uuid: 'parcel-uuid', parcel_name: 'Plot', geojson: polygon }])
   assert.equal(rows[0].id, 'parcel-uuid')
   assert.throws(() => normalizeMarketplaceRows([{ uuid: 'broken', geojson: '{' }]), /invalid geometry or identity/i)
+})
+
+test('Marketplace location filter is a text match against location_name and composes with search', () => {
+  const rows = [
+    { parcel_name: 'Amber plot', location_name: 'North Lake' },
+    { parcel_name: 'Amber field', location_name: 'North Ridge' },
+    { parcel_name: 'Amber farm', location_name: 'South Lake' },
+    { parcel_name: 'Amber unknown', location_name: null },
+  ]
+  assert.deepEqual(filterMarketplaceRows(rows, { location: 'north' }).map((row) => row.parcel_name), ['Amber plot', 'Amber field'])
+  assert.deepEqual(filterMarketplaceRows(rows, { query: 'field', location: 'north' }).map((row) => row.parcel_name), ['Amber field'])
+  assert.deepEqual(filterMarketplaceRows(rows, { location: 'district 1' }), [])
+})
+
+test('Marketplace price bounds only compare valid amounts in the selected currency', () => {
+  const rows = [
+    { parcel_name: 'USD low', price: 90, currency: 'USD' },
+    { parcel_name: 'USD match', price: '120', currency: 'usd' },
+    { parcel_name: 'USD high', price: 220, currency: 'USD' },
+    { parcel_name: 'EUR match', price: 120, currency: 'EUR' },
+    { parcel_name: 'Missing price', price: null, currency: 'USD' },
+    { parcel_name: 'Missing currency', price: 120 },
+  ]
+  assert.deepEqual(filterMarketplaceRows(rows, { minPrice: '100', maxPrice: '150', currency: 'USD' }).map((row) => row.parcel_name), ['USD match'])
+  assert.deepEqual(filterMarketplaceRows(rows, { minPrice: '100', currency: '' }), [])
+  assert.deepEqual(filterMarketplaceRows(rows, { currency: 'EUR' }).map((row) => row.parcel_name), rows.map((row) => row.parcel_name))
+  assert.deepEqual(filterMarketplaceRows(rows, { minPrice: '150', maxPrice: '100', currency: 'USD' }), [])
+})
+
+test('Marketplace area bounds accept numeric strings and exclude missing or invalid area_ha', () => {
+  const rows = [
+    { parcel_name: 'Small', area_ha: 0.5 },
+    { parcel_name: 'Match', area_ha: '1.75' },
+    { parcel_name: 'Large', area_ha: 3 },
+    { parcel_name: 'Missing', area_ha: null },
+    { parcel_name: 'Invalid', area_ha: 'unknown' },
+  ]
+  assert.deepEqual(filterMarketplaceRows(rows, { minArea: '1', maxArea: '2' }).map((row) => row.parcel_name), ['Match'])
+  assert.deepEqual(filterMarketplaceRows(rows, { minArea: '0.4' }).map((row) => row.parcel_name), ['Small', 'Match', 'Large'])
+  assert.deepEqual(filterMarketplaceRows(rows, { minArea: '2', maxArea: '1' }), [])
+})
+
+test('Marketplace search, location, price and area filters combine before the existing sort', () => {
+  const rows = [
+    { parcel_name: 'Amber B', location_name: 'North coast', price: 130, currency: 'USD', area_ha: 2 },
+    { parcel_name: 'Amber A', location_name: 'North coast', price: 110, currency: 'USD', area_ha: 1.5 },
+    { parcel_name: 'Amber C', location_name: 'North coast', price: 120, currency: 'EUR', area_ha: 2 },
+    { parcel_name: 'Other', location_name: 'North coast', price: 120, currency: 'USD', area_ha: 2 },
+  ]
+  const filtered = filterMarketplaceRows(rows, {
+    query: 'amber', location: 'coast', minPrice: '100', maxPrice: '140', currency: 'USD', minArea: '1.75',
+  })
+  assert.deepEqual(filtered.map((row) => row.parcel_name), ['Amber B'])
 })
 
 test('GeoReport accepts serialized or parsed geoinfos, and distinguishes empty and malformed data', () => {

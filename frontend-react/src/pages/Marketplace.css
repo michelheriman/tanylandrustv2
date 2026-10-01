@@ -113,6 +113,36 @@
 .market-react-filters button:disabled { opacity: .5; cursor: not-allowed; }
 .market-react-count { margin-left: auto; color: rgb(239 243 234 / 78%); font-size: 9px; }
 
+.market-react-filter-panel { flex: 0 0 auto; margin: 0 0 8px; color: #f1f5ef; font-size: 9px; }
+.market-react-filter-panel summary { width: fit-content; padding: 2px 1px; color: #f3f6f0; cursor: pointer; }
+.market-react-filter-panel[open] summary { margin-bottom: 5px; }
+.market-react-filter-fields { display: grid; gap: 6px; padding: 7px; border: 1px solid rgb(231 239 228 / 48%); border-radius: 6px; background: rgb(5 43 32 / 38%); }
+.market-react-filter-location, .market-react-filter-group > label { display: grid; min-width: 0; gap: 3px; color: #eef2e9; }
+.market-react-filter-location > span, .market-react-filter-group legend, .market-react-filter-group label > span { color: #f4f7f3; font-size: 9px; font-weight: 600; }
+.market-react-filter-location input, .market-react-filter-group input, .market-react-filter-group select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 23px;
+  padding: 3px 6px;
+  border: 1px solid rgb(232 241 234 / 65%);
+  border-radius: 4px;
+  color: #f4f7f3;
+  background: rgb(255 255 255 / 8%);
+  font: inherit;
+  font-size: 9px;
+}
+.market-react-filter-location input:focus, .market-react-filter-group input:focus, .market-react-filter-group select:focus { outline: 2px solid #d8bb54; outline-offset: 1px; }
+.market-react-filter-location small { color: rgb(235 241 234 / 74%); font-size: 8px; line-height: 1.35; }
+.market-react-filter-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 7px; min-width: 0; margin: 0; padding: 5px 0 0; border: 0; }
+.market-react-filter-group legend { grid-column: 1 / -1; padding: 0; }
+.market-react-filter-currency { grid-column: 1 / -1; }
+.market-react-filter-group select option { color: #173d30; background: #fff; }
+.market-react-filter-limits, .market-react-filter-currency-hint { margin: 0; color: rgb(235 241 234 / 78%); font-size: 8px; line-height: 1.4; }
+.market-react-filter-currency-hint { color: #f6df94; }
+.market-react-filter-reset { justify-self: start; min-height: 22px; padding: 3px 8px; border: 1px solid rgb(232 241 234 / 72%); border-radius: 4px; color: #f5f7f2; background: transparent; font: inherit; font-size: 9px; cursor: pointer; }
+.market-react-filter-reset:hover { color: #173d30; background: #edf1e6; }
+
 .market-react-list {
   display: flex;
   min-height: 0;
