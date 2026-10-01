@@ -84,7 +84,7 @@ export default function SignUp() {
           </select>
         </div>
         <p className="signup-terms">
-          By creating an account you agree to Tany&apos;s <a href="/terms.html" target="_blank" rel="noreferrer">Terms of Use</a> and <a href="/privacy.html" target="_blank" rel="noreferrer">Privacy Policy</a>.
+          By creating an account you agree to Tany&apos;s <a href="/terms" target="_blank" rel="noreferrer">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
         </p>
         <button type="submit" disabled={pending || success}>
           {pending ? 'Creating account…' : success ? 'Account created' : 'Create account'}

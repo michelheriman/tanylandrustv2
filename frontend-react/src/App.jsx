@@ -5,6 +5,7 @@ import SignUp from './pages/SignUp.jsx'
 import Home from './pages/Home.jsx'
 import Main from './pages/Main.jsx'
 import GeoReport from './pages/GeoReport.jsx'
+import LegalPage from './pages/LegalPage.jsx'
 import './App.css'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
   const isHome = pathname === '/'
   const isMain = pathname === '/main' || pathname === '/main.html'
   const isSignUp = pathname === '/signup'
+  const legalDocument = pathname === '/terms' ? 'terms' : pathname === '/privacy' ? 'privacy' : null
   const reportMatch = pathname.match(/^\/georeport\/([^/]+)$/)
   let parcelUuid = null
   if (reportMatch) {
@@ -21,18 +23,20 @@ function App() {
   const isGeoReport = Boolean(reportMatch && parcelUuid)
 
   useEffect(() => {
-    if (isHome || status === 'authenticated') return
+    if (isHome || legalDocument || status === 'authenticated') return
     document.title = `${isSignUp ? 'Sign up' : 'Login'} | Tany LandTrust`
-  }, [isHome, isSignUp, status])
+  }, [isHome, isSignUp, legalDocument, status])
 
   useEffect(() => {
     if (isHome) return
-    if (status === 'authenticated' && !isMain && !isGeoReport) window.history.replaceState(null, '', '/main')
+    if (status === 'authenticated' && !isMain && !isGeoReport && !legalDocument) window.history.replaceState(null, '', '/main')
     if (status === 'anonymous' && (isMain || isGeoReport)) window.location.replace('/signin')
-  }, [isHome, isMain, isGeoReport, status])
+  }, [isHome, isMain, isGeoReport, legalDocument, status])
 
   // Keep the landing page public even when restoring a saved session is unavailable.
   if (isHome) return <Home />
+  // Legal documents are public and should not wait for session restoration.
+  if (legalDocument) return <LegalPage document={legalDocument} />
 
   if (status === 'restoring') {
     return <main className="status-screen" role="status" aria-live="polite">Restoring your session…</main>
