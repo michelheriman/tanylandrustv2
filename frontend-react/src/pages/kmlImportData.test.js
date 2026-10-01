@@ -14,12 +14,8 @@ const fields = {
   sell_category: 'to_sell',
   status_category: 'titre',
 }
-const boundary = {
-  geometry: { rings: [[[47.1, -18.9], [47.2, -18.9], [47.2, -18.8], [47.1, -18.9]]] },
-  centroid: { x: 47.16, y: -18.87 },
-  areaHa: 0.24,
-}
-const file = () => Object.assign(new Blob(['<kml/>'], { type: 'application/vnd.google-earth.kml+xml' }), { name: 'parcel.KML' })
+const validKml = '<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>47.1,-18.9,0 47.2,-18.9,0 47.2,-18.8,0 47.1,-18.9,0</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></kml>'
+const file = () => Object.assign(new Blob([validKml], { type: 'application/vnd.google-earth.kml+xml' }), { name: 'parcel.KML' })
 
 test('KML file validation preserves the .kml extension and 10 MB limit', () => {
   assert.equal(validateKmlFile(file()), null)
@@ -28,34 +24,43 @@ test('KML file validation preserves the .kml extension and 10 MB limit', () => {
   assert.equal(validateKmlFile(null), 'required')
 })
 
-test('KML parcel fields validate required fields and numeric prices', () => {
+test('KML parcel fields enforce backend-required values and allow optional prices and currency', () => {
   assert.equal(validateKmlFields(fields), null)
+  assert.equal(validateKmlFields({ ...fields, price: '', price_m2: '', currency: '' }), null)
+  assert.equal(validateKmlFields({ ...fields, owner: ' ' }), 'owner')
   assert.equal(validateKmlFields({ ...fields, parcel_name: ' ' }), 'parcel_name')
-  assert.equal(validateKmlFields({ ...fields, price: '' }), 'price')
+  assert.equal(validateKmlFields({ ...fields, location_name: ' ' }), 'location_name')
+  assert.equal(validateKmlFields({ ...fields, sell_category: '' }), 'sell_category')
+  assert.equal(validateKmlFields({ ...fields, status_category: '' }), 'status_category')
+  assert.equal(validateKmlFields({ ...fields, price: 'unknown' }), 'price')
+  assert.equal(validateKmlFields({ ...fields, price: '-1' }), 'price')
   assert.equal(validateKmlFields({ ...fields, price_m2: 'unknown' }), 'price_m2')
+  assert.equal(validateKmlFields({ ...fields, price_m2: '-1' }), 'price_m2')
 })
 
-test('KML import sends the file, both-step metadata and drawn GeoJSON in one API request', async () => {
+test('KML import sends the file and required parcel metadata as multipart without a drawn boundary', async () => {
   const calls = []
   const request = async (path, options) => {
     calls.push({ path, options })
-    return { success: true, message: 'uploaded' }
+    return { status: 'success', message: 'uploaded' }
   }
-  await uploadKmlParcel(request, { file: file(), fields, ownerEmail: 'owner@example.test', boundary })
+  await uploadKmlParcel(request, { file: file(), fields, ownerEmail: 'owner@example.test' })
 
   assert.equal(calls.length, 1)
   assert.equal(calls[0].path, '/upload-kml')
   assert.equal(calls[0].options.method, 'POST')
   const body = calls[0].options.body
   assert.equal(body.get('kmlFile').name, 'parcel.KML')
+  assert.equal(await body.get('kmlFile').text(), validKml)
   assert.equal(body.get('owner_uuid'), 'owner@example.test')
   assert.equal(body.get('parcel_name'), 'North field')
   assert.equal(body.get('status_category'), 'titre')
   assert.equal(body.get('sell_category'), 'to_sell')
-  assert.deepEqual(JSON.parse(body.get('geojson')), { type: 'Polygon', coordinates: boundary.geometry.rings })
-  assert.equal(body.get('longitude'), '47.16')
-  assert.equal(body.get('latitude'), '-18.87')
-  assert.equal(body.get('area_ha'), '0.24')
+  assert.equal(body.has('geojson'), false)
+  assert.equal(body.has('longitude'), false)
+  assert.equal(body.has('latitude'), false)
+  assert.equal(body.has('area_ha'), false)
+  assert.equal(calls[0].options.acceptStatusSuccess, true)
 })
 
 test('KML import uses the React session Bearer token and leaves multipart content type to fetch', async () => {
@@ -66,19 +71,23 @@ test('KML import uses the React session Bearer token and leaves multipart conten
     storage,
     fetchImpl: async (path, options) => {
       if (path === '/api/current_user') return Response.json({ success: true, data: { user_id: 3, email: 'owner@example.test' } })
-      if (path === '/api/upload-kml') { uploadOptions = options; return Response.json({ success: true }) }
+      if (path === '/api/upload-kml') { uploadOptions = options; return Response.json({ status: 'success', message: 'uploaded' }) }
       throw new Error(`Unexpected request: ${path}`)
     },
   })
   await service.restore()
-  await uploadKmlParcel(service.request, { file: file(), fields, ownerEmail: 'owner@example.test', boundary })
+  await uploadKmlParcel(service.request, { file: file(), fields, ownerEmail: 'owner@example.test' })
 
   assert.equal(uploadOptions.headers.get('Authorization'), 'Bearer session-access')
   assert.equal(uploadOptions.headers.has('Content-Type'), false)
-  assert.equal(uploadOptions.body.get('geojson') != null, true)
+  assert.equal(uploadOptions.body.get('kmlFile').name, 'parcel.KML')
+  assert.equal(uploadOptions.body.has('geojson'), false)
+  assert.equal(uploadOptions.acceptStatusSuccess, undefined)
 })
 
-test('invalid or missing map geometry is rejected before the upload request', () => {
-  assert.throws(() => createKmlUploadForm({ file: file(), fields, ownerEmail: 'owner@example.test', boundary: { ...boundary, geometry: { rings: [] } } }), /valid parcel boundary/)
-  assert.throws(() => createKmlUploadForm({ file: file(), fields, ownerEmail: 'owner@example.test', boundary: null }), /valid parcel boundary/)
+test('missing or invalid KML file is rejected before the upload request', () => {
+  assert.throws(() => createKmlUploadForm({ file: null, fields, ownerEmail: 'owner@example.test' }), /Invalid KML file/)
+  assert.throws(() => createKmlUploadForm({ file: { name: 'parcel.txt', size: 4 }, fields, ownerEmail: 'owner@example.test' }), /Invalid KML file/)
+  assert.throws(() => createKmlUploadForm({ file: file(), fields: { ...fields, owner: '' }, ownerEmail: 'owner@example.test' }), /Invalid parcel field/)
+  assert.throws(() => createKmlUploadForm({ file: file(), fields, ownerEmail: '' }), /email is unavailable/)
 })

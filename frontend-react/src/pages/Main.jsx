@@ -290,7 +290,7 @@ function Dashboard({ lang }) {
                   ? <button type="submit" disabled={savingAdd}>{lang === 'fr' ? 'Suivant' : 'Next'}</button>
                   : <><button type="button" onClick={() => { setAddStep(1); setAddError(null) }} disabled={savingAdd}>{lang === 'fr' ? 'Retour' : 'Back'}</button><button type="submit" disabled={savingAdd}>{savingAdd ? (lang === 'fr' ? 'Enregistrement…' : 'Saving…') : (lang === 'fr' ? 'Valider' : 'Save')}</button></>}
               </div>
-            </form> :
+            </form> : kmlImportOpen ? <KmlImport layout="manager-column" request={request} userEmail={user?.email} lang={lang} onClose={closeKmlImport} onImported={completeKmlImport} /> :
           <aside className="main-parcel-sidebar" aria-label={lang === 'fr' ? 'Gestion des parcelles' : 'Parcel manager'}>
             <div className="main-sidebar-heading"><h3>{lang === 'fr' ? 'Gestionnaire de parcelles' : 'Parcel Manager'}</h3><span>{loading ? '…' : parcels.length}</span></div>
             <div className="main-actions">
@@ -328,7 +328,6 @@ function Dashboard({ lang }) {
           </aside>}
           <div className="main-map-wrap">
             <ParcelMap parcels={parcels} selectedParcel={parcels.find((row) => row.id === selectedParcelId) || null} focusVersion={focusVersion} onSelectParcel={selectParcel} onGeometryComplete={setDraftGeometry} resetDrawingKey={resetDrawingKey} lang={lang} onError={setError} />
-            {kmlImportOpen && <KmlImport request={request} userEmail={user?.email} boundary={draftGeometry} lang={lang} onClose={closeKmlImport} onImported={completeKmlImport} />}
           </div>
         </div>
       </div>

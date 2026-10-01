@@ -1,5 +1,3 @@
-import { isValidParcelBoundary } from './parcelMapData.js'
-
 export const MAX_KML_FILE_SIZE = 10 * 1024 * 1024
 export const KML_CURRENCIES = ['USD', 'EUR', 'KES', 'TZS', 'UGX', 'RWF', 'BIF', 'SOS', 'ETB', 'DJF', 'EGP', 'SDG', 'SSP', 'MGA']
 export const KML_CURRENCY_LABELS = {
@@ -22,23 +20,23 @@ export function validateKmlFile(file) {
 }
 
 export function validateKmlFields(fields) {
+  if (!fields.owner.trim()) return 'owner'
   if (!fields.parcel_name.trim()) return 'parcel_name'
-  if (!fields.currency) return 'currency'
-  if (!KML_CURRENCIES.includes(fields.currency)) return 'currency'
+  if (!fields.location_name.trim()) return 'location_name'
   if (!fields.sell_category || !KML_SALE_CATEGORIES.includes(fields.sell_category)) return 'sell_category'
   if (!fields.status_category || !KML_TITLE_STATUSES.includes(fields.status_category)) return 'status_category'
-  if (!fields.price.trim() || !Number.isFinite(Number(fields.price))) return 'price'
-  if (fields.price_m2.trim() && !Number.isFinite(Number(fields.price_m2))) return 'price_m2'
+  if (fields.currency && !KML_CURRENCIES.includes(fields.currency)) return 'currency'
+  if (fields.price.trim() && (!Number.isFinite(Number(fields.price)) || Number(fields.price) < 0)) return 'price'
+  if (fields.price_m2.trim() && (!Number.isFinite(Number(fields.price_m2)) || Number(fields.price_m2) < 0)) return 'price_m2'
   return null
 }
 
-export function createKmlUploadForm({ file, fields, ownerEmail, boundary }, FormDataType = FormData) {
+export function createKmlUploadForm({ file, fields, ownerEmail }, FormDataType = FormData) {
   const fileError = validateKmlFile(file)
   if (fileError) throw new Error(`Invalid KML file: ${fileError}.`)
   const fieldError = validateKmlFields(fields)
   if (fieldError) throw new Error(`Invalid parcel field: ${fieldError}.`)
   if (!ownerEmail) throw new Error('The signed-in user email is unavailable.')
-  if (!isValidParcelBoundary(boundary)) throw new Error('Draw a valid parcel boundary on the map before uploading.')
 
   const body = new FormDataType()
   body.append('kmlFile', file, file.name)
@@ -52,14 +50,10 @@ export function createKmlUploadForm({ file, fields, ownerEmail, boundary }, Form
   body.append('description', fields.description.trim())
   body.append('sell_category', fields.sell_category)
   body.append('status_category', fields.status_category)
-  body.append('geojson', JSON.stringify({ type: 'Polygon', coordinates: boundary.geometry.rings }))
-  body.append('longitude', String(boundary.centroid.x))
-  body.append('latitude', String(boundary.centroid.y))
-  body.append('area_ha', Number.isFinite(boundary.areaHa) ? String(boundary.areaHa) : '')
   return body
 }
 
 export async function uploadKmlParcel(request, input, FormDataType = FormData) {
   const body = createKmlUploadForm(input, FormDataType)
-  return request('/upload-kml', { method: 'POST', body })
+  return request('/upload-kml', { method: 'POST', body, acceptStatusSuccess: true })
 }

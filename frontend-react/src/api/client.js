@@ -19,7 +19,7 @@ export function apiUrl(path, location = globalThis.location) {
 }
 
 // Backend exceptions may contain authentication data; never display them.
-export async function requestJson(path, { token, ...options } = {}, fetchImpl = globalThis.fetch) {
+export async function requestJson(path, { token, acceptStatusSuccess = false, ...options } = {}, fetchImpl = globalThis.fetch) {
   const headers = new Headers(options.headers)
   if (options.body && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -38,6 +38,8 @@ export async function requestJson(path, { token, ...options } = {}, fetchImpl = 
   try { data = await response.json() } catch {
     throw new ApiError('protocol', 'Le serveur a renvoyé une réponse inattendue.', response.status)
   }
-  if (!data || data.success !== true) throw new ApiError('protocol', 'Le serveur n’a pas confirmé la demande.', response.status)
+  if (!data || (data.success !== true && !(acceptStatusSuccess && data.status === 'success'))) {
+    throw new ApiError('protocol', 'Le serveur n’a pas confirmé la demande.', response.status)
+  }
   return data
 }
