@@ -5,6 +5,7 @@ import { checkParcelLimit, makeParcelPayload } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
 import Marketplace from './Marketplace.jsx'
 import Chat from './Chat.jsx'
+import LandLaw from './LandLaw.jsx'
 import './Main.css'
 
 const tabs = [
@@ -15,9 +16,9 @@ const tabs = [
 ]
 
 const pages = {
-  crops: { file: 'main_market.html', en: ['Market Place', 'Browse listings, buy, and sell produce directly.'], fr: ['Marché', 'Parcourez les annonces, achetez et vendez directement.'] },
+  crops: { en: ['Market Place', 'Browse listings, buy, and sell produce directly.'], fr: ['Marché', 'Parcourez les annonces, achetez et vendez directement.'] },
   tasks: { en: ['Private Message', 'Communicate securely with your network.'], fr: ['Messages privés', 'Communiquez en toute sécurité avec votre réseau.'] },
-  yields: { file: 'legal.html', en: ['Land Law', ''], fr: ['Droit foncier', ''] },
+  yields: { en: ['Land Law', ''], fr: ['Droit foncier', ''] },
 }
 
 const fields = [
@@ -42,10 +43,6 @@ function readTab() {
 function readLanguage() {
   try { return (localStorage.getItem('language') ?? localStorage.getItem('tany.home.lang')) === 'fr' ? 'fr' : 'en' }
   catch { return 'en' }
-}
-
-function legacyUrl(file) {
-  return new URL(`/legacy/${file}`, window.location.origin).href
 }
 
 function ParcelCell({ row, field, lang, value, onChange, disabled }) {
@@ -299,7 +296,7 @@ function Dashboard({ lang }) {
 }
 
 export default function Main() {
-  const { logout, request, downloadKml, status, error } = useAuth()
+  const { logout, status, error } = useAuth()
   const [tab, setTab] = useState(readTab)
   const [lang, setLang] = useState(readLanguage)
 
@@ -316,33 +313,6 @@ export default function Main() {
     try { localStorage.setItem('language', lang) } catch { /* Language remains available for this visit. */ }
   }, [tab, lang])
 
-  useEffect(() => {
-    function answerLegacyRequest(event) {
-      const message = event.data
-      const source = event.source
-      if (event.origin !== window.location.origin || message?.type !== 'tany:legacy-api' ||
-          typeof message.path !== 'string' || !message.path.startsWith('/') || !source) return
-      const respond = (payload) => {
-        const activeFrame = document.querySelector('.main-legacy-frame iframe')
-        if (!activeFrame?.isConnected || activeFrame.contentWindow !== source) return
-        try { source.postMessage(payload, event.origin) } catch { /* The iframe may have navigated during the request. */ }
-      }
-      const body = message.body?.kind === 'form'
-        ? (() => { const form = new FormData(); for (const [key, value] of message.body.entries) form.append(key, value); return form })()
-        : message.body?.value
-      const action = message.path === '/export/kml'
-        ? downloadKml().then(async (file) => ({ binary: true, body: await file.arrayBuffer() }))
-        : request(message.path, { method: message.method, ...(body == null ? {} : { body }) }).then((data) => ({ data }))
-      action
-        .then(
-          (result) => respond({ type: 'tany:legacy-api-result', id: message.id, status: 200, ...result }),
-          (failure) => respond({ type: 'tany:legacy-api-result', id: message.id, status: failure.status || 503, data: { success: false, message: failure.message } }),
-        )
-    }
-    window.addEventListener('message', answerLegacyRequest)
-    return () => window.removeEventListener('message', answerLegacyRequest)
-  }, [request, downloadKml])
-
   function switchTab(event, next) {
     event.preventDefault()
     window.history.pushState(null, '', next === 'dashboard' ? '/main' : `/main#${next}`)
@@ -355,8 +325,6 @@ export default function Main() {
   }
 
   const nav = () => tabs.map((item) => <a key={item.id} href={item.id === 'dashboard' ? '/main' : `/main#${item.id}`} aria-current={tab === item.id ? 'page' : undefined} className={tab === item.id ? 'is-active' : ''} onClick={(event) => switchTab(event, item.id)}><span className="main-nav-icon" aria-hidden="true">{item.icon}</span><span>{item[lang]}</span></a>)
-  const page = pages[tab]
-
   return <div className={`main-page${tab === 'crops' ? ' main-page-marketplace' : ''}`}>
     <header className="main-header"><div className="main-header-inner">
       <a className="main-brand" href="/" aria-label="Tany Landtrust, home"><span className="main-brand-name">tany Landtrust</span></a>
@@ -374,7 +342,7 @@ export default function Main() {
         </details>
       </div>
     </div></header>
-    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <section className="main-section" aria-labelledby="main-legacy-title"><h1 id="main-legacy-title">{page[lang][0]}</h1>{page[lang][1] && <p className="main-subtitle">{page[lang][1]}</p>}<div className="main-legacy-frame"><iframe title={page[lang][0]} src={legacyUrl(page.file)} loading="lazy" /></div></section>}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
+    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <LandLaw lang={lang} />}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
     <nav className="main-mobile-nav" aria-label={lang === 'fr' ? 'Navigation mobile' : 'Mobile navigation'}>{nav()}</nav>
   </div>
 }
