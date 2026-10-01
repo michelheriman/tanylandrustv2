@@ -9,7 +9,7 @@ const legacyFiles = [
   'table_manager.html', 'app.js', 'real_add_kml.html', 'test.js',
   'add_kml.html', 'add_kml.js', 'main_market.html', 'main.js',
   'products_details.html', 'prodd.js', 'details_parcel.html', 'details_app.js',
-  'chat.html', 'script.js', 'legal.html', 'logo_.png',
+  'legal.html', 'logo_.png',
 ]
 const legacyNames = new Set([...legacyFiles, 'bridge.js', 'signin.html', 'signup.html'])
 

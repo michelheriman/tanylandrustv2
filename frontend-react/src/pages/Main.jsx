@@ -4,6 +4,7 @@ import { loadParcels, saveParcelField } from './mainData.js'
 import { checkParcelLimit, makeParcelPayload } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
 import Marketplace from './Marketplace.jsx'
+import Chat from './Chat.jsx'
 import './Main.css'
 
 const tabs = [
@@ -15,7 +16,7 @@ const tabs = [
 
 const pages = {
   crops: { file: 'main_market.html', en: ['Market Place', 'Browse listings, buy, and sell produce directly.'], fr: ['Marché', 'Parcourez les annonces, achetez et vendez directement.'] },
-  tasks: { file: 'chat.html', en: ['Private Message', 'Communicate securely with your network.'], fr: ['Messages privés', 'Communiquez en toute sécurité avec votre réseau.'] },
+  tasks: { en: ['Private Message', 'Communicate securely with your network.'], fr: ['Messages privés', 'Communiquez en toute sécurité avec votre réseau.'] },
   yields: { file: 'legal.html', en: ['Land Law', ''], fr: ['Droit foncier', ''] },
 }
 
@@ -373,7 +374,7 @@ export default function Main() {
         </details>
       </div>
     </div></header>
-    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : <section className="main-section" aria-labelledby="main-legacy-title"><h1 id="main-legacy-title">{page[lang][0]}</h1>{page[lang][1] && <p className="main-subtitle">{page[lang][1]}</p>}<div className="main-legacy-frame"><iframe title={page[lang][0]} src={legacyUrl(page.file)} loading="lazy" /></div></section>}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
+    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <section className="main-section" aria-labelledby="main-legacy-title"><h1 id="main-legacy-title">{page[lang][0]}</h1>{page[lang][1] && <p className="main-subtitle">{page[lang][1]}</p>}<div className="main-legacy-frame"><iframe title={page[lang][0]} src={legacyUrl(page.file)} loading="lazy" /></div></section>}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
     <nav className="main-mobile-nav" aria-label={lang === 'fr' ? 'Navigation mobile' : 'Mobile navigation'}>{nav()}</nav>
   </div>
 }
