@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import { loadParcels, saveParcelField } from './mainData.js'
-import { checkParcelLimit, makeParcelPayload } from './parcelMapData.js'
+import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
+import KmlImport from './KmlImport.jsx'
 import Marketplace from './Marketplace.jsx'
 import Chat from './Chat.jsx'
 import LandLaw from './LandLaw.jsx'
@@ -75,6 +76,8 @@ function Dashboard({ lang }) {
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState(null)
   const [addMode, setAddMode] = useState(false)
+  const [addStep, setAddStep] = useState(1)
+  const [kmlImportOpen, setKmlImportOpen] = useState(false)
   const [addForm, setAddForm] = useState(emptyNewParcel)
   const [draftGeometry, setDraftGeometry] = useState(null)
   const [savingAdd, setSavingAdd] = useState(false)
@@ -121,17 +124,43 @@ function Dashboard({ lang }) {
     }
   }
   function beginAdd() {
+    setKmlImportOpen(false)
     setError(null)
     setAddError(null)
     setAddForm(emptyNewParcel())
+    setAddStep(1)
     setDraftGeometry(null)
     setResetDrawingKey((key) => key + 1)
     setAddMode(true)
     setError(null)
   }
+  function beginKmlImport() {
+    setError(null)
+    setAddError(null)
+    setAddMode(false)
+    setDraftGeometry(null)
+    setResetDrawingKey((key) => key + 1)
+    setKmlImportOpen(true)
+  }
+  function closeKmlImport() {
+    setKmlImportOpen(false)
+    setDraftGeometry(null)
+    setResetDrawingKey((key) => key + 1)
+  }
+  function completeKmlImport() {
+    setKmlImportOpen(false)
+    setDraftGeometry(null)
+    setResetDrawingKey((key) => key + 1)
+    setSearch('')
+    setSelectedParcelId(null)
+    setExpandedParcelId(null)
+    setReloadKey((key) => key + 1)
+    setNotice(lang === 'fr' ? 'Parcelle importée.' : 'Parcel imported.')
+  }
   function closeAdd() {
     if (savingAdd) return
     setAddMode(false)
+    setAddStep(1)
     setDraftGeometry(null)
     setAddError(null)
     setResetDrawingKey((key) => key + 1)
@@ -139,11 +168,26 @@ function Dashboard({ lang }) {
   async function submitAdd(event) {
     event.preventDefault()
     if (savingAdd) return
+    if (addStep === 1) {
+      setAddStep(2)
+      setAddError(null)
+      return
+    }
+    const invalidControl = findInvalidAddParcelControl(event.currentTarget)
+    if (invalidControl) {
+      const invalidStep = addParcelStepForField(invalidControl.name)
+      setAddStep(invalidStep)
+      requestAnimationFrame(() => {
+        const control = document.getElementById(`add-parcel-${invalidControl.name}`)
+        control?.reportValidity()
+      })
+      return
+    }
     if (loading || error) {
       setAddError(new Error(lang === 'fr' ? 'Impossible de vérifier le nombre actuel de parcelles.' : 'Cannot verify the current parcel count.'))
       return
     }
-    if (!draftGeometry) {
+    if (!isValidParcelBoundary(draftGeometry)) {
       setAddError(new Error(lang === 'fr' ? 'Draw the parcel boundary on the map first.' : 'Draw the parcel boundary on the map first.'))
       return
     }
@@ -155,8 +199,7 @@ function Dashboard({ lang }) {
       const account = await request('/account')
       const quota = checkParcelLimit(account, latestParcels.length)
       if (!quota.allowed) throw new Error(`The ${quota.plan} plan limit of ${quota.limit} parcels has been reached.`)
-      const payload = makeParcelPayload(addForm, draftGeometry.geometry, user?.email, draftGeometry.centroid, draftGeometry.areaHa)
-      const response = await request('/parcels_w', { method: 'POST', body: JSON.stringify(payload) })
+      const response = await createParcel(request, addForm, draftGeometry, user?.email)
       if (!response.success) throw new Error(response.message || 'The parcel could not be saved.')
       setAddMode(false)
       setDraftGeometry(null)
@@ -220,10 +263,39 @@ function Dashboard({ lang }) {
       <div className="main-map-card">
         <div className="main-card-header"><h2>{lang === 'fr' ? 'Gestionnaire de données foncières' : 'Field Data Manager'}</h2></div>
         <div className="main-manager-layout">
+            {addMode ? <form className="main-add-panel main-parcel-add-form" noValidate onSubmit={(event) => void submitAdd(event)}>
+              <div className="main-add-panel-heading"><div><h3>{lang === 'fr' ? 'Ajouter une parcelle' : 'Add New Parcel'}</h3><span className="main-add-step-count" aria-live="polite">{lang === 'fr' ? `Étape ${addStep} sur 2` : `Step ${addStep} of 2`}</span></div><button type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} onClick={closeAdd} disabled={savingAdd}>×</button></div>
+              <p className="main-add-help">{draftGeometry ? (lang === 'fr' ? 'Contour dessiné. Complétez les informations puis validez.' : 'Boundary drawn. Complete the details and save.') : (lang === 'fr' ? 'Vous pouvez dessiner le contour sur la carte maintenant ou avant de valider.' : 'You can draw the parcel boundary on the map now or before saving.')}</p>
+              <div className="main-add-step-fields" hidden={addStep !== 1} aria-hidden={addStep !== 1}>
+                <label htmlFor="add-parcel-parcel_name">{lang === 'fr' ? 'Nom de la parcelle' : 'Parcel name'}<input id="add-parcel-parcel_name" name="parcel_name" required value={addForm.parcel_name} onChange={(event) => setAddForm((current) => ({ ...current, parcel_name: event.target.value }))} /></label>
+                <label htmlFor="add-parcel-owner">{lang === 'fr' ? 'Propriétaire' : 'Owner'}<input id="add-parcel-owner" name="owner" required value={addForm.owner} onChange={(event) => setAddForm((current) => ({ ...current, owner: event.target.value }))} /></label>
+                <label htmlFor="add-parcel-location_name">{lang === 'fr' ? 'Localisation' : 'Location'}<input id="add-parcel-location_name" name="location_name" required value={addForm.location_name} onChange={(event) => setAddForm((current) => ({ ...current, location_name: event.target.value }))} /></label>
+                <label htmlFor="add-parcel-description">{lang === 'fr' ? 'Description' : 'Description'}<textarea id="add-parcel-description" name="description" required rows="2" value={addForm.description} onChange={(event) => setAddForm((current) => ({ ...current, description: event.target.value }))} /></label>
+              </div>
+              <div className="main-add-step-fields" hidden={addStep !== 2} aria-hidden={addStep !== 2}>
+                <div className="main-add-grid">
+                  <label htmlFor="add-parcel-price_m2">{lang === 'fr' ? 'Prix / m²' : 'Price / m²'}<input id="add-parcel-price_m2" name="price_m2" required type="number" min="0" step="0.01" value={addForm.price_m2} onChange={(event) => setAddForm((current) => ({ ...current, price_m2: event.target.value }))} /></label>
+                  <label htmlFor="add-parcel-price">{lang === 'fr' ? 'Prix total' : 'Total price'}<input id="add-parcel-price" name="price" required type="number" min="0" step="0.01" value={addForm.price} onChange={(event) => setAddForm((current) => ({ ...current, price: event.target.value }))} /></label>
+                </div>
+                <label htmlFor="add-parcel-currency">{lang === 'fr' ? 'Devise' : 'Currency'}<select id="add-parcel-currency" name="currency" required value={addForm.currency} onChange={(event) => setAddForm((current) => ({ ...current, currency: event.target.value }))}>{currencies.map((currency) => <option key={currency}>{currency}</option>)}</select></label>
+                <div className="main-add-grid">
+                  <label htmlFor="add-parcel-sell_category">{lang === 'fr' ? 'Statut de vente' : 'Sale status'}<select id="add-parcel-sell_category" name="sell_category" required value={addForm.sell_category} onChange={(event) => setAddForm((current) => ({ ...current, sell_category: event.target.value }))}><option value="to_sell">{lang === 'fr' ? 'À vendre' : 'For sale'}</option><option value="vendu">{lang === 'fr' ? 'Vendue' : 'Sold'}</option><option value="autre">{lang === 'fr' ? 'Autre' : 'Other'}</option><option value="na">#NA</option></select></label>
+                  <label htmlFor="add-parcel-status_category">{lang === 'fr' ? 'Statut du titre' : 'Title status'}<select id="add-parcel-status_category" name="status_category" required value={addForm.status_category} onChange={(event) => setAddForm((current) => ({ ...current, status_category: event.target.value }))}><option value="">—</option><option value="titre">Titre</option><option value="titre_borne">Titre et borne</option><option value="kt">Karan-tany</option><option value="na">#NA</option></select></label>
+                </div>
+              </div>
+              {addError && <p className="main-add-error" role="alert">{addError.message || (lang === 'fr' ? 'Échec de l’ajout.' : 'Unable to add parcel.')}</p>}
+              <div className="main-add-actions">
+                <button type="button" onClick={closeAdd} disabled={savingAdd}>{lang === 'fr' ? 'Annuler' : 'Cancel'}</button>
+                {addStep === 1
+                  ? <button type="submit" disabled={savingAdd}>{lang === 'fr' ? 'Suivant' : 'Next'}</button>
+                  : <><button type="button" onClick={() => { setAddStep(1); setAddError(null) }} disabled={savingAdd}>{lang === 'fr' ? 'Retour' : 'Back'}</button><button type="submit" disabled={savingAdd}>{savingAdd ? (lang === 'fr' ? 'Enregistrement…' : 'Saving…') : (lang === 'fr' ? 'Valider' : 'Save')}</button></>}
+              </div>
+            </form> :
           <aside className="main-parcel-sidebar" aria-label={lang === 'fr' ? 'Gestion des parcelles' : 'Parcel manager'}>
             <div className="main-sidebar-heading"><h3>{lang === 'fr' ? 'Gestionnaire de parcelles' : 'Parcel Manager'}</h3><span>{loading ? '…' : parcels.length}</span></div>
             <div className="main-actions">
               <button type="button" onClick={beginAdd}>{lang === 'fr' ? 'Ajouter' : 'Add'}</button>
+              <button type="button" onClick={beginKmlImport}>{lang === 'fr' ? 'Importer KML' : 'Import KML'}</button>
               <button type="button" disabled={!selectedParcelId} onClick={() => openEdit(selectedParcelId)}>{lang === 'fr' ? 'Modifier' : 'Edit'}</button>
               <button type="button" onClick={() => void exportParcels()}>{lang === 'fr' ? 'Exporter' : 'Export'}</button>
             </div>
@@ -253,28 +325,10 @@ function Dashboard({ lang }) {
                 </dl>}
               </article>)}
             </div>
-          </aside>
+          </aside>}
           <div className="main-map-wrap">
             <ParcelMap parcels={parcels} selectedParcel={parcels.find((row) => row.id === selectedParcelId) || null} focusVersion={focusVersion} onSelectParcel={selectParcel} onGeometryComplete={setDraftGeometry} resetDrawingKey={resetDrawingKey} lang={lang} onError={setError} />
-            {addMode && <form className="main-add-panel" onSubmit={(event) => void submitAdd(event)}>
-              <div className="main-add-panel-heading"><h3>{lang === 'fr' ? 'Ajouter une parcelle' : 'Add New Parcel'}</h3><button type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} onClick={closeAdd} disabled={savingAdd}>×</button></div>
-              <p className="main-add-help">{draftGeometry ? (lang === 'fr' ? 'Contour dessiné. Complétez les informations puis validez.' : 'Boundary drawn. Complete the details and save.') : (lang === 'fr' ? 'Utilisez l’outil polygone sur la carte pour dessiner la parcelle.' : 'Use the polygon tool on the map to draw the parcel.')}</p>
-              <label>{lang === 'fr' ? 'Nom de la parcelle' : 'Parcel name'}<input required value={addForm.parcel_name} onChange={(event) => setAddForm((current) => ({ ...current, parcel_name: event.target.value }))} /></label>
-              <label>{lang === 'fr' ? 'Propriétaire' : 'Owner'}<input required value={addForm.owner} onChange={(event) => setAddForm((current) => ({ ...current, owner: event.target.value }))} /></label>
-              <div className="main-add-grid">
-                <label>{lang === 'fr' ? 'Prix / m²' : 'Price / m²'}<input required type="number" min="0" step="0.01" value={addForm.price_m2} onChange={(event) => setAddForm((current) => ({ ...current, price_m2: event.target.value }))} /></label>
-                <label>{lang === 'fr' ? 'Prix total' : 'Total price'}<input required type="number" min="0" step="0.01" value={addForm.price} onChange={(event) => setAddForm((current) => ({ ...current, price: event.target.value }))} /></label>
-              </div>
-              <label>{lang === 'fr' ? 'Devise' : 'Currency'}<select required value={addForm.currency} onChange={(event) => setAddForm((current) => ({ ...current, currency: event.target.value }))}>{currencies.map((currency) => <option key={currency}>{currency}</option>)}</select></label>
-              <label>{lang === 'fr' ? 'Localisation' : 'Location'}<input required value={addForm.location_name} onChange={(event) => setAddForm((current) => ({ ...current, location_name: event.target.value }))} /></label>
-              <label>{lang === 'fr' ? 'Description' : 'Description'}<textarea required rows="2" value={addForm.description} onChange={(event) => setAddForm((current) => ({ ...current, description: event.target.value }))} /></label>
-              <div className="main-add-grid">
-                <label>{lang === 'fr' ? 'Statut de vente' : 'Sale status'}<select required value={addForm.sell_category} onChange={(event) => setAddForm((current) => ({ ...current, sell_category: event.target.value }))}><option value="to_sell">{lang === 'fr' ? 'À vendre' : 'For sale'}</option><option value="vendu">{lang === 'fr' ? 'Vendue' : 'Sold'}</option><option value="autre">{lang === 'fr' ? 'Autre' : 'Other'}</option><option value="na">#NA</option></select></label>
-                <label>{lang === 'fr' ? 'Statut du titre' : 'Title status'}<select required value={addForm.status_category} onChange={(event) => setAddForm((current) => ({ ...current, status_category: event.target.value }))}><option value="">—</option><option value="titre">Titre</option><option value="titre_borne">Titre et borne</option><option value="kt">Karan-tany</option><option value="na">#NA</option></select></label>
-              </div>
-              {addError && <p className="main-add-error" role="alert">{addError.message || (lang === 'fr' ? 'Échec de l’ajout.' : 'Unable to add parcel.')}</p>}
-              <div className="main-add-actions"><button type="button" onClick={closeAdd} disabled={savingAdd}>{lang === 'fr' ? 'Annuler' : 'Cancel'}</button><button type="submit" disabled={savingAdd}>{savingAdd ? (lang === 'fr' ? 'Enregistrement…' : 'Saving…') : (lang === 'fr' ? 'Valider' : 'Save')}</button></div>
-            </form>}
+            {kmlImportOpen && <KmlImport request={request} userEmail={user?.email} boundary={draftGeometry} lang={lang} onClose={closeKmlImport} onImported={completeKmlImport} />}
           </div>
         </div>
       </div>

@@ -1,5 +1,27 @@
 const POLYGON_TYPES = new Set(['Polygon', 'MultiPolygon'])
 
+function isWgs84Point(point) {
+  return Array.isArray(point) && point.length >= 2 &&
+    Number.isFinite(point[0]) && Number.isFinite(point[1]) &&
+    Math.abs(point[0]) <= 180 && Math.abs(point[1]) <= 90
+}
+
+function isClosedValidRing(ring) {
+  if (!Array.isArray(ring) || ring.length < 4 || !ring.every(isWgs84Point)) return false
+  const first = ring[0]
+  const last = ring[ring.length - 1]
+  if (Math.abs(first[0] - last[0]) > 1e-8 || Math.abs(first[1] - last[1]) > 1e-8) return false
+  const distinctVertices = new Set(ring.slice(0, -1).map(([x, y]) => `${x},${y}`))
+  return distinctVertices.size >= 3
+}
+
+export function isValidParcelBoundary(draft) {
+  const rings = draft?.geometry?.rings
+  const centroid = draft?.centroid
+  return Array.isArray(rings) && rings.length > 0 && rings.every(isClosedValidRing) &&
+    isWgs84Point([centroid?.x, centroid?.y])
+}
+
 export function parseParcelGeometry(value) {
   let parsed = value
   if (typeof parsed === 'string') {
@@ -26,9 +48,9 @@ export function parcelsToFeatureCollection(parcels) {
 }
 
 export function makeParcelPayload(form, geometry, userEmail, centroid, areaHa) {
+  const boundary = { geometry, centroid }
   const rings = geometry?.rings
-  if (!Array.isArray(rings) || !rings.length) throw new Error('Draw a parcel boundary on the map before saving.')
-  if (!centroid || !Number.isFinite(centroid.x) || !Number.isFinite(centroid.y)) throw new Error('The parcel boundary has no usable center point.')
+  if (!isValidParcelBoundary(boundary)) throw new Error('Draw a valid parcel boundary on the map before saving.')
   if (!userEmail) throw new Error('The signed-in user email is unavailable.')
   return {
     owner: form.owner.trim(),
@@ -46,6 +68,19 @@ export function makeParcelPayload(form, geometry, userEmail, centroid, areaHa) {
     geojson: JSON.stringify({ type: 'Polygon', coordinates: rings }),
     area_ha: areaHa,
   }
+}
+
+export function createParcel(request, form, draft, userEmail) {
+  const payload = makeParcelPayload(form, draft?.geometry, userEmail, draft?.centroid, draft?.areaHa)
+  return request('/parcels_w', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function findInvalidAddParcelControl(form) {
+  return Array.from(form?.elements ?? []).find((control) => control.willValidate && !control.checkValidity()) ?? null
+}
+
+export function addParcelStepForField(fieldName) {
+  return ['parcel_name', 'owner', 'location_name', 'description'].includes(fieldName) ? 1 : 2
 }
 
 export function checkParcelLimit(accountResponse, currentCount) {
