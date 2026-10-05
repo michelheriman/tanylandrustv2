@@ -7,6 +7,7 @@ import { createAuthService } from '../auth/authService.js'
 import { filterMarketplaceRows, geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
 
 const viteConfig = await readFile(fileURLToPath(new URL('../../vite.config.js', import.meta.url)), 'utf8')
+const marketplaceComponent = await readFile(new URL('./Marketplace.jsx', import.meta.url), 'utf8')
 
 const polygon = { type: 'Polygon', coordinates: [[[47, -18], [48, -18], [48, -17], [47, -18]]] }
 const geoReport = {
@@ -19,6 +20,54 @@ const geoReport = {
   climates: { temperature: {}, precipitation: {} },
   proximity: { query: { radius_m: 5000 }, results: {} },
 }
+
+test('Marketplace visible parcel labels are localized in English and French', () => {
+  for (const [english, french] of [
+    ["fieldDataManager: 'Field Data Manager'", "fieldDataManager: 'Gestionnaire de données foncières'"],
+    ["pricePerM2: 'Price per m²'", "pricePerM2: 'Prix au m²'"],
+    ["locationLabel: 'Location'", "locationLabel: 'Localisation'"],
+    ["referenceLabel: 'Reference'", "referenceLabel: 'Référence'"],
+    ["vendorLabel: 'Vendor'", "vendorLabel: 'Vendeur'"],
+    ["priceLabel: 'Price'", "priceLabel: 'Prix'"],
+  ]) {
+    assert.ok(marketplaceComponent.includes(english), `missing English label: ${english}`)
+    assert.ok(marketplaceComponent.includes(french), `missing French label: ${french}`)
+  }
+
+  assert.match(marketplaceComponent, /const labels = text\[lang\]/)
+  assert.match(marketplaceComponent, /\{labels\.fieldDataManager\}/)
+  assert.match(marketplaceComponent, /\{labels\.pricePerM2\}/)
+  assert.match(marketplaceComponent, /\{labels\.locationLabel\}/)
+  assert.match(marketplaceComponent, /\{labels\.referenceLabel\}/)
+})
+
+test('Marketplace localization leaves parcel names, IDs, prices and backend rows untouched', () => {
+  const row = {
+    uuid: 'parcel-reference-1',
+    parcel_name: 'Backend parcel name',
+    owner: 'Backend owner',
+    price: 1250,
+    price_m2: 25,
+    currency: 'USD',
+    location_name: 'Backend location',
+    description: 'Backend description',
+    geojson: polygon,
+  }
+  const [normalized] = normalizeMarketplaceRows([row])
+
+  assert.equal(normalized.uuid, row.uuid)
+  assert.equal(normalized.parcel_name, row.parcel_name)
+  assert.equal(normalized.owner, row.owner)
+  assert.equal(normalized.price, row.price)
+  assert.equal(normalized.price_m2, row.price_m2)
+  assert.equal(normalized.currency, row.currency)
+  assert.equal(normalized.location_name, row.location_name)
+  assert.equal(normalized.description, row.description)
+  assert.equal(normalized.geojson, row.geojson)
+  assert.match(marketplaceComponent, /\{row\.parcel_name \|\| '—'\}/)
+  assert.match(marketplaceComponent, /\{row\.uuid \|\| '—'\}/)
+  assert.match(marketplaceComponent, /formatPrice\(row\.price_m2\)/)
+})
 
 test('Marketplace and GeoReport use the configured local Flask API in development', () => {
   assert.equal(apiUrl('/api/market', { hostname: '127.0.0.1', port: '5501' }), 'http://127.0.0.1:5000/api/market')
