@@ -442,7 +442,7 @@
   .hero-copy h1 { font-size: clamp(47px, 11vw, 64px); }
   .hero-description { max-width: 460px; font-size: 13px; }
   .home-hero-stats { display: flex; flex-wrap: wrap; gap: 5px 13px; margin-top: 14px; padding-top: 8px; }
-  .home-hero-stats > p { flex-basis: 100%; font-size: 8px; }
+  .home-hero-stats > p { flex-basis: 100%; font-size: 9px; }
   .trust-items { justify-content: flex-start; padding-inline: 0; }
   .home-section { padding-block: 58px; }
   .section-heading { margin-bottom: 24px; }
@@ -467,9 +467,11 @@
   .home-container { width: calc(100% - 28px); }
   .home-nav-inner { width: calc(100% - 20px); }
   .hero-copy h1 { font-size: 43px; }
-  .home-hero-stats { gap: 5px 9px; }
+  .home-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 8px 9px; }
+  .hero-stat { min-width: 0; flex-direction: column; align-items: flex-start; white-space: normal; }
   .hero-stat strong { font-size: 10px; }
-  .hero-stat > span, .home-hero-stats > p { font-size: 7px; }
+  .hero-stat > span { max-width: 100%; font-size: 9px; line-height: 1.25; }
+  .home-hero-stats > p { grid-column: 1 / -1; font-size: 9px; line-height: 1.35; }
 }
 
 /* Final header overrides keep the reference spacing after the page breakpoints. */

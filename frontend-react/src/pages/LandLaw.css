@@ -368,8 +368,8 @@
   .land-law-country-panel { width: min(100%, 790px); }
   .land-law-country-content .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .land-law-country-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 14px auto 16px; }
-  .land-law-country-tab { padding-inline: 3px; font-size: 7px; }
-  .land-law-page .land-law-country-tab { min-height: 23px; font-size: 7px; }
+  .land-law-country-tab { min-height: 32px; padding: 4px 3px; font-size: 10px; line-height: 1.2; }
+  .land-law-page .land-law-country-tab { min-height: 32px; font-size: 10px; }
   .land-law-country-content .country-title { font-size: clamp(18px, 4vw, 24px); }
   .land-law-country-content .info-box { padding: 8px; }
   .land-law-topics { margin-top: 12px; }

@@ -246,6 +246,11 @@
   .market-react-card-actions .market-react-report-link { font-size: 9px; }
 }
 
+@media (min-width: 768px) and (max-width: 900px) {
+  .market-react-card-actions button,
+  .market-react-card-actions .market-react-report-link { gap: 1px; padding-right: 2px; padding-left: 2px; white-space: normal; }
+}
+
 @media (max-width: 767px) {
   .main-content.main-content-marketplace { height: calc(100svh - 120px); min-height: 0; padding: 10px; overflow: auto; }
   .main-content-marketplace > .main-market-section { min-height: 790px; grid-template-rows: 57px minmax(720px, 1fr); gap: 10px; }
@@ -255,7 +260,7 @@
   .market-react-list { gap: 7px; }
   .market-react-map { min-height: 350px; margin: 0 8px 9px; }
   .market-react-card-actions button,
-  .market-react-card-actions .market-react-report-link { min-height: 25px; white-space: normal; }
+  .market-react-card-actions .market-react-report-link { min-height: 25px; font-size: 9px; white-space: normal; }
   .market-react-detail-pane { padding: 12px; }
   .market-react-detail { padding: 18px; }
   .market-react-report-grid { grid-template-columns: 1fr; }
@@ -267,5 +272,5 @@
   .market-react-card { padding: 7px; }
   .market-react-card-actions { gap: 3px; }
   .market-react-card-actions button,
-  .market-react-card-actions .market-react-report-link { padding-right: 3px; padding-left: 3px; font-size: 7px; }
+  .market-react-card-actions .market-react-report-link { gap: 2px; padding-right: 3px; padding-left: 3px; }
 }
