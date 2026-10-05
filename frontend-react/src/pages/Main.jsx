@@ -4,6 +4,7 @@ import Icon from '../components/Icon.jsx'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
 import { loadParcels, saveParcelField } from './mainData.js'
+import { MAIN_LABELS, PARCEL_STATUS_OPTIONS, parcelStatusLabel } from './mainLabels.js'
 import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
 import KmlImport from './KmlImport.jsx'
@@ -32,8 +33,8 @@ const fields = [
   { key: 'price', en: 'Price', fr: 'Prix', type: 'number' },
   { key: 'location_name', en: 'Location', fr: 'Localisation' },
   { key: 'description', en: 'Description', fr: 'Description' },
-  { key: 'sell_category', en: 'Sale status', fr: 'Statut de vente', options: [['to_sell', 'À vendre | to sell'], ['vendu', 'Vendue | Sold'], ['autre', 'Autre | other'], ['na', '#NA']] },
-  { key: 'status_category', en: 'Title status', fr: 'Statut du titre', options: [['titre', 'Titre | Title deed'], ['titre_borne', 'Titre et borne | Property title'], ['kt', 'Karan-tany | Land certificate'], ['na', '#NA']] },
+  { key: 'sell_category', en: 'Sale status', fr: 'Statut de vente', options: PARCEL_STATUS_OPTIONS.sell_category },
+  { key: 'status_category', en: 'Title status', fr: 'Statut du titre', options: PARCEL_STATUS_OPTIONS.status_category },
 ]
 
 const currencies = ['USD', 'EUR', 'KES', 'TZS', 'UGX', 'RWF', 'BIF', 'SOS', 'ETB', 'DJF', 'EGP', 'SDG', 'SSP', 'MGA']
@@ -49,8 +50,8 @@ function ParcelCell({ row, field, lang, value, onChange, disabled }) {
   const label = `${field[lang]}, ${row.parcel_name || row.id}`
   if (field.options) return (
     <select aria-label={label} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
-      {!field.options.some(([option]) => option === value) && <option value={value}>{value || '—'}</option>}
-      {field.options.map(([option, text]) => <option key={option} value={option}>{text}</option>)}
+      {!field.options.some(({ value: option }) => option === value) && <option value={value}>{value || '—'}</option>}
+      {field.options.map((option) => <option key={option.value} value={option.value}>{option[lang]}</option>)}
     </select>
   )
   return <input aria-label={label} type={field.type || 'text'} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} />
@@ -286,7 +287,7 @@ function Dashboard({ lang }) {
                 <label htmlFor="add-parcel-currency">{lang === 'fr' ? 'Devise' : 'Currency'}<select id="add-parcel-currency" name="currency" required value={addForm.currency} onChange={(event) => setAddForm((current) => ({ ...current, currency: event.target.value }))}>{currencies.map((currency) => <option key={currency}>{currency}</option>)}</select></label>
                 <div className="main-add-grid">
                   <label htmlFor="add-parcel-sell_category">{lang === 'fr' ? 'Statut de vente' : 'Sale status'}<select id="add-parcel-sell_category" name="sell_category" required value={addForm.sell_category} onChange={(event) => setAddForm((current) => ({ ...current, sell_category: event.target.value }))}><option value="to_sell">{lang === 'fr' ? 'À vendre' : 'For sale'}</option><option value="vendu">{lang === 'fr' ? 'Vendue' : 'Sold'}</option><option value="autre">{lang === 'fr' ? 'Autre' : 'Other'}</option><option value="na">#NA</option></select></label>
-                  <label htmlFor="add-parcel-status_category">{lang === 'fr' ? 'Statut du titre' : 'Title status'}<select id="add-parcel-status_category" name="status_category" required value={addForm.status_category} onChange={(event) => setAddForm((current) => ({ ...current, status_category: event.target.value }))}><option value="">—</option><option value="titre">Titre</option><option value="titre_borne">Titre et borne</option><option value="kt">Karan-tany</option><option value="na">#NA</option></select></label>
+                  <label htmlFor="add-parcel-status_category">{lang === 'fr' ? 'Statut du titre' : 'Title status'}<select id="add-parcel-status_category" name="status_category" required value={addForm.status_category} onChange={(event) => setAddForm((current) => ({ ...current, status_category: event.target.value }))}><option value="">—</option>{PARCEL_STATUS_OPTIONS.status_category.map((option) => <option key={option.value} value={option.value}>{option[lang]}</option>)}</select></label>
                 </div>
               </div>
               {addError && <p className="main-add-error" role="alert">{addError.message || (lang === 'fr' ? 'Échec de l’ajout.' : 'Unable to add parcel.')}</p>}
@@ -306,7 +307,7 @@ function Dashboard({ lang }) {
               <button type="button" onClick={() => void exportParcels()}>{lang === 'fr' ? 'Exporter' : 'Export'}</button>
             </div>
             <label className="main-search"><span className="sr-only">{lang === 'fr' ? 'Rechercher une parcelle' : 'Search parcels'}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={lang === 'fr' ? 'Rechercher…' : 'Search parcels…'} /></label>
-            <div className="main-sort-row"><span>{lang === 'fr' ? 'Filtre :' : 'Filter:'}</span><button type="button" className={`main-sort-pill${sort === 'date' ? ' is-selected' : ''}`} disabled={!hasParcelDates} aria-pressed={sort === 'date'} onClick={() => setSort((current) => current === 'date' ? 'name' : 'date')}>Date <Icon name={sort === 'date' ? 'arrow-down' : 'arrow-up'} size={12}/></button><button type="button" className={`main-sort-pill${sort === 'name' ? ' is-selected' : ''}`} aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setNameDescending((current) => !current) }}>{nameDescending ? 'Z–A' : 'A–Z'}</button></div>
+            <div className="main-sort-row"><span>{MAIN_LABELS.filter[lang]}</span><button type="button" className={`main-sort-pill${sort === 'date' ? ' is-selected' : ''}`} disabled={!hasParcelDates} aria-pressed={sort === 'date'} onClick={() => setSort((current) => current === 'date' ? 'name' : 'date')}>Date <Icon name={sort === 'date' ? 'arrow-down' : 'arrow-up'} size={12}/></button><button type="button" className={`main-sort-pill${sort === 'name' ? ' is-selected' : ''}`} aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setNameDescending((current) => !current) }}>{nameDescending ? 'Z–A' : 'A–Z'}</button></div>
             {loading && <p className="main-list-state" role="status">{lang === 'fr' ? 'Chargement…' : 'Loading parcels…'}</p>}
             {error && <div className="main-list-state main-list-error" role="alert"><p>{error.message || (lang === 'fr' ? 'Impossible de charger les parcelles.' : 'Unable to load parcels.')}</p><button type="button" onClick={() => setReloadKey((key) => key + 1)}>{lang === 'fr' ? 'Réessayer' : 'Try again'}</button></div>}
             {notice && <p className="main-notice" role="status">{notice}</p>}
@@ -317,7 +318,7 @@ function Dashboard({ lang }) {
                 <button className="main-parcel-summary" type="button" onClick={() => { setSelectedParcelId(row.id); setFocusVersion((version) => version + 1); setExpandedParcelId((current) => current === row.id ? null : row.id) }} aria-expanded={expandedParcelId === row.id} aria-pressed={selectedParcelId === row.id}>
                   <span className="main-parcel-mark" aria-hidden="true">{(row.parcel_name || 'P').slice(0, 1).toUpperCase()}</span>
                   <span className="main-parcel-copy"><strong>{row.parcel_name || (lang === 'fr' ? 'Parcelle sans nom' : 'Unnamed parcel')}</strong><small>{row.location_name || row.owner || '—'}</small></span>
-                  <span className="main-parcel-status">{row.status_category || '—'}</span>
+                  <span className="main-parcel-status">{parcelStatusLabel('status_category', row.status_category, lang)}</span>
                 </button>
                 {expandedParcelId === row.id && <dl className="main-parcel-details">
                   <div><dt>{fields[1][lang]}</dt><dd>{row.parcel_name || '—'}</dd></div>
@@ -326,8 +327,8 @@ function Dashboard({ lang }) {
                   <div><dt>{fields[2][lang]}</dt><dd>{row.price_m2 ?? '—'}</dd></div>
                   <div><dt>{fields[3][lang]}</dt><dd>{row.price ?? '—'}</dd></div>
                   <div className="main-parcel-description"><dt>{fields[5][lang]}</dt><dd>{row.description || '—'}</dd></div>
-                  <div><dt>{fields[6][lang]}</dt><dd>{row.sell_category || '—'}</dd></div>
-                  <div><dt>{fields[7][lang]}</dt><dd>{row.status_category || '—'}</dd></div>
+                  <div><dt>{fields[6][lang]}</dt><dd>{parcelStatusLabel('sell_category', row.sell_category, lang)}</dd></div>
+                  <div><dt>{fields[7][lang]}</dt><dd>{parcelStatusLabel('status_category', row.status_category, lang)}</dd></div>
                 </dl>}
               </article>)}
             </div>
@@ -391,11 +392,11 @@ export default function Main() {
       <div className="main-header-actions">
         <button className="main-logout" type="button" onClick={() => void signOut()} disabled={status === 'signingOut'}>{status === 'signingOut' ? '…' : lang === 'fr' ? 'Déconnexion' : 'Log Out'}</button>
         <details className="main-language-menu">
-          <summary aria-label={lang === 'fr' ? 'Changer de langue, français sélectionné' : 'Change language, French selected'}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
-            <span>FR</span><i aria-hidden="true" />
+            <summary aria-label={MAIN_LABELS.languageMenu[lang]}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+            <span>{lang.toUpperCase()}</span><i aria-hidden="true" />
           </summary>
-          <div className="main-language-options" role="group" aria-label="Switch language">
+          <div className="main-language-options" role="group" aria-label={MAIN_LABELS.switchLanguage[lang]}>
             {['en', 'fr'].map((language) => <button key={language} type="button" lang={language} aria-pressed={lang === language} onClick={(event) => { setLang(language); event.currentTarget.closest('details')?.removeAttribute('open') }}>{language.toUpperCase()}</button>)}
           </div>
         </details>
