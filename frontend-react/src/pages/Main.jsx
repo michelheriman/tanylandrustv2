@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
+import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
 import { loadParcels, saveParcelField } from './mainData.js'
 import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
@@ -76,6 +77,8 @@ function Dashboard({ lang }) {
   const [editDraft, setEditDraft] = useState(null)
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState(null)
+  const editDialogRef = useRef(null)
+  const editTriggerRef = useRef(null)
   const [addMode, setAddMode] = useState(false)
   const [addStep, setAddStep] = useState(1)
   const [kmlImportOpen, setKmlImportOpen] = useState(false)
@@ -90,19 +93,20 @@ function Dashboard({ lang }) {
     loadParcels(request).then((rows) => { if (live) setParcels(rows) }).catch((failure) => { if (live) setError(failure) }).finally(() => { if (live) setLoading(false) })
     return () => { live = false }
   }, [request, reloadKey])
-  function openEdit(id) {
+  function openEdit(id, trigger) {
     const row = parcels.find((parcel) => parcel.id === id)
     if (!row) return
+    editTriggerRef.current = trigger ?? document.activeElement
     setEditDraft(Object.fromEntries(fields.map((field) => [field.key, String(row[field.key] ?? '')])))
     setEditError(null)
     setEditingParcelId(id)
   }
-  function closeEdit() {
+  const closeEdit = useCallback(() => {
     if (savingEdit) return
     setEditingParcelId(null)
     setEditDraft(null)
     setEditError(null)
-  }
+  }, [savingEdit])
   async function submitEdit() {
     const row = parcels.find((parcel) => parcel.id === editingParcelId)
     if (!row || !editDraft || savingEdit) return
@@ -233,17 +237,22 @@ function Dashboard({ lang }) {
     setFocusVersion((version) => version + 1)
   }
   useEffect(() => {
+    if (editingParcelId) {
+      focusFirstDialogField(editDialogRef.current)
+      return undefined
+    }
+    restoreDialogFocus(editTriggerRef.current)
+    editTriggerRef.current = null
+    return undefined
+  }, [editingParcelId])
+  useEffect(() => {
     if (!editingParcelId) return undefined
     const onKeyDown = (event) => {
-      if (event.key === 'Escape' && !savingEdit) {
-        setEditingParcelId(null)
-        setEditDraft(null)
-        setEditError(null)
-      }
+      handleDialogKeydown(event, editDialogRef.current, closeEdit)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [editingParcelId, savingEdit])
+  }, [editingParcelId, closeEdit])
   const visibleParcels = parcels
     .filter((row) => !search.trim() || ['parcel_name', 'owner', 'location_name', 'description', 'price', 'price_m2'].some((key) => String(row[key] ?? '').toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())))
     .sort((a, b) => {
@@ -297,7 +306,7 @@ function Dashboard({ lang }) {
             <div className="main-actions">
               <button type="button" onClick={beginAdd}>{lang === 'fr' ? 'Ajouter' : 'Add'}</button>
               <button type="button" onClick={beginKmlImport}>{lang === 'fr' ? 'Importer KML' : 'Import KML'}</button>
-              <button type="button" disabled={!selectedParcelId} onClick={() => openEdit(selectedParcelId)}>{lang === 'fr' ? 'Modifier' : 'Edit'}</button>
+              <button type="button" disabled={!selectedParcelId} onClick={(event) => openEdit(selectedParcelId, event.currentTarget)}>{lang === 'fr' ? 'Modifier' : 'Edit'}</button>
               <button type="button" onClick={() => void exportParcels()}>{lang === 'fr' ? 'Exporter' : 'Export'}</button>
             </div>
             <label className="main-search"><span className="sr-only">{lang === 'fr' ? 'Rechercher une parcelle' : 'Search parcels'}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={lang === 'fr' ? 'Rechercher…' : 'Search parcels…'} /></label>
@@ -336,7 +345,7 @@ function Dashboard({ lang }) {
         const row = parcels.find((parcel) => parcel.id === editingParcelId)
         if (!row) return null
         return <div className="main-edit-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEdit() }}>
-          <section className="main-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="main-edit-title">
+          <section ref={editDialogRef} className="main-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="main-edit-title" tabIndex={-1}>
             <button className="main-edit-close" type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} disabled={savingEdit} onClick={closeEdit}><Icon name="close" size={18}/></button>
             <h2 id="main-edit-title">{lang === 'fr' ? 'Modifier la parcelle' : 'Edit Parcel'}</h2>
             <div className="main-edit-table-wrap"><table className="main-edit-table"><thead><tr>{fields.map((field) => <th key={field.key} scope="col">{field[lang]}</th>)}</tr></thead><tbody><tr>{fields.map((field) => <td key={field.key}><ParcelCell row={row} field={field} lang={lang} value={editDraft[field.key]} disabled={savingEdit} onChange={(value) => setEditDraft((current) => ({ ...current, [field.key]: value }))} /></td>)}</tr></tbody></table></div>
