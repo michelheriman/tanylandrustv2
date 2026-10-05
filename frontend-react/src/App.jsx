@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx'
 import Main from './pages/Main.jsx'
 import GeoReport from './pages/GeoReport.jsx'
 import LegalPage from './pages/LegalPage.jsx'
+import { resolveAuthRoute } from './appRouteState.js'
 import './App.css'
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
     try { parcelUuid = decodeURIComponent(reportMatch[1]) } catch { parcelUuid = null }
   }
   const isGeoReport = Boolean(reportMatch && parcelUuid)
+  const routeView = resolveAuthRoute(pathname, status, { isGeoReport })
 
   useEffect(() => {
     if (isHome || legalDocument || status === 'authenticated') return
@@ -38,11 +40,11 @@ function App() {
   // Legal documents are public and should not wait for session restoration.
   if (legalDocument) return <LegalPage document={legalDocument} />
 
-  if (status === 'restoring') {
+  if (routeView === 'restoring') {
     return <main className="status-screen" role="status" aria-live="polite">Restoring your session…</main>
   }
 
-  if (status === 'unavailable') {
+  if (routeView === 'unavailable') {
     return (
       <main className="status-screen">
         <section className="status-panel" aria-labelledby="restore-title">
@@ -55,11 +57,11 @@ function App() {
     )
   }
 
-  if ((status === 'authenticated' || status === 'signingOut') && isGeoReport) return <GeoReport parcelUuid={parcelUuid} />
+  if (routeView === 'georeport') return <GeoReport parcelUuid={parcelUuid} />
 
-  if (status === 'authenticated' || status === 'signingOut') return <Main />
+  if (routeView === 'main') return <Main />
 
-  if (isMain || isGeoReport) return <main className="status-screen" role="status">Redirecting to sign in…</main>
+  if (routeView === 'redirect') return <main className="status-screen" role="status">Redirecting to sign in…</main>
 
   return (
     <main className="auth-scene">
