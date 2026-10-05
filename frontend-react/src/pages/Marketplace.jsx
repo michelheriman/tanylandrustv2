@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import Icon from '../components/Icon.jsx'
 import ParcelMap from './ParcelMap.jsx'
 import { filterMarketplaceRows, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
 import './Marketplace.css'
@@ -60,7 +61,7 @@ function ProductInterest({ uuid, lang, onBack }) {
   }
 
   return <section className="market-react-detail" aria-labelledby="market-product-title">
-    <button className="market-react-back" type="button" onClick={onBack}>← {labels.back}</button>
+    <button className="market-react-back" type="button" onClick={onBack}><Icon name="arrow-left" size={15}/>{labels.back}</button>
     {loading && <p role="status">{labels.loadProduct}</p>}
     {!loading && error && <MarketError error={error} onRetry={() => { setProduct(null); setLoading(true); setError(null); request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid)) }).then((response) => setProduct(productFromResponse(response))).catch((failure) => setError(failure.message)).finally(() => setLoading(false)) }} lang={lang} />}
     {!loading && !error && !product && <p role="status">{labels.missing}</p>}
@@ -145,7 +146,7 @@ export default function Marketplace({ lang = 'en' }) {
         <aside className="market-react-sidebar" aria-label={labels.title}>
           <div className="market-react-sidebar-head"><h1 id="market-react-title">{lang === 'fr' ? 'Parcelles' : 'Parcel add'}</h1></div>
           <label className="market-react-search"><span className="sr-only">{labels.search}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={labels.search} /></label>
-          <div className="market-react-filters"><span>{labels.filter}</span><button type="button" aria-pressed={sort === 'date'} disabled={!hasDates} onClick={() => setSort((value) => value === 'date' ? 'name' : 'date')}>{labels.date} {sort === 'date' ? '↓' : '↑'}</button><button type="button" aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setDescending((value) => !value) }}>{labels.name} {descending ? '↓' : '↑'}</button><span className="market-react-count">{loading ? '…' : parcels.length}</span></div>
+          <div className="market-react-filters"><span>{labels.filter}</span><button type="button" aria-pressed={sort === 'date'} disabled={!hasDates} onClick={() => setSort((value) => value === 'date' ? 'name' : 'date')}>{labels.date} <Icon name={sort === 'date' ? 'arrow-down' : 'arrow-up'} size={12}/></button><button type="button" aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setDescending((value) => !value) }}>{labels.name} <Icon name={descending ? 'arrow-down' : 'arrow-up'} size={12}/></button><span className="market-react-count">{loading ? '…' : parcels.length}</span></div>
           <details className="market-react-filter-panel">
             <summary>{filterLabels.advanced}</summary>
             <div className="market-react-filter-fields">

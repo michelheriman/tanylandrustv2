@@ -19,7 +19,7 @@
 .georeport-print, .georeport-state-actions button { padding: 8px 13px; border: 1.5px solid #0f1a12; border-radius: 6px; color: #0f1a12; background: transparent; font: 12px 'DM Mono', Consolas, monospace; cursor: pointer; }
 .georeport-print:hover, .georeport-state-actions button:hover { color: #f5f2ec; background: #0f1a12; }
 .georeport-top-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0 4px; color: #67746a; font-size: 12px; }
-.georeport-top-actions a, .georeport-state a, .georeport-state-actions a { color: #2d6a4f; font-weight: 600; text-decoration: none; }
+.georeport-top-actions a, .georeport-state a, .georeport-state-actions a { display: inline-flex; align-items: center; gap: 6px; color: #2d6a4f; font-weight: 600; text-decoration: none; }
 .georeport-top-actions a:hover, .georeport-state a:hover, .georeport-state-actions a:hover { text-decoration: underline; }
 .georeport-top-actions code { overflow-wrap: anywhere; color: #2d6a4f; }
 .georeport-state { display: flex; min-height: 180px; flex-direction: column; align-items: center; justify-content: center; gap: 9px; margin: 30px 0; padding: 30px; border: 1px solid rgb(15 26 18 / 12%); border-radius: 10px; background: #ede9e1; text-align: center; }
@@ -60,7 +60,8 @@
 .georeport-map-callout { display: grid; gap: 3px; margin-top: 14px; padding: 12px 0 0; border-top: 1px solid rgb(15 26 18 / 12%); }
 .georeport-map-callout small, .georeport-map-callout span { color: #718076; font: 10px 'DM Mono', Consolas, monospace; }
 .georeport-map-callout > strong { font: 400 25px 'DM Serif Display', Georgia, serif; }
-.georeport-proximity-marker { display: grid; place-items: center; border: 0; background: transparent; font-size: 20px; }
+.georeport-proximity-marker { display: grid; place-items: center; border: 0; color: #2d6a4f; background: transparent; }
+.georeport-proximity-marker svg { display: block; }
 .georeport-climate-grid, .georeport-flood-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; margin-top: 14px; }
 .georeport-panel { min-width: 0; padding: 18px; }
 .georeport-panel > h3, .georeport-proximity-card > h3 { margin: 0 0 11px; color: #718076; font: 500 10px 'DM Mono', Consolas, monospace; letter-spacing: .13em; text-transform: uppercase; }
@@ -73,7 +74,7 @@
 .georeport-month > span { position: absolute; top: 21px; left: 50%; color: #718076; font: 7px 'DM Mono', Consolas, monospace; transform: translateX(-50%); }
 .georeport-proximity-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
 .georeport-proximity-card { display: flex; min-width: 0; max-height: 300px; min-height: 205px; flex-direction: column; padding: 17px; }
-.georeport-proximity-icon { display: block; margin-bottom: 7px; font-size: 21px; }
+.georeport-proximity-icon { display: inline-flex; align-items: center; justify-content: center; margin-bottom: 7px; color: #2d6a4f; }
 .georeport-proximity-card > h3 { flex: 0 0 auto; }
 .georeport-proximity-list { display: grid; min-height: 0; max-height: 210px; flex: 1 1 auto; gap: 7px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0 6px 0 0; list-style: none; scrollbar-color: #a7b3a9 #dedbd2; scrollbar-width: thin; }
 .georeport-proximity-list li { display: flex; min-width: 0; justify-content: space-between; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid rgb(15 26 18 / 9%); }

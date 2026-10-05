@@ -67,6 +67,8 @@
 .hero-scroll i { width: 1px; height: 21px; background: linear-gradient(#c5dab2, transparent); animation: scroll-pulse 1.8s ease-in-out infinite; }
 .trust-bar { border-bottom: 1px solid #dde0d1; background: #eeeee4; }
 .trust-items { display: flex; min-height: 61px; flex-wrap: wrap; align-items: center; justify-content: space-around; gap: 13px 30px; padding-block: 12px; color: #66736a; font-size: 11px; font-weight: 500; }
+.trust-items > span { display: inline-flex; align-items: center; gap: 7px; }
+.trust-items svg { flex: 0 0 auto; color: #3d704b; }
 
 .home-section { padding-block: clamp(66px, 9vw, 108px); scroll-margin-top: 69px; }
 .features-section { background: #f6f5ec; }
@@ -88,9 +90,9 @@
 .pillar-card ul, .price-card ul { display: grid; gap: 9px; margin: 20px 0 0; padding: 16px 0 0; border-top: 1px solid #e8e9e2; list-style: none; }
 .pillar-featured ul { border-color: rgb(255 255 255 / 16%); }
 .pillar-card li { display: flex; align-items: flex-start; gap: 9px; color: #59665d; font-size: 11px; }
-.pillar-card li > span { color: var(--home-green); font-weight: 700; }
+.pillar-card li > svg { flex: 0 0 auto; color: var(--home-green); }
 .pillar-featured li { color: rgb(243 242 229 / 80%); }
-.pillar-featured li > span { color: #a6cf8e; }
+.pillar-featured li > svg { color: #a6cf8e; }
 
 .gis-section { background: #e8ede3; }
 .gis-grid, .negotiation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: clamp(38px, 8vw, 98px); }
@@ -123,6 +125,7 @@
 .thread-card > header strong { color: var(--home-ink); font-size: 12px; }
 .thread-card > header > div > span { color: #798178; font-size: 10px; }
 .thread-status { flex-shrink: 0; color: var(--home-green); font-size: 10px; font-weight: 600; }
+.thread-status-indicator { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: currentColor; vertical-align: middle; }
 .thread-messages { display: grid; gap: 16px; padding: clamp(17px, 3vw, 25px); }
 .thread-message { display: flex; align-items: flex-start; gap: 10px; }
 .thread-message > div { min-width: 0; }
@@ -135,11 +138,11 @@
 .avatar { display: grid; width: 29px; height: 29px; flex: 0 0 29px; place-items: center; border-radius: 50%; font-size: 10px; font-weight: 700; }
 .avatar.seller { color: #377449; background: #e6f1e2; }
 .avatar.buyer { color: #b27c2c; background: #f5ecdc; }
-.thread-seal { margin-top: 2px; padding-top: 13px; border-top: 1px solid #e6e7de; color: #768178; font-size: 9px; }
+.thread-seal { display: flex; align-items: center; gap: 6px; margin-top: 2px; padding-top: 13px; border-top: 1px solid #e6e7de; color: #768178; font-size: 9px; }
 .amber-eyebrow { color: #b17b35; }
 .negotiation-points { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .negotiation-points li { display: grid; grid-template-columns: 17px minmax(0, 1fr); gap: 8px; align-items: start; }
-.negotiation-points li > span { color: #c18a40; }
+.negotiation-points li > svg { color: #c18a40; }
 .negotiation-points p { margin: 0; color: #667168; font-size: 11px; line-height: 1.7; }
 
 .pricing-section { color: #f6f0dc; background: #102f25; }
@@ -157,7 +160,7 @@
 .plan-tagline { min-height: 36px; margin: 4px 0 0; color: rgb(232 234 214 / 65%); font-size: 10px; }
 .price-card ul { gap: 11px; flex: 1; margin: 13px 0 17px; padding-top: 14px; border-color: rgb(255 255 255 / 14%); }
 .price-card li { display: flex; gap: 8px; align-items: baseline; color: rgb(246 243 222 / 82%); font-size: 10px; line-height: 1.55; }
-.price-card li::before { color: #8aba79; content: '✓'; }
+.price-card li::before { width: 6px; height: 10px; flex: 0 0 6px; margin: 1px 3px 0 2px; border-right: 1.5px solid #8aba79; border-bottom: 1.5px solid #8aba79; content: ''; transform: rotate(45deg); }
 .price-card li s { color: rgb(246 243 222 / 51%); }
 .price-card li strong { color: #f7f1dc; }
 .price-card > .button { width: 100%; min-height: 38px; color: #dfeadd; border-color: rgb(230 239 219 / 36%); background: transparent; font-size: 10px; }
@@ -213,9 +216,9 @@
   .home-nav-actions { gap: 8px; }
   .nav-cta { min-height: 32px; padding-inline: 11px; font-size: 10px; }
   .mobile-nav { position: relative; display: block; }
-  .mobile-nav summary { display: grid; width: 34px; height: 34px; align-content: center; justify-items: center; gap: 4px; border: 1px solid #d9dfd4; border-radius: 6px; cursor: pointer; list-style: none; }
+  .mobile-nav summary { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid #d9dfd4; border-radius: 6px; cursor: pointer; list-style: none; }
   .mobile-nav summary::-webkit-details-marker { display: none; }
-  .mobile-nav summary span { width: 14px; height: 1px; background: var(--home-ink); }
+.mobile-nav summary svg { color: var(--home-ink); }
   .mobile-nav nav { position: absolute; top: calc(100% + 9px); right: 0; display: grid; width: 185px; gap: 3px; padding: 8px; border: 1px solid #e1e5db; border-radius: 9px; background: #faf9f2; box-shadow: 0 10px 24px rgb(16 45 31 / 13%); }
   .mobile-nav nav a { padding: 9px 10px; border-radius: 5px; color: #56665b; font-size: 12px; }
   .mobile-nav nav .mobile-auth-link { border-top: 1px solid #e4e8dd; }

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { HOME_TRANSLATIONS } from '../homeTranslations.js'
+import AppIcon from '../components/Icon.jsx'
 import './Home.css'
 
 const numbers = [12400, 98, 34]
+const trustIcons = { trust1: 'lock', trust2: 'map', trust3: 'scales', trust4: 'mobile' }
 
 const pillarKeys = [
   { title: 'f1_title', body: 'f1_desc', list: ['f1_li1', 'f1_li2', 'f1_li3'], icon: 'parcel' },
@@ -121,7 +123,7 @@ function Home() {
               </div>
             </details>
             <details className="mobile-nav">
-              <summary aria-label="Open navigation"><span></span><span></span><span></span></summary>
+              <summary aria-label={lang === 'fr' ? 'Ouvrir la navigation' : 'Open navigation'}><AppIcon name="menu" size={18}/></summary>
               <nav aria-label="Mobile navigation">
                 <a href="#features">{t('nav_features')}</a><a href="#gis">{t('nav_gis')}</a><a href="#negotiation">{t('nav_negotiation')}</a><a href="#pricing">{t('nav_pricing')}</a>
                 <a className="mobile-auth-link" href="/signin">{t('nav_signin')}</a><a className="mobile-auth-link" href="/signup">{t('nav_cta')}</a>
@@ -139,7 +141,7 @@ function Home() {
               <h1><span>{t('hero_h1_line1')}</span><br/><em>{t('hero_h1_line2')}</em><br/><span>{t('hero_h1_line3')}</span></h1>
               <p className="hero-description">{t('hero_sub')}</p>
               <div className="hero-buttons">
-                <a className="button button-amber" href="/signup">{t('hero_cta_primary')}<span aria-hidden="true">→</span></a>
+                <a className="button button-amber" href="/signup">{t('hero_cta_primary')}<AppIcon name="arrow-right" size={15}/></a>
                 <a className="button button-outline" href="#features">{t('hero_cta_secondary')}</a>
               </div>
               <div className="home-hero-stats" aria-label="Tany in numbers">
@@ -152,21 +154,21 @@ function Home() {
         </section>
 
         <section className="trust-bar" id="trust" aria-label="Platform principles">
-          <div className="home-container trust-items">{['trust1', 'trust2', 'trust3', 'trust4'].map((key) => <span key={key}>{t(key).replace(/^(🔒|🗺|⚖️|📱)\s*/u, '')}</span>)}</div>
+          <div className="home-container trust-items">{['trust1', 'trust2', 'trust3', 'trust4'].map((key) => <span key={key}><AppIcon name={trustIcons[key]} size={15}/>{t(key)}</span>)}</div>
         </section>
 
         <section className="home-section features-section" id="features">
           <div className="home-container">
             <div className="section-heading home-reveal"><p className="section-eyebrow">{t('feat_eyebrow')}</p><h2>{t('feat_h2_line1')}<br/><em>{t('feat_h2_line2')}</em></h2></div>
             <div className="pillar-grid">{pillarKeys.map((pillar, index) => <article className="pillar-card home-reveal" key={pillar.title} style={{ '--reveal-delay': `${index * 80}ms` }}>
-              <span className="pillar-icon"><Icon name={pillar.icon}/></span><h3>{t(pillar.title)}</h3><p>{t(pillar.body)}</p><ul>{pillar.list.map((key) => <li key={key}><span aria-hidden="true">✓</span>{t(key)}</li>)}</ul>
+              <span className="pillar-icon"><Icon name={pillar.icon}/></span><h3>{t(pillar.title)}</h3><p>{t(pillar.body)}</p><ul>{pillar.list.map((key) => <li key={key}><AppIcon name="check" size={14}/>{t(key)}</li>)}</ul>
             </article>)}</div>
           </div>
         </section>
 
         <section className="home-section gis-section" id="gis">
           <div className="home-container gis-grid">
-            <div className="gis-copy home-reveal"><p className="section-eyebrow">{t('gis_eyebrow')}</p><h2>{t('gis_h2_line1')}<br/><em>{t('gis_h2_line2')}</em></h2><p className="section-intro">{t('gis_intro')}</p><a className="gis-cta" href="/signup">{t('gis_dl_btn')}</a>
+            <div className="gis-copy home-reveal"><p className="section-eyebrow">{t('gis_eyebrow')}</p><h2>{t('gis_h2_line1')}<br/><em>{t('gis_h2_line2')}</em></h2><p className="section-intro">{t('gis_intro')}</p><a className="gis-cta" href="/signup">{t('gis_dl_btn')}<AppIcon name="arrow-right" size={15}/></a>
               <div className="report-card home-reveal">
               <header><strong>{t('gis_panel_title')}</strong><span>Pro</span></header>
               <div className="report-map" aria-label="Illustrative parcel topography map"><svg viewBox="0 0 320 176" fill="none" aria-hidden="true"><rect width="320" height="176" fill="#102820"/><g stroke="#4a8c5c"><ellipse cx="160" cy="88" rx="150" ry="80"/><ellipse cx="160" cy="88" rx="120" ry="62"/><ellipse cx="160" cy="88" rx="90" ry="46"/><ellipse cx="160" cy="88" rx="62" ry="32"/></g><path d="m80 40 160 15-15 80-160-15 15-80Z" fill="#e4a85a12" stroke="#e4a85a" strokeDasharray="6 3"/><circle cx="160" cy="88" r="4" fill="#8dcc85"/><text x="132" y="108" fill="#8dcc85" fontSize="9">Peak 1242 m</text></svg><span>Tany GIS</span></div>
@@ -180,14 +182,14 @@ function Home() {
 
         <section className="home-section negotiation-section" id="negotiation">
           <div className="home-container negotiation-grid">
-            <article className="thread-card home-reveal"><header><div><strong>{t('neg_thread_title')}</strong><span>{t('neg_thread_sub')}</span></div><span className="thread-status">● {t('neg_active')}</span></header>
+            <article className="thread-card home-reveal"><header><div><strong>{t('neg_thread_title')}</strong><span>{t('neg_thread_sub')}</span></div><span className="thread-status"><span className="thread-status-indicator" aria-hidden="true" />{t('neg_active')}</span></header>
               <div className="thread-messages"><div className="thread-message"><span className="avatar seller">{t('neg_seller_initial')}</span><div><small>{t('neg_msg1_meta')}</small><p dangerouslySetInnerHTML={rich('neg_msg1')}/></div></div>
                 <div className="thread-message message-right"><div><small>{t('neg_msg2_meta')}</small><p dangerouslySetInnerHTML={rich('neg_msg2')}/></div><span className="avatar buyer">{t('neg_buyer_initial')}</span></div>
                 <div className="thread-message"><span className="avatar seller">{t('neg_seller_initial2')}</span><div><small>{t('neg_msg3_meta')}</small><p dangerouslySetInnerHTML={rich('neg_msg3')}/></div></div>
-                <div className="thread-seal">⚖ {t('neg_seal')}</div>
+                <div className="thread-seal"><AppIcon name="scales" size={17}/>{t('neg_seal')}</div>
               </div>
             </article>
-            <div className="negotiation-copy home-reveal" style={{ '--reveal-delay': '120ms' }}><p className="section-eyebrow amber-eyebrow">{t('neg_eyebrow')}</p><h2>{t('neg_h2_line1')}<br/><em>{t('neg_h2_line2')}</em></h2><p className="section-intro">{t('neg_intro')}</p><ul className="negotiation-points">{['neg_b1', 'neg_b2', 'neg_b3'].map((key) => <li key={key}><span>→</span><p dangerouslySetInnerHTML={rich(key)}/></li>)}</ul></div>
+            <div className="negotiation-copy home-reveal" style={{ '--reveal-delay': '120ms' }}><p className="section-eyebrow amber-eyebrow">{t('neg_eyebrow')}</p><h2>{t('neg_h2_line1')}<br/><em>{t('neg_h2_line2')}</em></h2><p className="section-intro">{t('neg_intro')}</p><ul className="negotiation-points">{['neg_b1', 'neg_b2', 'neg_b3'].map((key) => <li key={key}><AppIcon name="arrow-right" size={15}/><p dangerouslySetInnerHTML={rich(key)}/></li>)}</ul></div>
           </div>
         </section>
 

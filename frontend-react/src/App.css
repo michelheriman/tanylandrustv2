@@ -61,7 +61,7 @@
 }
 
 .back-link { position: absolute; top: 36px; right: clamp(28px, 4vw, 54px); display: inline-flex; align-items: center; gap: 8px; color: rgb(255 255 255 / 86%); font-size: 13px; text-decoration: none; }
-.back-link span { font-size: 18px; line-height: 1; }
+.back-link svg { flex: 0 0 auto; }
 .back-link:hover, .login-options a:hover, .signup-prompt a:hover { color: #ffe2a3; text-decoration: underline; text-underline-offset: 3px; }
 .card-heading, .form-panel form, .account-panel { width: min(100%, 380px); }
 .card-heading { margin: 0 0 26px; text-align: center; }

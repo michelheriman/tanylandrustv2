@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import Icon from '../components/Icon.jsx'
 import {
   conversationMatchesSearch,
   loadConversations,
@@ -246,7 +247,7 @@ export default function Chat({ lang = 'en' }) {
 
     {adminOpen && <div className="chat-react-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !adminSending) setAdminOpen(false) }}>
       <section className="chat-react-admin-dialog" role="dialog" aria-modal="true" aria-labelledby="chat-react-admin-title">
-        <button type="button" className="chat-react-modal-close" aria-label={t.cancel} disabled={adminSending} onClick={() => setAdminOpen(false)}>×</button>
+        <button type="button" className="chat-react-modal-close" aria-label={t.cancel} disabled={adminSending} onClick={() => setAdminOpen(false)}><Icon name="close" size={17}/></button>
         <h2 id="chat-react-admin-title">{t.adminTitle}</h2>
         <p>{t.adminDescription}</p>
         <form onSubmit={(event) => void sendAdminMessage(event)}>

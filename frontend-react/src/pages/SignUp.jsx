@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import Icon from '../components/Icon.jsx'
 
 export default function SignUp() {
   const { register } = useAuth()
@@ -47,7 +48,7 @@ export default function SignUp() {
   return (
     <>
       <a className="back-link" href="/signin">
-        <span aria-hidden="true">←</span> Back to sign in
+        <Icon name="arrow-left" size={15}/> Back to sign in
       </a>
       <header className="card-heading">
         <h1>Create account</h1>

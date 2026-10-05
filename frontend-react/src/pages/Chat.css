@@ -101,7 +101,7 @@
 
 .chat-react-modal-backdrop { position: fixed; z-index: 70; inset: 0; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / 56%); }
 .chat-react-admin-dialog { position: relative; box-sizing: border-box; width: min(430px, 100%); padding: 25px; border: 1px solid #dbe5dc; border-radius: 10px; color: #26352d; background: #f8f8f4; box-shadow: 0 18px 60px rgb(0 0 0 / 32%); }
-.chat-react-modal-close { position: absolute; top: 8px; right: 11px; width: 30px; height: 30px; border: 0; border-radius: 50%; color: #4b5b51; background: transparent; font-size: 23px; cursor: pointer; }
+.chat-react-modal-close { position: absolute; top: 8px; right: 11px; display: grid; width: 30px; height: 30px; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #4b5b51; background: transparent; cursor: pointer; }
 .chat-react-modal-close:hover { background: #e8ece6; }
 .chat-react-modal-close:disabled { opacity: .6; cursor: wait; }
 .chat-react-admin-dialog h2 { margin: 0 28px 5px 0; color: #123b2d; font-family: Georgia, serif; font-size: 20px; font-weight: 500; }

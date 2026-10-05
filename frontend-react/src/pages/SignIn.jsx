@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import Icon from '../components/Icon.jsx'
 
 export default function SignIn() {
   const { login, error: sessionError } = useAuth()
@@ -31,7 +32,7 @@ export default function SignIn() {
   return (
     <>
       <a className="back-link" href="/">
-        <span aria-hidden="true">←</span> Back to home
+        <Icon name="arrow-left" size={15}/> Back to home
       </a>
       <header className="card-heading">
         <h1>Login</h1>

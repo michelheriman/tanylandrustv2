@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import Icon from '../components/Icon.jsx'
 import { loadParcels, saveParcelField } from './mainData.js'
 import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
 import ParcelMap from './ParcelMap.jsx'
@@ -10,10 +11,10 @@ import LandLaw from './LandLaw.jsx'
 import './Main.css'
 
 const tabs = [
-  { id: 'dashboard', icon: '◫', en: 'Parcel', fr: 'Parcelle' },
-  { id: 'crops', icon: '▣', en: 'Market Place', fr: 'Marché' },
-  { id: 'tasks', icon: '▤', en: 'Message', fr: 'Message' },
-  { id: 'yields', icon: '§', en: 'Land law', fr: 'Droit foncier' },
+  { id: 'dashboard', icon: 'parcel', en: 'Parcel', fr: 'Parcelle' },
+  { id: 'crops', icon: 'marketplace', en: 'Market Place', fr: 'Marché' },
+  { id: 'tasks', icon: 'message', en: 'Message', fr: 'Message' },
+  { id: 'yields', icon: 'scales', en: 'Land law', fr: 'Droit foncier' },
 ]
 
 const pages = {
@@ -264,7 +265,7 @@ function Dashboard({ lang }) {
         <div className="main-card-header"><h2>{lang === 'fr' ? 'Gestionnaire de données foncières' : 'Field Data Manager'}</h2></div>
         <div className="main-manager-layout">
             {addMode ? <form className="main-add-panel main-parcel-add-form" noValidate onSubmit={(event) => void submitAdd(event)}>
-              <div className="main-add-panel-heading"><div><h3>{lang === 'fr' ? 'Ajouter une parcelle' : 'Add New Parcel'}</h3><span className="main-add-step-count" aria-live="polite">{lang === 'fr' ? `Étape ${addStep} sur 2` : `Step ${addStep} of 2`}</span></div><button type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} onClick={closeAdd} disabled={savingAdd}>×</button></div>
+              <div className="main-add-panel-heading"><div><h3>{lang === 'fr' ? 'Ajouter une parcelle' : 'Add New Parcel'}</h3><span className="main-add-step-count" aria-live="polite">{lang === 'fr' ? `Étape ${addStep} sur 2` : `Step ${addStep} of 2`}</span></div><button type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} onClick={closeAdd} disabled={savingAdd}><Icon name="close" size={16}/></button></div>
               <p className="main-add-help">{draftGeometry ? (lang === 'fr' ? 'Contour dessiné. Complétez les informations puis validez.' : 'Boundary drawn. Complete the details and save.') : (lang === 'fr' ? 'Vous pouvez dessiner le contour sur la carte maintenant ou avant de valider.' : 'You can draw the parcel boundary on the map now or before saving.')}</p>
               <div className="main-add-step-fields" hidden={addStep !== 1} aria-hidden={addStep !== 1}>
                 <label htmlFor="add-parcel-parcel_name">{lang === 'fr' ? 'Nom de la parcelle' : 'Parcel name'}<input id="add-parcel-parcel_name" name="parcel_name" required value={addForm.parcel_name} onChange={(event) => setAddForm((current) => ({ ...current, parcel_name: event.target.value }))} /></label>
@@ -300,7 +301,7 @@ function Dashboard({ lang }) {
               <button type="button" onClick={() => void exportParcels()}>{lang === 'fr' ? 'Exporter' : 'Export'}</button>
             </div>
             <label className="main-search"><span className="sr-only">{lang === 'fr' ? 'Rechercher une parcelle' : 'Search parcels'}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={lang === 'fr' ? 'Rechercher…' : 'Search parcels…'} /></label>
-            <div className="main-sort-row"><span>{lang === 'fr' ? 'Filtre :' : 'Filter:'}</span><button type="button" className={`main-sort-pill${sort === 'date' ? ' is-selected' : ''}`} disabled={!hasParcelDates} aria-pressed={sort === 'date'} onClick={() => setSort((current) => current === 'date' ? 'name' : 'date')}>Date {sort === 'date' ? '⌄' : '↑'}</button><button type="button" className={`main-sort-pill${sort === 'name' ? ' is-selected' : ''}`} aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setNameDescending((current) => !current) }}>{nameDescending ? 'Z–A' : 'A–Z'}</button></div>
+            <div className="main-sort-row"><span>{lang === 'fr' ? 'Filtre :' : 'Filter:'}</span><button type="button" className={`main-sort-pill${sort === 'date' ? ' is-selected' : ''}`} disabled={!hasParcelDates} aria-pressed={sort === 'date'} onClick={() => setSort((current) => current === 'date' ? 'name' : 'date')}>Date <Icon name={sort === 'date' ? 'arrow-down' : 'arrow-up'} size={12}/></button><button type="button" className={`main-sort-pill${sort === 'name' ? ' is-selected' : ''}`} aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setNameDescending((current) => !current) }}>{nameDescending ? 'Z–A' : 'A–Z'}</button></div>
             {loading && <p className="main-list-state" role="status">{lang === 'fr' ? 'Chargement…' : 'Loading parcels…'}</p>}
             {error && <div className="main-list-state main-list-error" role="alert"><p>{error.message || (lang === 'fr' ? 'Impossible de charger les parcelles.' : 'Unable to load parcels.')}</p><button type="button" onClick={() => setReloadKey((key) => key + 1)}>{lang === 'fr' ? 'Réessayer' : 'Try again'}</button></div>}
             {notice && <p className="main-notice" role="status">{notice}</p>}
@@ -336,7 +337,7 @@ function Dashboard({ lang }) {
         if (!row) return null
         return <div className="main-edit-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeEdit() }}>
           <section className="main-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="main-edit-title">
-            <button className="main-edit-close" type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} disabled={savingEdit} onClick={closeEdit}>×</button>
+            <button className="main-edit-close" type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} disabled={savingEdit} onClick={closeEdit}><Icon name="close" size={18}/></button>
             <h2 id="main-edit-title">{lang === 'fr' ? 'Modifier la parcelle' : 'Edit Parcel'}</h2>
             <div className="main-edit-table-wrap"><table className="main-edit-table"><thead><tr>{fields.map((field) => <th key={field.key} scope="col">{field[lang]}</th>)}</tr></thead><tbody><tr>{fields.map((field) => <td key={field.key}><ParcelCell row={row} field={field} lang={lang} value={editDraft[field.key]} disabled={savingEdit} onChange={(value) => setEditDraft((current) => ({ ...current, [field.key]: value }))} /></td>)}</tr></tbody></table></div>
             {editError && <p className="main-edit-error" role="alert">{editError.message || (lang === 'fr' ? 'Échec de l’enregistrement.' : 'Unable to save parcel changes.')}</p>}
@@ -377,7 +378,7 @@ export default function Main() {
     window.location.replace('/signin')
   }
 
-  const nav = () => tabs.map((item) => <a key={item.id} href={item.id === 'dashboard' ? '/main' : `/main#${item.id}`} aria-current={tab === item.id ? 'page' : undefined} className={tab === item.id ? 'is-active' : ''} onClick={(event) => switchTab(event, item.id)}><span className="main-nav-icon" aria-hidden="true">{item.icon}</span><span>{item[lang]}</span></a>)
+  const nav = () => tabs.map((item) => <a key={item.id} href={item.id === 'dashboard' ? '/main' : `/main#${item.id}`} aria-current={tab === item.id ? 'page' : undefined} className={tab === item.id ? 'is-active' : ''} onClick={(event) => switchTab(event, item.id)}><span className="main-nav-icon"><Icon name={item.icon} size={17}/></span><span>{item[lang]}</span></a>)
   return <div className={`main-page${tab === 'crops' ? ' main-page-marketplace' : ''}`}>
     <header className="main-header"><div className="main-header-inner">
       <a className="main-brand" href="/" aria-label="Tany Landtrust, home"><span className="main-brand-name">tany Landtrust</span></a>

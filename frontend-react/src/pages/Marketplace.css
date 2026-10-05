@@ -111,6 +111,7 @@
 }
 .market-react-filters button[aria-pressed="true"] { border-color: #d8bb54; color: #fff; }
 .market-react-filters button:disabled { opacity: .5; cursor: not-allowed; }
+.market-react-filters button svg { vertical-align: -2px; }
 .market-react-count { margin-left: auto; color: rgb(239 243 234 / 78%); font-size: 9px; }
 
 .market-react-filter-panel { flex: 0 0 auto; margin: 0 0 8px; color: #f1f5ef; font-size: 9px; }
@@ -180,9 +181,12 @@
 .market-react-card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 0; }
 .market-react-card-actions button,
 .market-react-card-actions .market-react-report-link {
-  display: inline-flex;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   min-width: 0;
   min-height: 21px;
   padding: 3px 5px;
@@ -193,11 +197,12 @@
   font: inherit;
   font-size: 8px;
   line-height: 1.25;
+  text-align: center;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease;
 }
-.market-react-card-actions svg { width: 10px; height: 10px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.market-react-card-actions svg { display: block; width: 10px; height: 10px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .market-react-card-actions button:hover,
 .market-react-card-actions .market-react-report-link:hover { color: #173d30; background: #edf1e6; }
 .market-react-card-actions .market-react-report-link { text-decoration: none; }
@@ -219,7 +224,7 @@
 .market-react-detail[aria-labelledby="market-product-title"] .market-react-back:hover { background: rgb(255 255 255 / 15%); }
 .market-react-detail h2 { margin: 18px 0 8px; color: #1f2937; font-size: 24px; font-weight: 600; }
 .market-react-detail p { line-height: 1.5; }
-.market-react-back { padding: 7px 11px; border: 1px solid #d1d5db; border-radius: 5px; color: #374151; background: #f3f4f6; cursor: pointer; }
+.market-react-back { display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border: 1px solid #d1d5db; border-radius: 5px; color: #374151; background: #f3f4f6; cursor: pointer; }
 .market-react-facts, .market-react-report-grid dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 22px 0; }
 .market-react-facts div, .market-react-report-grid article { min-width: 0; padding: 14px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
 .market-react-facts dt, .market-react-report-grid dt { color: #6b7280; font-size: 12px; }

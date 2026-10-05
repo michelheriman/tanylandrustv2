@@ -19,10 +19,10 @@ export const HOME_TRANSLATIONS = {
     stat2_label: 'Regions covered',
     scroll_hint: 'Scroll',
 
-    trust1: '🔒 End-to-end encrypted negotiation',
-    trust2: '🗺 Certified geospatial data',
-    trust3: '⚖️ Court-admissible records',
-    trust4: '📱 Mobile-first design',
+    trust1: 'End-to-end encrypted negotiation',
+    trust2: 'Certified geospatial data',
+    trust3: 'Court-admissible records',
+    trust4: 'Mobile-first design',
 
     feat_eyebrow: 'What Tany offers',
     feat_h2_line1: 'Three pillars.',
@@ -60,7 +60,7 @@ export const HOME_TRANSLATIONS = {
     gis_d3_label: 'Nearest hospital',
     gis_d4_label: 'Flood risk',
     gis_d4_val: 'Low',
-    gis_dl_btn: 'Download full GeoReport →',
+    gis_dl_btn: 'Download full GeoReport',
 
     neg_eyebrow: 'Negotiation Platform',
     neg_h2_line1: 'Every word,',
@@ -157,10 +157,10 @@ export const HOME_TRANSLATIONS = {
     stat2_label: 'Régions couvertes',
     scroll_hint: 'Défiler',
 
-    trust1: '🔒 Négociation chiffrée de bout en bout',
-    trust2: '🗺 Données géospatiales certifiées',
-    trust3: '⚖️ Dossiers recevables en justice',
-    trust4: '📱 Conçu pour mobile',
+    trust1: 'Négociation chiffrée de bout en bout',
+    trust2: 'Données géospatiales certifiées',
+    trust3: 'Dossiers recevables en justice',
+    trust4: 'Conçu pour mobile',
 
     feat_eyebrow: 'Ce que Tany propose',
     feat_h2_line1: 'Trois piliers.',
@@ -198,7 +198,7 @@ export const HOME_TRANSLATIONS = {
     gis_d3_label: 'Hôpital le plus proche',
     gis_d4_label: 'Risque inondation',
     gis_d4_val: 'Faible',
-    gis_dl_btn: 'Télécharger le GéoRapport complet →',
+    gis_dl_btn: 'Télécharger le GéoRapport complet',
 
     neg_eyebrow: 'Plateforme de Négociation',
     neg_h2_line1: 'Chaque mot,',

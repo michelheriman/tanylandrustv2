@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useAuth } from '../auth/useAuth.js'
+import Icon from '../components/Icon.jsx'
+import { iconMarkup } from '../components/iconPaths.js'
 import { geoReportErrorMessage, loadGeoReport, proximityPlaces } from './geoReportData.js'
 import './GeoReport.css'
 
@@ -68,14 +70,14 @@ function GeoReportMap({ report, lang }) {
     if (Number.isFinite(radius) && radius > 0) {
       L.circle([latitude, longitude], { color: '#2d6a4f', fillColor: '#52b788', fillOpacity: 0.08, weight: 1.5, radius }).addTo(map)
     }
-    const icons = { hospital: '🏥', market: '🏪', transport: '🚌' }
+    const icons = { hospital: 'hospital', market: 'store', transport: 'bus' }
     Object.entries(report.proximity.results).forEach(([category, entries]) => {
       if (!Array.isArray(entries)) return
       entries.forEach((entry) => {
         const lat = Number(entry?.lat)
         const lon = Number(entry?.lon)
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return
-        L.marker([lat, lon], { icon: L.divIcon({ className: 'georeport-proximity-marker', html: icons[category] || '📍', iconSize: [24, 24], iconAnchor: [12, 12] }) })
+        L.marker([lat, lon], { icon: L.divIcon({ className: 'georeport-proximity-marker', html: iconMarkup(icons[category] || 'pin', 20), iconSize: [24, 24], iconAnchor: [12, 12] }) })
           .addTo(map).bindPopup(popupNode(entry?.name || category))
       })
     })
@@ -149,7 +151,7 @@ export default function GeoReport({ parcelUuid }) {
         </div>
       </header>
       <nav className="georeport-top-actions" aria-label={lang === 'fr' ? 'Actions du rapport' : 'Report actions'}>
-        <a href={backHref}>← {t.back}</a>
+        <a href={backHref}><Icon name="arrow-left" size={15}/>{t.back}</a>
         <span>{t.parcel} UUID: <code>{parcelUuid}</code></span>
       </nav>
 
@@ -208,9 +210,9 @@ export default function GeoReport({ parcelUuid }) {
 
         <section className="georeport-section" aria-labelledby="gr-proximity">
           <SectionTitle id="gr-proximity">{t.proximity}</SectionTitle>
-          <div className="georeport-proximity-grid">{[['hospital', t.hospital, '🏥'], ['market', t.market, '🏪'], ['transport', t.transport, '🚌']].map(([key, title, icon]) => {
+          <div className="georeport-proximity-grid">{[['hospital', t.hospital, 'hospital'], ['market', t.market, 'store'], ['transport', t.transport, 'bus']].map(([key, title, icon]) => {
             const places = proximityPlaces(proximity.results, key)
-            return <article className="georeport-proximity-card" key={key}><span className="georeport-proximity-icon" aria-hidden="true">{icon}</span><h3>{title}</h3>{Array.isArray(places) ? <ul className="georeport-proximity-list">{places.map((place, index) => <li key={`${key}-${index}`}><strong>{place.name || t.unknown}</strong><small>{place.distanceKm === null ? t.unknown : `${number(place.distanceKm, 2)} km`}</small></li>)}</ul> : places === null ? <div className="georeport-no-data">{t.none}</div> : <div className="georeport-no-data">{t.unknown}</div>}</article>
+            return <article className="georeport-proximity-card" key={key}><span className="georeport-proximity-icon"><Icon name={icon} size={19}/></span><h3>{title}</h3>{Array.isArray(places) ? <ul className="georeport-proximity-list">{places.map((place, index) => <li key={`${key}-${index}`}><strong>{place.name || t.unknown}</strong><small>{place.distanceKm === null ? t.unknown : `${number(place.distanceKm, 2)} km`}</small></li>)}</ul> : places === null ? <div className="georeport-no-data">{t.none}</div> : <div className="georeport-no-data">{t.unknown}</div>}</article>
           })}</div>
         </section>
 

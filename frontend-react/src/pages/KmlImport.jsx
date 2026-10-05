@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import Icon from '../components/Icon.jsx'
 import {
   KML_CURRENCIES,
   KML_CURRENCY_LABELS,
@@ -94,7 +95,7 @@ export default function KmlImport({ request, userEmail, onClose, onImported, lan
   return <section className={`main-add-panel main-kml-panel${layout === 'manager-column' ? ' is-manager-column' : ''}`} aria-label={labels.title}>
     <div className="main-add-panel-heading">
       <div><h3>{labels.title}</h3></div>
-      <button type="button" aria-label={labels.close} onClick={onClose} disabled={saving}>×</button>
+      <button type="button" aria-label={labels.close} onClick={onClose} disabled={saving}><Icon name="close" size={16}/></button>
     </div>
 
     <form className="main-kml-form" onSubmit={(event) => void submit(event)}>
@@ -130,7 +131,7 @@ export default function KmlImport({ request, userEmail, onClose, onImported, lan
         <input ref={fileInput} type="file" accept=".kml,application/vnd.google-earth.kml+xml" aria-label={labels.kml} onChange={(event) => selectFile(event.target.files?.[0])} />
         <button type="button" onClick={() => fileInput.current?.click()} disabled={saving}>{labels.browse}</button>
       </div>
-      {file && <div className="main-kml-file-info"><span><strong>{file.name}</strong><small>{formatFileSize(file.size)} · ≤ {MAX_KML_FILE_SIZE / (1024 * 1024)} MB</small></span><button type="button" aria-label={labels.remove} disabled={saving} onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}>×</button></div>}
+      {file && <div className="main-kml-file-info"><span><strong>{file.name}</strong><small>{formatFileSize(file.size)} · ≤ {MAX_KML_FILE_SIZE / (1024 * 1024)} MB</small></span><button type="button" aria-label={labels.remove} disabled={saving} onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}><Icon name="close" size={14}/></button></div>}
       {error && <p className="main-add-error" role="alert">{error}</p>}
       {saving && <div className="main-kml-progress" role="status"><span />{labels.uploading}</div>}
       <div className="main-add-actions">
