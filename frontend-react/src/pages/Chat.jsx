@@ -8,6 +8,7 @@ import {
   sendAdminMessage as postAdminMessage,
   sendConversationReply,
 } from './chatData.js'
+import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
 import './Chat.css'
 
 const copy = {
@@ -68,6 +69,8 @@ export default function Chat({ lang = 'en' }) {
   const [adminSending, setAdminSending] = useState(false)
   const [adminError, setAdminError] = useState('')
   const endOfMessages = useRef(null)
+  const adminDialogRef = useRef(null)
+  const adminTriggerRef = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -114,8 +117,22 @@ export default function Chat({ lang = 'en' }) {
   }, [messages])
 
   useEffect(() => {
+    if (adminOpen) {
+      focusFirstDialogField(adminDialogRef.current)
+      return undefined
+    }
+    restoreDialogFocus(adminTriggerRef.current)
+    adminTriggerRef.current = null
+    return undefined
+  }, [adminOpen])
+
+  useEffect(() => {
     if (!adminOpen) return undefined
-    const closeOnEscape = (event) => { if (event.key === 'Escape' && !adminSending) setAdminOpen(false) }
+    const closeOnEscape = (event) => {
+      handleDialogKeydown(event, adminDialogRef.current, () => {
+        if (!adminSending) setAdminOpen(false)
+      })
+    }
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [adminOpen, adminSending])
@@ -180,7 +197,7 @@ export default function Chat({ lang = 'en' }) {
       <aside className="chat-react-sidebar" aria-label={t.chat}>
         <div className="chat-react-sidebar-heading">
           <h2>{t.chat}</h2>
-          <button type="button" className="chat-react-admin-trigger" aria-label={t.admin} title={t.admin} onClick={() => { setAdminError(''); setAdminOpen(true) }}>
+          <button type="button" className="chat-react-admin-trigger" aria-label={t.admin} title={t.admin} onClick={(event) => { adminTriggerRef.current = event.currentTarget; setAdminError(''); setAdminOpen(true) }}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.8 7.3L3 20l1.2-4.4A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8 11.5h8M12 8v7"/></svg>
           </button>
         </div>
@@ -246,7 +263,7 @@ export default function Chat({ lang = 'en' }) {
     </div>
 
     {adminOpen && <div className="chat-react-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !adminSending) setAdminOpen(false) }}>
-      <section className="chat-react-admin-dialog" role="dialog" aria-modal="true" aria-labelledby="chat-react-admin-title">
+      <section ref={adminDialogRef} className="chat-react-admin-dialog" role="dialog" aria-modal="true" aria-labelledby="chat-react-admin-title" tabIndex={-1}>
         <button type="button" className="chat-react-modal-close" aria-label={t.cancel} disabled={adminSending} onClick={() => setAdminOpen(false)}><Icon name="close" size={17}/></button>
         <h2 id="chat-react-admin-title">{t.adminTitle}</h2>
         <p>{t.adminDescription}</p>

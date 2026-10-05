@@ -66,7 +66,7 @@ test('Escape invokes the dialog close action', () => {
 })
 
 test('closing restores focus to the opener and Main wires the focus lifecycle', () => {
-  const { dialog, document, makeElement } = makeDialog()
+  const { document, makeElement } = makeDialog()
   const opener = makeElement()
   document.activeElement = opener
   restoreDialogFocus(opener)
@@ -78,5 +78,20 @@ test('closing restores focus to the opener and Main wires the focus lifecycle', 
   assert.match(mainSource, /restoreDialogFocus\(editTriggerRef\.current\)/)
   assert.match(mainSource, /handleDialogKeydown\(event, editDialogRef\.current, closeEdit\)/)
   assert.match(mainSource, /ref=\{editDialogRef\}[^>]*role="dialog" aria-modal="true"/)
-  assert.ok(dialog)
+})
+
+test('Chat admin dialog uses the shared focus lifecycle and preserves its successful-send flow', () => {
+  const chatSource = readFileSync(new URL('./Chat.jsx', import.meta.url), 'utf8')
+  assert.match(chatSource, /import \{ focusFirstDialogField, handleDialogKeydown, restoreDialogFocus \} from '\.\/mainDialogFocus\.js'/)
+  assert.match(chatSource, /adminTriggerRef\.current = event\.currentTarget/)
+  assert.match(chatSource, /focusFirstDialogField\(adminDialogRef\.current\)/)
+  assert.match(chatSource, /restoreDialogFocus\(adminTriggerRef\.current\)/)
+  assert.match(chatSource, /handleDialogKeydown\(event, adminDialogRef\.current, \(\) => \{/)
+  assert.match(chatSource, /if \(!adminSending\) setAdminOpen\(false\)/)
+  assert.match(chatSource, /ref=\{adminDialogRef\}[^>]*role="dialog" aria-modal="true"/)
+
+  assert.match(chatSource, /await postAdminMessage\(request, user\.email, adminSubject, adminContent, globalThis\.crypto\.randomUUID\(\)\)/)
+  assert.match(chatSource, /setAdminSubject\(''\)\s*setAdminContent\(''\)\s*setAdminOpen\(false\)\s*setConversationsLoading\(true\)\s*setConversationRetry/)
+  assert.match(chatSource, /setMessages\(\(current\) => \[\.\.\.current, \{ \.\.\.body, created_at: t\.now, localEcho: true \}\]\)/)
+  assert.match(chatSource, /endOfMessages\.current\?\.scrollIntoView/)
 })
