@@ -1,0 +1,385 @@
+.land-law-page {
+  position: relative;
+  left: 50%;
+  width: 100vw;
+  min-height: calc(100svh - 58px);
+  margin: -9px 0 -24px;
+  padding: 18px clamp(16px, 4.2vw, 54px) 56px;
+  box-sizing: border-box;
+  color: #f7f2df;
+  background-color: #062f24;
+  background-image:
+    radial-gradient(ellipse at 12% 22%, transparent 0 20%, rgb(202 207 151 / 8%) 20.2% 20.5%, transparent 20.7% 25%, rgb(202 207 151 / 7%) 25.2% 25.5%, transparent 25.7% 31%, rgb(202 207 151 / 6%) 31.2% 31.5%, transparent 31.7%),
+    radial-gradient(ellipse at 88% 68%, transparent 0 16%, rgb(202 207 151 / 8%) 16.2% 16.5%, transparent 16.7% 22%, rgb(202 207 151 / 7%) 22.2% 22.5%, transparent 22.7% 29%, rgb(202 207 151 / 6%) 29.2% 29.5%, transparent 29.7%),
+    repeating-radial-gradient(ellipse at 44% 103%, transparent 0 24px, rgb(202 207 151 / 5%) 25px 26px, transparent 27px 48px),
+    linear-gradient(145deg, #0b4030, #03291f 58%, #0a3a2b);
+  transform: translateX(-50%);
+}
+
+.land-law-shell { width: min(100%, 1000px); margin: 0 auto; }
+.land-law-title-card {
+  display: flex;
+  min-height: 72px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 24px;
+  border: 1px solid rgb(255 255 255 / 88%);
+  border-radius: 6px;
+  color: #171b17;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+}
+.land-law-title-card h1 {
+  margin: 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #30342f;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(19px, 2.3vw, 27px);
+  font-weight: 500;
+  line-height: 1.2;
+}
+.land-law-title-card p { max-width: 680px; margin: 4px 0 0; color: #252a25; font-size: 10px; line-height: 1.45; }
+
+.land-law-country-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 15px auto 16px;
+}
+.land-law-country-tab {
+  min-width: 0;
+  min-height: 35px;
+  padding: 7px 10px;
+  border: 1px solid rgb(242 243 233 / 55%);
+  border-radius: 5px;
+  color: #15271e;
+  background: #e2e2df;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+}
+.land-law-country-tab:hover { border-color: #f0cd65; background: #f3ead0; }
+.land-law-country-tab.is-active { border-color: #d7b454; color: #10281d; background: #d7b454; }
+
+.land-law-country-panel {
+  width: min(100%, 790px);
+  margin: 0 auto;
+  padding: clamp(12px, 2.3vw, 23px);
+  border: 1px solid rgb(214 229 205 / 25%);
+  border-radius: 8px;
+  background: rgb(3 43 32 / 36%);
+  box-shadow: 0 12px 35px rgb(0 0 0 / 15%);
+  backdrop-filter: blur(2px);
+}
+.land-law-country-content .country { display: block; margin: 0; padding: 0; border: 0; animation: none; }
+.land-law-country-content .country-header { display: flex; align-items: center; justify-content: center; gap: 9px; margin: 0 0 14px; text-align: center; }
+.land-law-country-content .country-flag { margin: 0; font-size: 25px; }
+.land-law-country-content .country-title-block { min-width: 0; }
+.land-law-country-content .country-label { margin-bottom: 2px; color: #e5c76f; font-size: 9px; letter-spacing: .12em; }
+.land-law-country-content .country-title { color: #fff; font-family: 'Playfair Display', Georgia, serif; font-size: clamp(18px, 2.2vw, 24px); font-weight: 500; }
+.land-law-country-content .country-subtitle { margin-top: 3px; color: rgb(244 244 231 / 74%); font-size: 10px; line-height: 1.45; }
+
+.land-law-country-content .summary-card {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid rgb(255 226 142 / 65%);
+  border-radius: 7px;
+  color: #1d281d;
+  background: #d7b454;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+.land-law-country-content .summary-card::before { color: rgb(54 67 39 / 10%); }
+.land-law-country-content .summary-card p { font-size: 11px; line-height: 1.55; }
+.land-law-country-content .law-section {
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border: 1px solid rgb(233 239 221 / 24%);
+  border-radius: 6px;
+  background: rgb(234 243 226 / 7%);
+}
+.land-law-country-content .law-section h3 { margin: 0 0 8px; padding-bottom: 6px; border-color: rgb(233 239 221 / 24%); color: #e5c76f; font-size: 9px; letter-spacing: .11em; }
+.land-law-country-content .law-section p { margin: 0 0 7px; color: #f2f0e5; font-size: 10px; line-height: 1.6; }
+.land-law-country-content .law-section p:last-child { margin-bottom: 0; }
+.land-law-country-content .key-laws { margin-top: 4px; border-collapse: collapse; color: #f6f4e9; font-size: 9px; }
+.land-law-country-content .key-laws th { padding: 7px 8px; border-bottom: 1px solid rgb(237 239 219 / 30%); color: #f6e5a7; background: rgb(0 30 21 / 38%); font-size: 8px; letter-spacing: .05em; }
+.land-law-country-content .key-laws td { padding: 7px 8px; border-bottom: 1px solid rgb(237 239 219 / 15%); color: #f0f1e4; font-size: 9px; line-height: 1.45; }
+.land-law-country-content .law-name { color: #f5d77d; }
+.land-law-country-content .doc-link { margin: 3px 3px 0 0; border-color: rgb(239 219 156 / 42%); color: #f2dc9b; font-size: 8px; }
+.land-law-country-content .doc-link:hover { color: #fff; background: rgb(255 255 255 / 10%); }
+.land-law-country-content .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 10px; }
+.land-law-country-content .info-box { padding: 12px 14px; border: 1px solid rgb(255 233 172 / 65%); border-radius: 6px; background: #d7b454; }
+.land-law-country-content .info-box h4 { margin: 0 0 7px; color: #283222; font-size: 9px; letter-spacing: .08em; }
+.land-law-country-content .info-box ul { color: #253025; font-size: 9px; line-height: 1.5; }
+.land-law-country-content .info-box ul li { padding: 2px 0 2px 12px; }
+.land-law-country-content .info-box ul li::before { color: #304b31; }
+.land-law-country-content .alert { margin: 0 0 10px; padding: 10px 13px; border-left-color: #e6c460; border-radius: 0 5px 5px 0; color: #f3f0e3; background: rgb(230 233 207 / 9%); font-size: 9px; line-height: 1.55; }
+.land-law-country-content .alert strong { color: #f2d378; }
+
+.land-law-topics { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin: 14px 0 2px; }
+.land-law-topic {
+  min-height: 26px;
+  padding: 5px 11px;
+  border: 1px solid rgb(228 236 216 / 68%);
+  border-radius: 100px;
+  color: #f3f2e8;
+  background: rgb(5 43 32 / 35%);
+  font-size: 8px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+}
+.land-law-topic:hover { border-color: #e2c365; background: rgb(215 180 84 / 15%); }
+.land-law-topic.is-active { border-color: #d7b454; color: #193122; background: #d7b454; font-weight: 650; }
+.land-law-disclaimer { margin: 12px 0 0; color: rgb(240 238 221 / 68%); font-size: 8px; line-height: 1.5; }
+.land-law-disclaimer strong { color: #eed47e; }
+.land-law-footer { display: grid; gap: 2px; margin: 18px auto 0; color: rgb(234 235 219 / 55%); text-align: center; font-size: 8px; line-height: 1.45; }
+.land-law-footer strong { color: #f0d981; font-size: 9px; font-weight: 600; }
+
+@media (max-width: 700px) {
+  .land-law-page { padding: 12px 11px 80px; background-attachment: scroll; }
+  .land-law-title-card { min-height: 74px; padding: 10px 12px; }
+  .land-law-title-card h1 { font-size: clamp(18px, 5vw, 22px); }
+  .land-law-title-card p { font-size: 9px; }
+  .land-law-country-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 11px auto; }
+  .land-law-country-tab { min-height: 36px; font-size: 10px; }
+  .land-law-country-panel { padding: 11px 9px; }
+  .land-law-country-content .country-header { align-items: flex-start; margin-bottom: 11px; }
+  .land-law-country-content .country-flag { font-size: 21px; }
+  .land-law-country-content .country-subtitle { font-size: 9px; }
+  .land-law-country-content .summary-card { padding: 11px 12px; }
+  .land-law-country-content .law-section { padding: 10px; overflow-x: auto; }
+  .land-law-country-content .key-laws { min-width: 520px; }
+  .land-law-country-content .two-col { grid-template-columns: 1fr; }
+  .land-law-topic { min-height: 29px; padding-inline: 9px; }
+}
+
+/* Match the compact, open layout of the Land Law reference. */
+.land-law-page {
+  left: 0;
+  width: calc(100% + clamp(16px, 5.7vw, 82px) + clamp(16px, 5.7vw, 82px));
+  margin-left: calc(-1 * clamp(16px, 5.7vw, 82px));
+  padding-right: 4.2vw;
+  padding-left: 6.2vw;
+  padding-top: 22px;
+  padding-bottom: 42px;
+  background-attachment: scroll;
+  transform: none;
+}
+
+.land-law-title-card {
+  min-height: 120px;
+  padding: 8px 18px;
+  border-radius: 5px;
+  box-shadow: none;
+}
+
+.land-law-title-card h1 {
+  font-size: clamp(26px, 3.5vw, 34px);
+}
+
+.land-law-title-card p {
+  margin-top: 3px;
+  font-size: clamp(9px, 1.3vw, 11px);
+}
+
+.land-law-country-tabs {
+  gap: 6px;
+  margin: 27px auto 34px;
+}
+
+.land-law-country-tab {
+  min-height: 27px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: clamp(7px, .9vw, 10px);
+}
+
+.land-law-page .land-law-country-tab {
+  font-size: clamp(9px, 1.3vw, 11px);
+}
+
+.land-law-country-panel {
+  width: min(74.5%, 790px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.land-law-country-content .country-header {
+  display: block;
+  margin: 0 0 7px;
+}
+
+.land-law-country-content .country-flag,
+.land-law-country-content .country-label {
+  display: none;
+}
+
+.land-law-country-content .country-title {
+  font-size: clamp(21px, 3.1vw, 25px);
+}
+
+.land-law-country-content .country-subtitle {
+  margin-top: 2px;
+  font-size: clamp(7px, 1vw, 9px);
+  line-height: 1.3;
+}
+
+.land-law-country-content .summary-card {
+  margin-bottom: 7px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.land-law-country-content .summary-card p {
+  font-size: clamp(6px, .72vw, 8px);
+  line-height: 1.35;
+}
+
+.land-law-country-content .law-section {
+  margin-bottom: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.land-law-country-content .law-section h3 {
+  margin-bottom: 3px;
+  padding-bottom: 0;
+  border: 0;
+  font-size: clamp(6px, .7vw, 8px);
+  letter-spacing: .03em;
+}
+
+.land-law-country-content .law-section p {
+  margin-bottom: 3px;
+  font-size: clamp(7px, .9vw, 9px);
+  line-height: 1.5;
+}
+
+.land-law-country-content .key-laws {
+  width: 100%;
+  margin-top: 2px;
+  font-size: clamp(7px, .85vw, 8px);
+}
+
+.land-law-country-content .key-laws th {
+  padding: 4px 5px;
+  font-size: clamp(7px, .8vw, 8px);
+}
+
+.land-law-country-content .key-laws td {
+  padding: 4px 5px;
+  font-size: clamp(7px, .8vw, 8px);
+  line-height: 1.35;
+}
+
+.land-law-country-content .two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 7px 0 6px;
+}
+
+.land-law-country-content .info-box {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 4px;
+}
+
+.land-law-country-content .info-box h4 {
+  margin-bottom: 4px;
+  font-size: clamp(7px, .8vw, 8px);
+  letter-spacing: .02em;
+}
+
+.land-law-country-content .info-box ul {
+  margin: 0;
+  padding-left: 12px;
+  font-size: clamp(7px, .78vw, 8px);
+  line-height: 1.4;
+}
+
+.land-law-country-content .info-box ul li {
+  padding: 1px 0 1px 2px;
+}
+
+.land-law-country-content .two-col {
+  grid-template-columns: 39% 39%;
+  column-gap: 21%;
+}
+
+.land-law-country-content .alert {
+  margin: 5px 0 6px;
+  padding: 8px 7px;
+  border: 0;
+  border-radius: 2px;
+  background: rgb(236 240 222 / 20%);
+  font-size: clamp(6px, .67vw, 7px);
+  line-height: 1.35;
+}
+
+.land-law-topics {
+  gap: 5px;
+  margin: 20px 0 0;
+}
+
+.land-law-topic {
+  min-height: 18px;
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 3px 8px;
+  font-size: clamp(6px, .65vw, 7px);
+  text-align: center;
+}
+
+.land-law-page .land-law-topic {
+  font-size: clamp(6px, .65vw, 7px);
+}
+
+.land-law-disclaimer {
+  margin-top: 136px;
+  font-size: 6px;
+}
+
+.land-law-footer {
+  margin-top: 10px;
+}
+
+@media (max-width: 700px) {
+  .land-law-page {
+    width: 100vw;
+    left: 0;
+    margin-left: -10px;
+    padding: 8px 11px 72px;
+    transform: none;
+  }
+  .land-law-title-card { min-height: 80px; }
+  .land-law-title-card h1 { font-size: clamp(19px, 4vw, 25px); }
+  .land-law-title-card p { font-size: 9px; }
+  .land-law-country-panel { width: min(100%, 790px); }
+  .land-law-country-content .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .land-law-country-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 14px auto 16px; }
+  .land-law-country-tab { padding-inline: 3px; font-size: 7px; }
+  .land-law-page .land-law-country-tab { min-height: 23px; font-size: 7px; }
+  .land-law-country-content .country-title { font-size: clamp(18px, 4vw, 24px); }
+  .land-law-country-content .info-box { padding: 8px; }
+  .land-law-topics { margin-top: 12px; }
+  .land-law-disclaimer { margin-top: 18px; }
+  .land-law-country-content .key-laws { width: 100%; min-width: 0; table-layout: fixed; }
+  .land-law-country-content .key-laws td { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 440px) {
+  .land-law-country-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .land-law-country-content .two-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .land-law-country-content .info-box { width: 100%; }
+}
