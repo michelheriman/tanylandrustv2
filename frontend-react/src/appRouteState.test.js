@@ -17,7 +17,21 @@ test('unavailable protected routes keep the retryable service error screen', () 
   assert.equal(resolveAuthRoute('/main.html', 'unavailable'), 'unavailable')
   assert.equal(resolveAuthRoute('/georeport/parcel-uuid', 'unavailable', { isGeoReport: true }), 'unavailable')
   assert.match(appSource, /if \(routeView === 'unavailable'\)/)
+  assert.match(appSource, /\{copy\.unavailableTitle\}/)
+  assert.match(appSource, /error\?\.message \?\? copy\.retryHelp/)
+  assert.match(appSource, /\{copy\.retry\}/)
   assert.match(appSource, /onClick=\{\(\) => void restore\(\{ retry: true \}\)\}/)
+})
+
+test('App state labels are available in both supported languages', async () => {
+  const { AUTH_TRANSLATIONS } = await import('./authTranslations.js')
+
+  assert.equal(AUTH_TRANSLATIONS.en.app.restoring, 'Restoring your session…')
+  assert.equal(AUTH_TRANSLATIONS.fr.app.restoring, 'Restauration de votre session…')
+  assert.equal(AUTH_TRANSLATIONS.en.app.unavailableTitle, 'Your dashboard is temporarily unavailable')
+  assert.equal(AUTH_TRANSLATIONS.fr.app.unavailableTitle, 'Votre tableau de bord est temporairement indisponible')
+  assert.equal(AUTH_TRANSLATIONS.en.app.retry, 'Try again')
+  assert.equal(AUTH_TRANSLATIONS.fr.app.retry, 'Réessayer')
 })
 
 test('anonymous protected routes still redirect to Sign In', () => {

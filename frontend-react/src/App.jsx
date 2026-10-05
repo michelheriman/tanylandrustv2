@@ -7,10 +7,14 @@ import Main from './pages/Main.jsx'
 import GeoReport from './pages/GeoReport.jsx'
 import LegalPage from './pages/LegalPage.jsx'
 import { resolveAuthRoute } from './appRouteState.js'
+import { readLanguage } from './languageStorage.js'
+import { AUTH_TRANSLATIONS } from './authTranslations.js'
 import './App.css'
 
 function App() {
   const { status, error, restore } = useAuth()
+  const language = readLanguage()
+  const copy = AUTH_TRANSLATIONS[language].app
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
   const isHome = pathname === '/'
   const isMain = pathname === '/main' || pathname === '/main.html'
@@ -26,8 +30,8 @@ function App() {
 
   useEffect(() => {
     if (isHome || legalDocument || status === 'authenticated') return
-    document.title = `${isSignUp ? 'Sign up' : 'Login'} | Tany LandTrust`
-  }, [isHome, isSignUp, legalDocument, status])
+    document.title = isSignUp ? copy.signUpTitle : copy.signInTitle
+  }, [isHome, isSignUp, legalDocument, status, copy.signInTitle, copy.signUpTitle])
 
   useEffect(() => {
     if (isHome) return
@@ -41,7 +45,7 @@ function App() {
   if (legalDocument) return <LegalPage document={legalDocument} />
 
   if (routeView === 'restoring') {
-    return <main className="status-screen" role="status" aria-live="polite">Restoring your session…</main>
+    return <main className="status-screen" role="status" aria-live="polite">{copy.restoring}</main>
   }
 
   if (routeView === 'unavailable') {
@@ -49,9 +53,9 @@ function App() {
       <main className="status-screen">
         <section className="status-panel" aria-labelledby="restore-title">
           <p className="eyebrow">Tany | LandTrust</p>
-          <h1 id="restore-title">Your dashboard is temporarily unavailable</h1>
-          <p role="alert">{error?.message ?? 'Check your connection and try again.'}</p>
-          <button type="button" onClick={() => void restore({ retry: true })}>Try again</button>
+          <h1 id="restore-title">{copy.unavailableTitle}</h1>
+          <p role="alert">{error?.message ?? copy.retryHelp}</p>
+          <button type="button" onClick={() => void restore({ retry: true })}>{copy.retry}</button>
         </section>
       </main>
     )
@@ -61,19 +65,19 @@ function App() {
 
   if (routeView === 'main') return <Main />
 
-  if (routeView === 'redirect') return <main className="status-screen" role="status">Redirecting to sign in…</main>
+  if (routeView === 'redirect') return <main className="status-screen" role="status">{copy.redirecting}</main>
 
   return (
     <main className="auth-scene">
-      <section className="auth-card" aria-label={isSignUp ? 'Tany LandTrust sign up' : 'Tany LandTrust login'}>
+      <section className="auth-card" aria-label={isSignUp ? copy.signUpCardLabel : copy.signInCardLabel}>
         <aside className="brand-panel">
           <p className="brand-name">Tany | LandTrust</p>
           <div className="brand-copy">
-            <h1>{isSignUp ? 'Create your LandTrust account' : 'Access your LandTrust Dashboard'}</h1>
-            <p>{isSignUp ? 'Join Tany to manage your land, documents, and transactions with confidence.' : 'Manage your land, documents, and transactions with confidence, all in one place.'}</p>
+            <h1>{isSignUp ? copy.signUpHeading : copy.signInHeading}</h1>
+            <p>{isSignUp ? copy.signUpDescription : copy.signInDescription}</p>
           </div>
         </aside>
-        <section className="form-panel" aria-label={isSignUp ? 'Create account' : 'Sign in'}>
+        <section className="form-panel" aria-label={isSignUp ? copy.signUpFormLabel : copy.signInFormLabel}>
           {isSignUp ? <SignUp /> : <SignIn />}
         </section>
       </section>

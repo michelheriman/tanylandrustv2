@@ -2,9 +2,12 @@ import { useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
 import { acquireSubmissionLock, releaseSubmissionLock } from './signupSubmission.js'
+import { readLanguage } from '../languageStorage.js'
+import { AUTH_TRANSLATIONS } from '../authTranslations.js'
 
 export default function SignUp() {
   const { register } = useAuth()
+  const copy = AUTH_TRANSLATIONS[readLanguage()].signUp
   const [pending, setPending] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
@@ -18,7 +21,7 @@ export default function SignUp() {
     const password = values.get('password')
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long.')
+      setError(copy.passwordTooShort)
       requestAnimationFrame(() => errorRef.current?.focus())
       return
     }
@@ -39,9 +42,9 @@ export default function SignUp() {
       setSuccess(true)
       window.setTimeout(() => window.location.assign('/signin'), 2000)
     } catch (failure) {
-      if (failure.status === 409) setError('That email or username is already in use.')
-      else if (failure.status === 400) setError('Please check the required fields and try again.')
-      else setError(failure.message || 'Registration failed. Please try again.')
+      if (failure.status === 409) setError(copy.accountInUse)
+      else if (failure.status === 400) setError(copy.requiredFields)
+      else setError(failure.message || copy.registrationFailed)
       requestAnimationFrame(() => errorRef.current?.focus())
     } finally {
       releaseSubmissionLock(submitting)
@@ -52,52 +55,52 @@ export default function SignUp() {
   return (
     <>
       <a className="back-link" href="/signin">
-        <Icon name="arrow-left" size={15}/> Back to sign in
+        <Icon name="arrow-left" size={15}/> {copy.backToSignIn}
       </a>
       <header className="card-heading">
-        <h1>Create account</h1>
-        <p>Free to join — takes less than a minute</p>
+        <h1>{copy.title}</h1>
+        <p>{copy.subtitle}</p>
       </header>
       <form className="signup-form" onSubmit={handleSubmit} aria-busy={pending}>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-name">Full name</label>
-          <input id="signup-name" name="name" type="text" autoComplete="name" placeholder="Full name" required readOnly={pending || success} />
+          <label className="sr-only" htmlFor="signup-name">{copy.nameLabel}</label>
+          <input id="signup-name" name="name" type="text" autoComplete="name" placeholder={copy.namePlaceholder} required readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-email">Email address</label>
-          <input id="signup-email" name="email" type="email" autoComplete="email" placeholder="Email address" required spellCheck="false" readOnly={pending || success} />
+          <label className="sr-only" htmlFor="signup-email">{copy.emailLabel}</label>
+          <input id="signup-email" name="email" type="email" autoComplete="email" placeholder={copy.emailPlaceholder} required spellCheck="false" readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-username">Username</label>
-          <input id="signup-username" name="username" type="text" autoComplete="username" placeholder="Username" required spellCheck="false" readOnly={pending || success} />
+          <label className="sr-only" htmlFor="signup-username">{copy.usernameLabel}</label>
+          <input id="signup-username" name="username" type="text" autoComplete="username" placeholder={copy.usernamePlaceholder} required spellCheck="false" readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-password">Password</label>
-          <input id="signup-password" name="password" type="password" autoComplete="new-password" placeholder="Password" required minLength={6} readOnly={pending || success} />
+          <label className="sr-only" htmlFor="signup-password">{copy.passwordLabel}</label>
+          <input id="signup-password" name="password" type="password" autoComplete="new-password" placeholder={copy.passwordPlaceholder} required minLength={6} readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-mobile">Phone number</label>
-          <input id="signup-mobile" name="mobile" type="tel" autoComplete="tel" placeholder="Phone number" required readOnly={pending || success} />
+          <label className="sr-only" htmlFor="signup-mobile">{copy.phoneLabel}</label>
+          <input id="signup-mobile" name="mobile" type="tel" autoComplete="tel" placeholder={copy.phonePlaceholder} required readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-account">Account plan</label>
+          <label className="sr-only" htmlFor="signup-account">{copy.accountPlanLabel}</label>
           <select id="signup-account" name="account" defaultValue="free" required disabled={pending || success}>
-            <option value="free">Free plan</option>
-            <option value="pro5">Pro — Tier 1</option>
-            <option value="pro10">Pro — Tier 2</option>
-            <option value="pro">Pro — Tier 3</option>
+            <option value="free">{copy.freePlan}</option>
+            <option value="pro5">{copy.proTier1}</option>
+            <option value="pro10">{copy.proTier2}</option>
+            <option value="pro">{copy.proTier3}</option>
           </select>
         </div>
         <p className="signup-terms">
-          By creating an account you agree to Tany&apos;s <a href="/terms" target="_blank" rel="noreferrer">Terms of Use</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.
+          {copy.termsPrefix} <a href="/terms" target="_blank" rel="noreferrer">{copy.termsLink}</a> {copy.termsJoin} <a href="/privacy" target="_blank" rel="noreferrer">{copy.privacyLink}</a>{copy.termsSuffix}
         </p>
         <button type="submit" disabled={pending || success}>
-          {pending ? 'Creating account…' : success ? 'Account created' : 'Create account'}
+          {pending ? copy.creating : success ? copy.created : copy.submit}
         </button>
         <p className="message error" role="alert" aria-live="polite" tabIndex={-1} ref={errorRef} hidden={!error}>{error}</p>
-        <p className="message signup-success" role="status" aria-live="polite" hidden={!success}>Registration successful. Please check your email for confirmation.</p>
+        <p className="message signup-success" role="status" aria-live="polite" hidden={!success}>{copy.success}</p>
       </form>
-      <p className="signup-prompt">Already have an account? <a href="/signin">Sign in</a></p>
+      <p className="signup-prompt">{copy.haveAccount} <a href="/signin">{copy.signIn}</a></p>
     </>
   )
 }

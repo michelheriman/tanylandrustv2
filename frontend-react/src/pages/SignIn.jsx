@@ -1,9 +1,12 @@
 import { useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
+import { readLanguage } from '../languageStorage.js'
+import { AUTH_TRANSLATIONS } from '../authTranslations.js'
 
 export default function SignIn() {
   const { login, error: sessionError } = useAuth()
+  const copy = AUTH_TRANSLATIONS[readLanguage()].signIn
   const [pending, setPending] = useState(false)
   const [error, setError] = useState(null)
   const submitting = useRef(false)
@@ -21,7 +24,7 @@ export default function SignIn() {
       await login(values.get('email').trim(), values.get('password'))
       form.reset()
     } catch (failure) {
-      setError(failure.kind === 'auth' ? 'Adresse e-mail ou mot de passe incorrect.' : failure.message)
+      setError(failure.kind === 'auth' ? copy.invalidCredentials : failure.message)
       requestAnimationFrame(() => errorRef.current?.focus())
     } finally {
       submitting.current = false
@@ -32,27 +35,27 @@ export default function SignIn() {
   return (
     <>
       <a className="back-link" href="/">
-        <Icon name="arrow-left" size={15}/> Back to home
+        <Icon name="arrow-left" size={15}/> {copy.backHome}
       </a>
       <header className="card-heading">
-        <h1>Login</h1>
+        <h1>{copy.title}</h1>
       </header>
       <form onSubmit={handleSubmit} aria-busy={pending}>
         <div className="form-field">
-          <label className="sr-only" htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" autoComplete="email" required spellCheck="false" placeholder="Email address" readOnly={pending} />
+          <label className="sr-only" htmlFor="email">{copy.emailLabel}</label>
+          <input id="email" name="email" type="email" autoComplete="email" required spellCheck="false" placeholder={copy.emailPlaceholder} readOnly={pending} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="password">Password</label>
-          <input id="password" name="password" type="password" autoComplete="current-password" required placeholder="Password" readOnly={pending} />
+          <label className="sr-only" htmlFor="password">{copy.passwordLabel}</label>
+          <input id="password" name="password" type="password" autoComplete="current-password" required placeholder={copy.passwordPlaceholder} readOnly={pending} />
         </div>
         <div className="login-options">
-          <span className="login-options-unavailable">Forgot password? — Not available yet</span>
+          <span className="login-options-unavailable">{copy.forgotUnavailable}</span>
         </div>
-        <button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
+        <button type="submit" disabled={pending}>{pending ? copy.signingIn : copy.submit}</button>
         <p className="message error" role="alert" tabIndex={-1} ref={errorRef} hidden={!error}>{error}</p>
       </form>
-      <p className="signup-prompt">Don't have an account? <a href="/signup">Create one</a></p>
+      <p className="signup-prompt">{copy.noAccount} <a href="/signup">{copy.createAccount}</a></p>
       {sessionError && !error && <p className="message" role="status">{sessionError.message}</p>}
     </>
   )
