@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
+import { acquireSubmissionLock, releaseSubmissionLock } from './signupSubmission.js'
 
 export default function SignUp() {
   const { register } = useAuth()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
+  const submitting = useRef(false)
   const errorRef = useRef(null)
 
   async function handleSubmit(event) {
@@ -21,6 +23,7 @@ export default function SignUp() {
       return
     }
 
+    if (!acquireSubmissionLock(submitting)) return
     setPending(true)
     setError(null)
     try {
@@ -41,6 +44,7 @@ export default function SignUp() {
       else setError(failure.message || 'Registration failed. Please try again.')
       requestAnimationFrame(() => errorRef.current?.focus())
     } finally {
+      releaseSubmissionLock(submitting)
       setPending(false)
     }
   }
