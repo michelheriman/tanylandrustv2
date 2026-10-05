@@ -76,6 +76,7 @@
 .form-field input[readonly], .form-field select:disabled { opacity: 0.7; }
 .login-options { margin-top: -5px; text-align: right; }
 .login-options a, .signup-prompt a { color: #f1cd82; font-size: 13px; text-decoration: none; }
+.login-options-unavailable { color: rgb(255 255 255 / 58%); font-size: 12px; }
 
 .form-panel button, .status-panel button, .signout-button { min-height: 52px; padding: 0 20px; border: 0; border-radius: 999px; color: #23352e; background: var(--gold); font-weight: 700; cursor: pointer; transition: background-color 150ms ease, transform 150ms ease; }
 .form-panel button:hover:not(:disabled), .status-panel button:hover, .signout-button:hover:not(:disabled) { background: #f1cd82; }

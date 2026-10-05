@@ -47,7 +47,7 @@ export default function SignIn() {
           <input id="password" name="password" type="password" autoComplete="current-password" required placeholder="Password" readOnly={pending} />
         </div>
         <div className="login-options">
-          <a href="#forgot-password">Forgot password?</a>
+          <span className="login-options-unavailable">Forgot password? — Not available yet</span>
         </div>
         <button type="submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
         <p className="message error" role="alert" tabIndex={-1} ref={errorRef} hidden={!error}>{error}</p>
