@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 import { legalPageMarkup, TERMS_DOCUMENT_URL, TERMS_QR_LIBRARY_URL } from './legalPageData.js'
+import { readLanguage, writeLanguage } from '../languageStorage.js'
 
 const legalContentDirectory = new URL('../legal-content/', import.meta.url)
 
@@ -10,6 +11,8 @@ test('Terms React content retains both language versions and accordion sections 
   const markup = legalPageMarkup(source, 'terms')
   assert.match(markup, /Conditions d'utilisation/)
   assert.match(markup, /Terms of Use/)
+  assert.match(markup, /class="lang-fr visible"/)
+  assert.match(markup, /class="lang-en"/)
   assert.match(markup, /class="term-card open"/)
   assert.match(markup, /class="term-card-header"/)
   assert.doesNotMatch(markup, /<script\b|onclick=/i)
@@ -32,6 +35,8 @@ test('Privacy React content retains bilingual policy and contact sections with R
   const markup = legalPageMarkup(source)
   assert.match(markup, /Politique de confidentialité|Politique de confidentialit/)
   assert.match(markup, /Privacy Policy/)
+  assert.match(markup, /class="lang-fr visible"/)
+  assert.match(markup, /class="lang-en"/)
   assert.match(markup, /class="term-card-header"/)
   assert.match(markup, /mailto:raherimanantsoa\.consult@gmail\.com/)
   assert.doesNotMatch(markup, /<script\b|onclick=/i)
@@ -64,4 +69,43 @@ test('Sign up and the React app expose direct public Terms and Privacy routes', 
   assert.match(appSource, /pathname === '\/terms'/)
   assert.match(appSource, /pathname === '\/privacy'/)
   assert.match(appSource, /if \(legalDocument\) return <LegalPage document=\{legalDocument\} \/>/)
+})
+
+test('Terms and Privacy read and save the canonical language preference', async () => {
+  const [legalPageSource, appSource] = await Promise.all([
+    readFile(new URL('./LegalPage.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../App.jsx', import.meta.url), 'utf8'),
+  ])
+  const values = new Map()
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, String(value)),
+    removeItem: (key) => values.delete(key),
+  }
+
+  assert.match(legalPageSource, /import \{ readLanguage, writeLanguage \} from '\.\.\/languageStorage\.js'/)
+  assert.match(legalPageSource, /useState\(readLanguage\)/)
+  assert.match(legalPageSource, /writeLanguage\(nextLanguage\)/)
+  assert.match(legalPageSource, /setLanguage\(nextLanguage\)/)
+  assert.match(legalPageSource, /const nextLanguage = languageButton\.id === 'btn-fr' \? 'fr' : 'en'/)
+  assert.match(legalPageSource, /language === 'fr'/)
+  assert.match(legalPageSource, /language === 'en'/)
+  assert.match(appSource, /pathname === '\/terms'/)
+  assert.match(appSource, /pathname === '\/privacy'/)
+  assert.match(appSource, /<LegalPage document=\{legalDocument\} \/>/)
+
+  writeLanguage('en', storage)
+  assert.equal(readLanguage(storage), 'en')
+  writeLanguage('fr', storage)
+  assert.equal(readLanguage(storage), 'fr')
+  writeLanguage('en', storage)
+  assert.equal(readLanguage(storage), 'en')
+})
+
+test('QR loading fallback follows the selected French or English language', async () => {
+  const source = await readFile(new URL('./LegalPage.jsx', import.meta.url), 'utf8')
+
+  assert.match(source, /en: 'The QR code could not be loaded\. Use the official document link above\.'/)
+  assert.match(source, /fr: 'Le code QR n’a pas pu être chargé\. Utilisez le lien vers le document officiel ci-dessus\.'/)
+  assert.match(source, /\{qrErrorMessages\[language\]\}/)
 })
