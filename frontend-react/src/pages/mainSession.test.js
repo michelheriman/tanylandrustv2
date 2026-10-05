@@ -139,7 +139,7 @@ test('clears only the session when the refresh token is rejected during restorat
   assert.equal(saved, null)
 })
 
-test('clears the unusable session when refresh cannot reach the auth service', async () => {
+test('keeps the session when refresh returns a server error', async () => {
   let saved = { accessToken: 'expired-access', refreshToken: 'stored-refresh', user: null }
   const storage = {
     read: () => saved,
@@ -151,8 +151,26 @@ test('clears the unusable session when refresh cannot reach the auth service', a
     : response(503, { success: false }) })
 
   await service.restore()
-  assert.equal(service.getSnapshot().status, 'anonymous')
-  assert.equal(saved, null)
+  assert.equal(service.getSnapshot().status, 'unavailable')
+  assert.deepEqual(saved, { accessToken: 'expired-access', refreshToken: 'stored-refresh', user: null })
+})
+
+test('keeps the session when refresh fails because of a network error', async () => {
+  let saved = { accessToken: 'expired-access', refreshToken: 'stored-refresh', user: null }
+  const storage = {
+    read: () => saved,
+    write: (session) => { saved = session },
+    clear: () => { saved = null },
+  }
+  const service = createAuthService({ storage, fetchImpl: (path) => {
+    if (path === '/api/current_user') return response(401, { success: false })
+    throw new TypeError('network unavailable')
+  } })
+
+  await service.restore()
+  assert.equal(service.getSnapshot().status, 'unavailable')
+  assert.deepEqual(saved, { accessToken: 'expired-access', refreshToken: 'stored-refresh', user: null })
+  assert.equal(service.getSnapshot().error.kind, 'network')
 })
 
 test('a server error during parcel loading keeps the session', async () => {
@@ -173,6 +191,48 @@ test('a rejected refresh closes an expired session', async () => {
   await assert.rejects(loadParcels(service.request), { kind: 'auth' })
   assert.equal(service.getSnapshot().status, 'anonymous')
   assert.equal(current(), null)
+})
+
+test('does not retry in a loop when a request still returns 401 after refresh', async () => {
+  let parcelCalls = 0
+  let refreshCalls = 0
+  const { service, current } = setup((path) => {
+    if (path === '/api/current_user') return response(200, { success: true, data: { user_id: 1, email: 'user@example.test' } })
+    if (path === '/api/refresh-token') { refreshCalls += 1; return response(200, { success: true, token: 'new-access', refresh_token: 'new-refresh' }) }
+    if (path === '/api/map-data') { parcelCalls += 1; return response(401, { success: false }) }
+    throw new Error(`Unexpected request: ${path}`)
+  })
+
+  await service.restore()
+  await assert.rejects(loadParcels(service.request), { kind: 'auth' })
+  assert.equal(parcelCalls, 2)
+  assert.equal(refreshCalls, 1)
+  assert.equal(service.getSnapshot().status, 'anonymous')
+  assert.equal(current(), null)
+})
+
+test('shares one refresh across concurrent protected requests', async () => {
+  let refreshCalls = 0
+  const { service, current } = setup((path, options) => {
+    if (path === '/api/current_user') return response(200, { success: true, data: { user_id: 1, email: 'user@example.test' } })
+    if (path === '/api/refresh-token') {
+      refreshCalls += 1
+      return response(200, { success: true, token: 'new-access', refresh_token: 'new-refresh' })
+    }
+    if (path === '/api/first' || path === '/api/second') {
+      return options.headers.get('Authorization') === 'Bearer new-access'
+        ? response(200, { success: true, data: path })
+        : response(401, { success: false })
+    }
+    throw new Error(`Unexpected request: ${path}`)
+  })
+
+  await service.restore()
+  const results = await Promise.all([service.request('/first'), service.request('/second')])
+  assert.deepEqual(results.map((result) => result.data), ['/api/first', '/api/second'])
+  assert.equal(refreshCalls, 1)
+  assert.equal(current().accessToken, 'new-access')
+  assert.equal(current().refreshToken, 'new-refresh')
 })
 
 test('KML export uses the same renewed session and returns the server file', async () => {

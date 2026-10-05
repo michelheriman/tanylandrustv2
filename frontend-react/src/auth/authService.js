@@ -50,9 +50,9 @@ export function createAuthService({ storage = createSessionStorage(), fetchImpl 
         checkGeneration(expected)
         save(sessionFrom(data, session.user))
       } catch (error) {
-        // Any failed refresh leaves this client without a usable session. Clear only
-        // authentication keys; unrelated browser data remains untouched.
-        if (generation === expected) clear(error)
+        // Only an authentication rejection proves the refresh token is unusable.
+        // Keep the session on transient server/network failures so the user can retry.
+        if (generation === expected && error.kind === 'auth') clear(error)
         throw error
       }
     })()
