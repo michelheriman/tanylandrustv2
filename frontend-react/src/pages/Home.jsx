@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { HOME_TRANSLATIONS } from '../homeTranslations.js'
+import { readLanguage, writeLanguage } from '../languageStorage.js'
 import AppIcon from '../components/Icon.jsx'
 import './Home.css'
 
@@ -41,9 +42,7 @@ function Icon({ name }) {
 }
 
 function Home() {
-  const [lang, setLang] = useState(() => {
-    try { return localStorage.getItem('tany.home.lang') === 'fr' ? 'fr' : 'en' } catch { return 'en' }
-  })
+  const [lang, setLang] = useState(readLanguage)
   const [counts, setCounts] = useState([12400, 100, 24])
   const t = (key) => HOME_TRANSLATIONS[lang][key] ?? HOME_TRANSLATIONS.en[key] ?? key
   const rich = (key) => ({ __html: t(key) })
@@ -51,7 +50,7 @@ function Home() {
   useEffect(() => {
     document.documentElement.lang = lang
     document.title = lang === 'fr' ? 'Tany | Landtrust — Le Marché Foncier' : 'Tany | Landtrust — The Land Marketplace'
-    try { localStorage.setItem('tany.home.lang', lang) } catch { /* Language remains available for this page. */ }
+    writeLanguage(lang)
   }, [lang])
 
   useEffect(() => {

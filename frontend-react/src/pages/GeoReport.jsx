@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
 import { iconMarkup } from '../components/iconPaths.js'
+import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { geoReportErrorMessage, loadGeoReport, proximityPlaces } from './geoReportData.js'
 import './GeoReport.css'
 
@@ -22,11 +23,6 @@ const soilNames = {
 const labels = {
   en: { eyebrow: 'Terrain Analysis Report', back: 'Back to Marketplace', print: 'Print PDF', assessed: 'Assessed', coordinates: 'Coordinates', terrain: 'Terrain Overview', elevation: 'Elevation', maxSlope: 'Max Slope', avgSlope: 'Avg Slope', samples: 'Slope Samples', degrees: 'degrees', measurements: 'measurements', slopeProfile: 'Individual Slope Profile', average: 'Average', location: 'Location Map', source: 'SOURCE', peak: 'Forecast Peak Discharge', sevenDay: '7-day forecast', radius: 'Search radius', climate: 'Climate', temperature: 'Temperature Profile', meanTemp: 'Mean annual temp.', coldest: 'Coldest month', hottest: 'Hottest month', range: 'Data range', rainy: 'Rainy Season', onset: 'Onset', end: 'End', wettest: 'Wettest month', yearlyRain: 'Avg yearly rain', monthly: 'Monthly season indicator', proximity: 'Proximity — services within radius', hospital: 'Hospital', market: 'Market', transport: 'Transport', none: 'None found', soil: 'Soil Properties', flood: 'Flood Risk Assessment', risk: 'Risk level', history: 'History', years: 'years analyzed', thresholds: 'Return Period Thresholds', currentPeak: 'Current peak:', noThresholds: 'No threshold data provided.', dataSource: 'Data source', loading: 'Loading GeoReport…', retry: 'Retry', noReport: 'No GeoReport data is available for this parcel yet.', parcel: 'Parcel', unknown: 'Not provided', errorTitle: 'GeoReport could not be loaded' },
   fr: { eyebrow: 'Rapport d’analyse du terrain', back: 'Retour au marché', print: 'Imprimer PDF', assessed: 'Évalué le', coordinates: 'Coordonnées', terrain: 'Aperçu du terrain', elevation: 'Altitude', maxSlope: 'Pente max.', avgSlope: 'Pente moyenne', samples: 'Mesures de pente', degrees: 'degrés', measurements: 'mesures', slopeProfile: 'Profil de pente individuel', average: 'Moyenne', location: 'Carte de localisation', source: 'SOURCE', peak: 'Débit de pointe prévu', sevenDay: 'Prévision sur 7 jours', radius: 'Rayon de recherche', climate: 'Climat', temperature: 'Profil de température', meanTemp: 'Température annuelle moyenne', coldest: 'Mois le plus froid', hottest: 'Mois le plus chaud', range: 'Période des données', rainy: 'Saison des pluies', onset: 'Début', end: 'Fin', wettest: 'Mois le plus pluvieux', yearlyRain: 'Pluie annuelle moyenne', monthly: 'Indicateur saisonnier mensuel', proximity: 'Proximité — services dans le rayon', hospital: 'Hôpital', market: 'Marché', transport: 'Transport', none: 'Aucun trouvé', soil: 'Propriétés du sol', flood: 'Évaluation du risque d’inondation', risk: 'Niveau de risque', history: 'Historique', years: 'années analysées', thresholds: 'Seuils de période de retour', currentPeak: 'Pic actuel :', noThresholds: 'Aucune donnée de seuil fournie.', dataSource: 'Source des données', loading: 'Chargement du GeoReport…', retry: 'Réessayer', noReport: 'Aucune donnée GeoReport n’est encore disponible pour cette parcelle.', parcel: 'Parcelle', unknown: 'Non renseigné', errorTitle: 'Impossible de charger le GeoReport' },
-}
-
-function initialLanguage() {
-  try { return (localStorage.getItem('language') ?? localStorage.getItem('tany.home.lang')) === 'fr' ? 'fr' : 'en' }
-  catch { return 'en' }
 }
 
 function finite(value) { return value !== null && value !== '' && Number.isFinite(Number(value)) }
@@ -92,7 +88,7 @@ function ValueRow({ label, value }) {
 
 export default function GeoReport({ parcelUuid }) {
   const { request } = useAuth()
-  const [lang, setLang] = useState(initialLanguage)
+  const [lang, setLang] = useState(readLanguage)
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -125,7 +121,7 @@ export default function GeoReport({ parcelUuid }) {
   const dateRange = useMemo(() => climate?.data_range ? `${displayDate(climate.data_range.start)} → ${displayDate(climate.data_range.end)}` : '—', [climate])
   const setLanguage = (next) => {
     setLang(next)
-    try { localStorage.setItem('language', next) } catch { /* Language still changes for this page. */ }
+    writeLanguage(next)
   }
   const retry = () => {
     setLoading(true)

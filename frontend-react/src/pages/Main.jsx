@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
+import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
 import { loadParcels, saveParcelField } from './mainData.js'
 import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
@@ -41,11 +42,6 @@ const emptyNewParcel = () => ({ owner: '', parcel_name: '', price_m2: '0', price
 function readTab() {
   const hash = window.location.hash.slice(1)
   return tabs.some((tab) => tab.id === hash) ? hash : 'dashboard'
-}
-
-function readLanguage() {
-  try { return (localStorage.getItem('language') ?? localStorage.getItem('tany.home.lang')) === 'fr' ? 'fr' : 'en' }
-  catch { return 'en' }
 }
 
 function ParcelCell({ row, field, lang, value, onChange, disabled }) {
@@ -373,7 +369,7 @@ export default function Main() {
   useEffect(() => {
     document.title = `${tab === 'dashboard' ? 'Dashboard' : pages[tab]?.[lang]?.[0] || 'Tany'} | Tany`
     document.documentElement.lang = lang
-    try { localStorage.setItem('language', lang) } catch { /* Language remains available for this visit. */ }
+    writeLanguage(lang)
   }, [tab, lang])
 
   function switchTab(event, next) {
