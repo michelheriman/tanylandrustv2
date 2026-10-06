@@ -43,6 +43,40 @@ test('GeoReport parses the backend envelope and JSON geoinfos without inventing 
   assert.throws(() => geoReportFromResponse({ success: true, data: [{ geoinfos: '{}' }] }), /incomplete or unsupported/)
 })
 
+test('GeoReport localizes descriptive unit fragments and return-period text without changing API values', () => {
+  const labelsStart = pageSource.indexOf('const labels = {')
+  const englishStart = pageSource.indexOf('  en: {', labelsStart)
+  const frenchStart = pageSource.indexOf('  fr: {', englishStart)
+  const labelsEnd = pageSource.indexOf('function finite', frenchStart)
+  const english = pageSource.slice(englishStart, frenchStart)
+  const french = pageSource.slice(frenchStart, labelsEnd)
+
+  assert.match(english, /elevationUnit: 'm a\.s\.l\.'/)
+  assert.match(english, /averageMinimum: 'avg min'/)
+  assert.match(english, /averageMaximum: 'avg max'/)
+  assert.match(english, /rainfallRateUnit: 'mm\/year'/)
+  assert.match(english, /returnPeriod: '\{period\}-year'/)
+  assert.match(french, /elevationUnit: 'm d’altitude'/)
+  assert.match(french, /averageMinimum: 'moy\. min'/)
+  assert.match(french, /averageMaximum: 'moy\. max'/)
+  assert.match(french, /rainfallRateUnit: 'mm\/an'/)
+  assert.match(french, /returnPeriod: 'Période de \{period\} ans'/)
+
+  assert.ok(pageSource.includes('unit={t.elevationUnit}'))
+  assert.ok(pageSource.includes('unit={t.rainfallRateUnit}'))
+  assert.ok(pageSource.includes('unit={`°C ${t.averageMinimum}`}'))
+  assert.ok(pageSource.includes('unit={`°C ${t.averageMaximum}`}'))
+  assert.ok(pageSource.includes("t.returnPeriod.replace('{period}', period)"))
+  assert.equal('{period}-year'.replace('{period}', '10'), '10-year')
+  assert.equal('Période de {period} ans'.replace('{period}', '10'), 'Période de 10 ans')
+
+  const parsed = geoReportFromResponse({ success: true, data: [{ geoinfos: JSON.stringify(report) }] })
+  assert.deepEqual(parsed, report)
+  assert.deepEqual([parsed.elevation, parsed.avg_slope, parsed.climates.precipitation.avg_yearly_total_mm], [1250, 6.4, 1200])
+  assert.ok(pageSource.includes('m³/s'))
+  assert.ok(pageSource.includes('`${number(place.distanceKm, 2)} km`'))
+})
+
 test('GeoReport displays every place and converts each backend proximity distance to kilometers', () => {
   const apiResponse = {
     success: true,
