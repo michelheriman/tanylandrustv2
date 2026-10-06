@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import { apiUrl } from '../api/client.js'
 import { createAuthService } from '../auth/authService.js'
-import { filterMarketplaceRows, geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
+import { filterMarketplaceRows, geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, interestMessageBody, loadMarketplaceRows, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
 
 const viteConfig = await readFile(fileURLToPath(new URL('../../vite.config.js', import.meta.url)), 'utf8')
 const marketplaceComponent = await readFile(new URL('./Marketplace.jsx', import.meta.url), 'utf8')
@@ -78,6 +78,47 @@ test('Marketplace and GeoReport use the configured local Flask API in developmen
   assert.equal(apiUrl('/api/get_infos', { hostname: 'tanylandrustv2.vercel.app', port: '' }), '/api/get_infos')
   assert.match(viteConfig, /'\/api': \{ target: 'http:\/\/127\.0\.0\.1:5000'/)
   assert.doesNotMatch(viteConfig, /geo-report-api|pythonanywhere/)
+})
+
+test('Marketplace shares one in-flight market load and does not cache completed results', async () => {
+  const rows = [{ id: 'plot-1', uuid: 'plot-1', parcel_name: 'Market lot', geojson: polygon }]
+  const calls = []
+  const resolvers = []
+  const request = (path) => {
+    calls.push(path)
+    return new Promise((resolve) => resolvers.push(resolve))
+  }
+
+  const first = loadMarketplaceRows(request)
+  const second = loadMarketplaceRows(request)
+  assert.strictEqual(first, second)
+  await Promise.resolve()
+  assert.deepEqual(calls, ['/market'])
+  resolvers[0]({ success: true, data: rows })
+  const [firstRows, secondRows] = await Promise.all([first, second])
+  assert.deepEqual(firstRows, normalizeMarketplaceRows(rows))
+  assert.deepEqual(secondRows, firstRows)
+
+  const later = loadMarketplaceRows(request)
+  await Promise.resolve()
+  assert.deepEqual(calls, ['/market', '/market'])
+  resolvers[1]({ success: true, data: rows })
+  assert.deepEqual(await later, firstRows)
+})
+
+test('Marketplace clears a failed market flight so Retry can issue a new request', async () => {
+  const rows = [{ id: 'plot-2', uuid: 'plot-2', parcel_name: 'Retry lot', geojson: polygon }]
+  let calls = 0
+  const request = () => {
+    calls += 1
+    return calls === 1
+      ? Promise.reject(new Error('temporary marketplace failure'))
+      : Promise.resolve({ success: true, data: rows })
+  }
+
+  await assert.rejects(loadMarketplaceRows(request), /temporary marketplace failure/)
+  assert.deepEqual(await loadMarketplaceRows(request), normalizeMarketplaceRows(rows))
+  assert.equal(calls, 2)
 })
 
 test('Marketplace actions preserve legacy endpoint payloads and use the React session token', async () => {

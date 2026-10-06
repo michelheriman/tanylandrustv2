@@ -11,6 +11,24 @@ export function normalizeMarketplaceRows(data) {
   })
 }
 
+const marketplaceLoadFlights = new WeakMap()
+
+export function loadMarketplaceRows(request) {
+  const activeFlight = marketplaceLoadFlights.get(request)
+  if (activeFlight) return activeFlight
+
+  const flight = Promise.resolve()
+    .then(() => request('/market'))
+    .then((response) => normalizeMarketplaceRows(response.data))
+
+  marketplaceLoadFlights.set(request, flight)
+  const clearFlight = () => {
+    if (marketplaceLoadFlights.get(request) === flight) marketplaceLoadFlights.delete(request)
+  }
+  void flight.then(clearFlight, clearFlight)
+  return flight
+}
+
 function marketplaceNumber(value) {
   if (value == null || typeof value === 'boolean' || (typeof value === 'string' && value.trim() === '')) return null
   const number = Number(value)

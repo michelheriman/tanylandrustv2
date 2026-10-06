@@ -3,7 +3,7 @@ import { useAuth } from '../auth/useAuth.js'
 import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import ParcelMap from './ParcelMap.jsx'
-import { filterMarketplaceRows, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
+import { filterMarketplaceRows, interestMessageBody, loadMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
 import './Marketplace.css'
 
 const text = {
@@ -105,7 +105,7 @@ export default function Marketplace({ lang = 'en' }) {
 
   useEffect(() => {
     let live = true
-    request('/market').then((result) => { if (live) setParcels(normalizeMarketplaceRows(result.data)) })
+    loadMarketplaceRows(request).then((rows) => { if (live) setParcels(rows) })
       .catch((failure) => { if (live) setError(failure) })
       .finally(() => { if (live) setLoading(false) })
     return () => { live = false }

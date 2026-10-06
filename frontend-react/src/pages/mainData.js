@@ -3,10 +3,25 @@ const EDITABLE_FIELDS = new Set([
   'description', 'sell_category', 'status_category',
 ])
 
-export async function loadParcels(request) {
-  const response = await request('/map-data')
-  if (!Array.isArray(response.data)) throw new Error('The parcel list has an unexpected format.')
-  return response.data
+const parcelLoadFlights = new WeakMap()
+
+export function loadParcels(request) {
+  const activeFlight = parcelLoadFlights.get(request)
+  if (activeFlight) return activeFlight
+
+  const flight = Promise.resolve()
+    .then(() => request('/map-data'))
+    .then((response) => {
+      if (!Array.isArray(response.data)) throw new Error('The parcel list has an unexpected format.')
+      return response.data
+    })
+
+  parcelLoadFlights.set(request, flight)
+  const clearFlight = () => {
+    if (parcelLoadFlights.get(request) === flight) parcelLoadFlights.delete(request)
+  }
+  void flight.then(clearFlight, clearFlight)
+  return flight
 }
 
 export async function saveParcelField(request, rowId, field, value) {
