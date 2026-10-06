@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import { createAuthService } from '../auth/authService.js'
-import { geoReportFromResponse, geoReportLookupBody, loadGeoReport, proximityPlaces } from './geoReportData.js'
+import { geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, loadGeoReport, proximityPlaces } from './geoReportData.js'
 
 const appSource = await readFile(fileURLToPath(new URL('../App.jsx', import.meta.url)), 'utf8')
 const pageSource = await readFile(fileURLToPath(new URL('./GeoReport.jsx', import.meta.url)), 'utf8')
@@ -232,4 +232,38 @@ test('the app protects a dedicated GeoReport route and the page bundles local Le
   assert.match(pageSource, /from 'leaflet'/)
   assert.match(pageSource, /leaflet\/dist\/leaflet\.css/)
   assert.doesNotMatch(pageSource, /unpkg\.com\/leaflet/)
+})
+
+test('GeoReport errors are localized, neutral, and omit internal details', () => {
+  const uuid = '3508650a-3afa-4510-baed-e79c9792a81f'
+  const noReport = Object.assign(new Error(`The GeoReport API returned no record for parcel UUID "${uuid}".`), {
+    kind: 'not_found',
+    parcelUuid: uuid,
+  })
+
+  for (const lang of ['fr', 'en']) {
+    const message = geoReportErrorMessage(noReport, lang)
+    assert.doesNotMatch(message, new RegExp(uuid))
+    assert.match(message, /GeoReport/i)
+  }
+  assert.equal(geoReportErrorMessage(noReport, 'fr'), 'Aucun GeoReport n’est disponible pour cette parcelle.')
+  assert.equal(geoReportErrorMessage(noReport, 'en'), 'No GeoReport is available for this parcel.')
+
+  for (const status of [500, 503]) {
+    assert.equal(geoReportErrorMessage({ kind: 'server', status, message: 'raw backend body' }, 'fr'), 'Le GeoReport est temporairement indisponible.')
+    assert.equal(geoReportErrorMessage({ kind: 'server', status, message: 'raw backend body' }, 'en'), 'GeoReport is temporarily unavailable.')
+  }
+  assert.equal(geoReportErrorMessage({ status: 401 }, 'fr'), 'Votre session a expiré. Reconnectez-vous pour consulter ce GeoReport.')
+  assert.equal(geoReportErrorMessage({ status: 401 }, 'en'), 'Your session has expired. Sign in again to view this GeoReport.')
+  assert.equal(geoReportErrorMessage({ status: 403 }, 'fr'), 'Un compte Pro est nécessaire pour consulter ce GeoReport.')
+  assert.equal(geoReportErrorMessage({ status: 403 }, 'en'), 'A Pro account is required to view this GeoReport.')
+  assert.equal(geoReportErrorMessage({ status: 404 }, 'fr'), 'La ressource GeoReport demandée est introuvable.')
+  assert.equal(geoReportErrorMessage({ status: 404 }, 'en'), 'The requested GeoReport resource was not found.')
+  assert.equal(geoReportErrorMessage({ kind: 'network', message: 'fetch failed' }, 'fr'), 'Impossible de contacter le serveur GeoReport. Vérifiez votre connexion puis réessayez.')
+  assert.equal(geoReportErrorMessage({ kind: 'network', message: 'fetch failed' }, 'en'), 'Unable to reach the GeoReport server. Check your connection and try again.')
+  assert.equal(geoReportErrorMessage({ kind: 'protocol', message: 'internal parser detail' }, 'fr'), 'Le serveur a renvoyé une réponse GeoReport invalide.')
+  assert.equal(geoReportErrorMessage({ kind: 'protocol', message: 'internal parser detail' }, 'en'), 'The server returned an invalid GeoReport response.')
+  assert.equal(geoReportErrorMessage(new Error(`The GeoReport geoinfos value is not valid JSON for ${uuid}`), 'en'), 'Unable to load the GeoReport. Please try again.')
+  assert.match(pageSource, /geoReportErrorMessage\(error, lang\)/)
+  assert.doesNotMatch(pageSource, /<p>\{error\.message\}<\/p>/)
 })

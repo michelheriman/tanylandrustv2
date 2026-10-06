@@ -248,8 +248,8 @@ test('GeoReport accepts serialized or parsed geoinfos, and distinguishes empty a
 })
 
 test('GeoReport messages distinguish expired sessions, plan-denial status and network failures', () => {
-  assert.equal(geoReportErrorMessage({ kind: 'not_found', parcelUuid: 'parcel-uuid' }, 'fr'), 'Aucun GeoReport disponible pour cette parcelle')
+  assert.equal(geoReportErrorMessage({ kind: 'not_found', parcelUuid: 'parcel-uuid' }, 'fr'), 'Aucun GeoReport n’est disponible pour cette parcelle.')
   assert.match(geoReportErrorMessage({ kind: 'auth', status: 401 }), /session has expired/i)
-  assert.match(geoReportErrorMessage({ kind: 'server', status: 500 }), /backend uses HTTP 500/i)
-  assert.match(geoReportErrorMessage({ kind: 'network' }), /server is unreachable/i)
+  assert.equal(geoReportErrorMessage({ kind: 'server', status: 500 }, 'en'), 'GeoReport is temporarily unavailable.')
+  assert.match(geoReportErrorMessage({ kind: 'network' }), /Unable to reach the GeoReport server/i)
 })

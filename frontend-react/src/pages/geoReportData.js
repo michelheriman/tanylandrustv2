@@ -79,26 +79,32 @@ export function loadGeoReport(request, uuid) {
 }
 
 export function geoReportErrorMessage(error, lang = 'en') {
+  const isFrench = lang === 'fr'
+
   if (error?.kind === 'auth' || error?.status === 401) {
-    return lang === 'fr'
+    return isFrench
       ? 'Votre session a expiré. Reconnectez-vous pour consulter ce GeoReport.'
       : 'Your session has expired. Sign in again to view this GeoReport.'
   }
   if (error?.status === 403) {
-    return lang === 'fr' ? 'Un compte Pro est nécessaire pour consulter ce GeoReport.' : 'A Pro account is required to view this GeoReport.'
+    return isFrench ? 'Un compte Pro est nécessaire pour consulter ce GeoReport.' : 'A Pro account is required to view this GeoReport.'
   }
   if (error?.kind === 'not_found') {
     return lang === 'fr'
-      ? 'Aucun GeoReport disponible pour cette parcelle'
-      : error.message
+      ? 'Aucun GeoReport n’est disponible pour cette parcelle.'
+      : 'No GeoReport is available for this parcel.'
   }
-  if (error?.status === 500) {
-    return lang === 'fr'
-      ? 'Le GeoReport est indisponible pour ce compte ou le serveur a rencontré une erreur. Les comptes gratuits sont refusés par le backend avec HTTP 500.'
-      : 'GeoReport is unavailable for this account or the server encountered an error. The backend uses HTTP 500 to deny free accounts.'
+  if (error?.status === 404) {
+    return isFrench ? 'La ressource GeoReport demandée est introuvable.' : 'The requested GeoReport resource was not found.'
+  }
+  if (error?.status >= 500 || error?.kind === 'server' || error?.kind === 'unavailable') {
+    return isFrench ? 'Le GeoReport est temporairement indisponible.' : 'GeoReport is temporarily unavailable.'
   }
   if (error?.kind === 'network') {
-    return lang === 'fr' ? 'Le serveur GeoReport est injoignable. Vérifiez la connexion puis réessayez.' : 'The GeoReport server is unreachable. Check your connection and retry.'
+    return isFrench ? 'Impossible de contacter le serveur GeoReport. Vérifiez votre connexion puis réessayez.' : 'Unable to reach the GeoReport server. Check your connection and try again.'
   }
-  return error?.message || (lang === 'fr' ? 'Impossible de charger le GeoReport.' : 'Unable to load the GeoReport.')
+  if (error?.kind === 'protocol') {
+    return isFrench ? 'Le serveur a renvoyé une réponse GeoReport invalide.' : 'The server returned an invalid GeoReport response.'
+  }
+  return isFrench ? 'Impossible de charger le GeoReport. Veuillez réessayer.' : 'Unable to load the GeoReport. Please try again.'
 }
