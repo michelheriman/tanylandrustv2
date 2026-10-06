@@ -262,12 +262,12 @@
 }
 
 @media (max-width: 767px) {
-  .main-content.main-content-marketplace { height: calc(100svh - 120px); min-height: 0; padding: 10px; overflow: auto; }
-  .main-content-marketplace > .main-market-section { min-height: 790px; grid-template-rows: 57px minmax(720px, 1fr); gap: 10px; }
-  .market-react-workspace { min-height: 720px; grid-template-columns: minmax(0, 1fr); grid-template-rows: 35px minmax(330px, 44%) minmax(350px, 56%); overflow: visible; }
-  .market-react-sidebar { padding: 10px 12px; }
+  .main-content.main-content-marketplace { height: auto; min-height: calc(100dvh - 58px); padding: 10px 10px calc(62px + env(safe-area-inset-bottom) + 24px); overflow: visible; }
+  .main-content-marketplace > .main-market-section { height: auto; min-height: 0; grid-template-rows: 57px auto; gap: 10px; }
+  .market-react-workspace { height: auto; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: 35px auto minmax(350px, 58svh); overflow: visible; }
+  .market-react-sidebar { height: auto; min-height: 0; max-height: none; padding: 10px 12px; overflow: visible; }
   .market-react-sidebar-head { margin-bottom: 8px; }
-  .market-react-list { gap: 7px; }
+  .market-react-list { flex: 0 1 auto; max-height: 32svh; gap: 7px; }
   .market-react-map { min-height: 350px; margin: 0 8px 9px; }
   .market-react-card-actions button,
   .market-react-card-actions .market-react-report-link { min-height: 25px; font-size: 9px; white-space: normal; }
