@@ -72,6 +72,27 @@ function replaceLegalDecorations(markup, documentType) {
   return result
 }
 
+function replaceLegalHeadings(markup, documentType) {
+  let result = markup.replace(
+    /<p class="section-label"([^>]*)>([\s\S]*?)<\/p>/gi,
+    '<h2 class="section-label"$1>$2</h2>',
+  )
+
+  result = result.replace(
+    /<div class="term-card-header"([^>]*)>([\s\S]*?)<\/div>(\s*)(?=<div class="term-card-body">)/gi,
+    (_, attributes, content, whitespace) => {
+      const phrasingContent = content.replace(/<div class="card-title">([\s\S]*?)<\/div>/i, '<span class="card-title">$1</span>')
+      return `<h3 class="term-card-heading"><button type="button" class="term-card-header"${attributes}>${phrasingContent}</button></h3>${whitespace}`
+    },
+  )
+
+  if (documentType === 'privacy') {
+    result = result.replace(/(<div class="contact-block">[\s\S]*?)<h3>([\s\S]*?)<\/h3>/i, '$1<h2>$2</h2>')
+  }
+
+  return result
+}
+
 export function legalPageMarkup(source, documentType) {
   const body = source.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1]
   if (!body) throw new Error('The legal document has no body content.')
@@ -85,5 +106,5 @@ export function legalPageMarkup(source, documentType) {
     .replaceAll('href="./signin.html"', 'href="/signin"')
     .replaceAll('href="./index.html"', 'href="/"')
 
-  return replaceLegalDecorations(markup, documentType)
+  return replaceLegalHeadings(replaceLegalDecorations(markup, documentType), documentType)
 }

@@ -37,8 +37,6 @@ export default function LegalPage({ document: documentType }) {
         button.setAttribute('aria-pressed', String(active))
       })
       container.querySelectorAll('.term-card-header').forEach((header) => {
-        header.setAttribute('role', 'button')
-        header.setAttribute('tabindex', '0')
         header.setAttribute('aria-expanded', String(Boolean(header.closest('.term-card')?.classList.contains('open'))))
       })
     }
@@ -108,14 +106,7 @@ export default function LegalPage({ document: documentType }) {
     if (header) toggleCard(header)
   }
 
-  function handleKeyDown(event) {
-    const header = event.target.closest('.term-card-header')
-    if (!header || (event.key !== 'Enter' && event.key !== ' ')) return
-    event.preventDefault()
-    toggleCard(header)
-  }
-
-  return <main className={`legal-page legal-page-${documentType}${qrLoaded ? ' has-qr' : ''}`} ref={host} onClick={handleClick} onKeyDown={handleKeyDown}>
+  return <main className={`legal-page legal-page-${documentType}${qrLoaded ? ' has-qr' : ''}`} ref={host} onClick={handleClick}>
     <div dangerouslySetInnerHTML={{ __html: markup }} />
     {documentType === 'terms' && qrError && <p className="legal-qr-error" role="status">{qrErrorMessages[language]}</p>}
   </main>
