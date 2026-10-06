@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import { createAuthService } from '../auth/authService.js'
 import {
@@ -12,6 +13,8 @@ import {
   sendAdminMessage,
   sendConversationReply,
 } from './chatData.js'
+
+const chatSource = await readFile(new URL('./Chat.jsx', import.meta.url), 'utf8')
 
 const conversation = { objet: 'Parcel enquiry', main_user: 'buyer@example.test', uuid_post: 'parcel-42' }
 const thread = [
@@ -129,4 +132,33 @@ test('rejects malformed conversation and message responses and filters by partic
   assert.equal(conversationMatchesSearch(conversation, 'enquiry'), true)
   assert.equal(conversationMatchesSearch(conversation, 'unrelated'), false)
   assert.throws(() => conversationReplyBody(conversation, [], 'buyer@example.test', 'Hello'), /with messages/)
+})
+
+test('Chat uses localized frontend error fallbacks while preserving API-provided messages', async () => {
+  const englishStart = chatSource.indexOf('  en: {')
+  const frenchStart = chatSource.indexOf('  fr: {', englishStart)
+  const dictionaryEnd = chatSource.indexOf('function contactName', frenchStart)
+  const english = chatSource.slice(englishStart, frenchStart)
+  const french = chatSource.slice(frenchStart, dictionaryEnd)
+
+  assert.match(english, /conversationsError: 'Unable to load conversations\.'/)
+  assert.match(english, /messagesError: 'Unable to load messages\.'/)
+  assert.match(english, /sendMessageError: 'Unable to send this message\.'/)
+  assert.match(french, /conversationsError: 'Impossible de charger les conversations\.'/)
+  assert.match(french, /messagesError: 'Impossible de charger les messages\.'/)
+  assert.match(french, /sendMessageError: 'Impossible d’envoyer ce message\.'/)
+  assert.match(english, /adminUuidUnavailable: 'A secure UUID generator is unavailable in this browser\.'/)
+  assert.match(french, /adminUuidUnavailable: 'Un générateur d’UUID sécurisé n’est pas disponible dans ce navigateur\.'/)
+  assert.match(chatSource, /const t = copy\[lang\]/)
+  assert.match(chatSource, /setConversationsError\(failure\?\.message \|\| \{ fallbackKey: 'conversationsError' \}\)/)
+  assert.match(chatSource, /setMessagesError\(failure\?\.message \|\| \{ fallbackKey: 'messagesError' \}\)/)
+  assert.match(chatSource, /setSendError\(failure\?\.message \|\| \{ fallbackKey: 'sendMessageError' \}\)/)
+  assert.match(chatSource, /setAdminError\(failure\?\.message \|\| \{ fallbackKey: failure\?\.fallbackKey \|\| 'sendMessageError' \}\)/)
+  assert.match(chatSource, /function chatErrorText\(error, labels, fallbackKey\)/)
+  assert.match(chatSource, /return typeof error === 'string' \? error : labels\[error\?\.fallbackKey \|\| fallbackKey\]/)
+  assert.match(chatSource, /throw Object\.assign\(new Error\(\), \{ fallbackKey: 'adminUuidUnavailable' \}\)/)
+
+  assert.throws(() => conversationsFromResponse({ success: false, message: 'Backend conversation error' }), /Backend conversation error/)
+  assert.throws(() => messagesFromResponse({ success: false, message: 'Backend message error' }), /Backend message error/)
+  await assert.rejects(sendConversationReply(async () => ({ success: false, message: 'Backend send error' }), conversation, thread, 'buyer@example.test', 'Reply'), /Backend send error/)
 })

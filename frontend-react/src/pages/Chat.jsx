@@ -16,9 +16,11 @@ const copy = {
     title: 'Private Message', subtitle: 'Communicate securely with your network.', chat: 'Chat',
     search: 'Search conversations', admin: 'Write to Admin', online: 'Online', select: 'Select a conversation to view its messages.',
     loading: 'Loading conversations…', loadingMessages: 'Loading messages…', retry: 'Retry', noConversations: 'No conversations yet.',
+    conversationsError: 'Unable to load conversations.', messagesError: 'Unable to load messages.', sendMessageError: 'Unable to send this message.',
     noSearchResults: 'No conversations match this search.', noMessages: 'No messages in this conversation yet.',
     placeholder: 'Write a message…', send: 'Send message', sending: 'Sending…', now: 'Now',
     adminTitle: 'Write to Admin', adminDescription: 'Your message will be sent directly to the admin team.',
+    adminUuidUnavailable: 'A secure UUID generator is unavailable in this browser.',
     subject: 'Subject', subjectPlaceholder: 'e.g. Issue with my account', message: 'Message',
     adminPlaceholder: 'Describe your issue or question…', cancel: 'Cancel', sendAdmin: 'Send message',
   },
@@ -26,9 +28,11 @@ const copy = {
     title: 'Messages privés', subtitle: 'Communiquez en toute sécurité avec votre réseau.', chat: 'Messages',
     search: 'Rechercher une conversation', admin: 'Écrire à l’administration', online: 'En ligne', select: 'Sélectionnez une conversation pour afficher ses messages.',
     loading: 'Chargement des conversations…', loadingMessages: 'Chargement des messages…', retry: 'Réessayer', noConversations: 'Aucune conversation pour le moment.',
+    conversationsError: 'Impossible de charger les conversations.', messagesError: 'Impossible de charger les messages.', sendMessageError: 'Impossible d’envoyer ce message.',
     noSearchResults: 'Aucune conversation ne correspond à cette recherche.', noMessages: 'Aucun message dans cette conversation.',
     placeholder: 'Écrire un message…', send: 'Envoyer', sending: 'Envoi…', now: 'À l’instant',
     adminTitle: 'Écrire à l’administration', adminDescription: 'Votre message sera envoyé directement à l’équipe d’administration.',
+    adminUuidUnavailable: 'Un générateur d’UUID sécurisé n’est pas disponible dans ce navigateur.',
     subject: 'Sujet', subjectPlaceholder: 'Ex. : problème avec mon compte', message: 'Message',
     adminPlaceholder: 'Décrivez votre problème ou votre question…', cancel: 'Annuler', sendAdmin: 'Envoyer le message',
   },
@@ -45,6 +49,10 @@ function initials(value) {
 
 function ChatError({ error, onRetry, retryLabel }) {
   return <div className="chat-react-error" role="alert"><p>{error}</p>{onRetry && <button type="button" onClick={onRetry}>{retryLabel}</button>}</div>
+}
+
+function chatErrorText(error, labels, fallbackKey) {
+  return typeof error === 'string' ? error : labels[error?.fallbackKey || fallbackKey]
 }
 
 export default function Chat({ lang = 'en' }) {
@@ -86,7 +94,7 @@ export default function Chat({ lang = 'en' }) {
       })
       .catch((failure) => {
         if (active) {
-          setConversationsError(failure.message || 'Unable to load conversations.')
+          setConversationsError(failure?.message || { fallbackKey: 'conversationsError' })
           setConversationsLoading(false)
         }
       })
@@ -105,7 +113,7 @@ export default function Chat({ lang = 'en' }) {
       }
     }).catch((failure) => {
       if (active) {
-        setMessagesError(failure.message || 'Unable to load messages.')
+        setMessagesError(failure?.message || { fallbackKey: 'messagesError' })
         setMessagesLoading(false)
       }
     })
@@ -161,7 +169,7 @@ export default function Chat({ lang = 'en' }) {
       setMessages((current) => [...current, { ...body, created_at: t.now, localEcho: true }])
       setDraft('')
     } catch (failure) {
-      setSendError(failure.message || 'Unable to send this message.')
+      setSendError(failure?.message || { fallbackKey: 'sendMessageError' })
     } finally {
       setSending(false)
     }
@@ -173,7 +181,7 @@ export default function Chat({ lang = 'en' }) {
     setAdminSending(true)
     setAdminError('')
     try {
-      if (!globalThis.crypto?.randomUUID) throw new Error('A secure UUID generator is unavailable in this browser.')
+      if (!globalThis.crypto?.randomUUID) throw Object.assign(new Error(), { fallbackKey: 'adminUuidUnavailable' })
       await postAdminMessage(request, user.email, adminSubject, adminContent, globalThis.crypto.randomUUID())
       setAdminSubject('')
       setAdminContent('')
@@ -181,7 +189,7 @@ export default function Chat({ lang = 'en' }) {
       setConversationsLoading(true)
       setConversationRetry((value) => value + 1)
     } catch (failure) {
-      setAdminError(failure.message || 'Unable to send this message.')
+      setAdminError(failure?.message || { fallbackKey: failure?.fallbackKey || 'sendMessageError' })
     } finally {
       setAdminSending(false)
     }
@@ -208,7 +216,7 @@ export default function Chat({ lang = 'en' }) {
 
         <div className="chat-react-conversation-list" aria-live="polite" aria-busy={conversationsLoading}>
           {conversationsLoading && <p className="chat-react-list-state" role="status">{t.loading}</p>}
-          {!conversationsLoading && conversationsError && <ChatError error={conversationsError} retryLabel={t.retry} onRetry={() => { setConversationsLoading(true); setConversationsError(''); setConversationRetry((value) => value + 1) }} />}
+          {!conversationsLoading && conversationsError && <ChatError error={chatErrorText(conversationsError, t, 'conversationsError')} retryLabel={t.retry} onRetry={() => { setConversationsLoading(true); setConversationsError(''); setConversationRetry((value) => value + 1) }} />}
           {!conversationsLoading && !conversationsError && conversations.length === 0 && <p className="chat-react-list-state">{t.noConversations}</p>}
           {!conversationsLoading && !conversationsError && conversations.length > 0 && visibleConversations.length === 0 && <p className="chat-react-list-state">{t.noSearchResults}</p>}
           {!conversationsLoading && !conversationsError && visibleConversations.map((conversation, index) => {
@@ -234,7 +242,7 @@ export default function Chat({ lang = 'en' }) {
         {selectedConversation ? <>
           <div className="chat-react-messages" aria-live="polite" aria-busy={messagesLoading}>
             {messagesLoading && <p className="chat-react-thread-state" role="status">{t.loadingMessages}</p>}
-            {!messagesLoading && messagesError && <ChatError error={messagesError} retryLabel={t.retry} onRetry={() => { setMessagesLoading(true); setMessagesError(''); setMessageRetry((value) => value + 1) }} />}
+            {!messagesLoading && messagesError && <ChatError error={chatErrorText(messagesError, t, 'messagesError')} retryLabel={t.retry} onRetry={() => { setMessagesLoading(true); setMessagesError(''); setMessageRetry((value) => value + 1) }} />}
             {!messagesLoading && !messagesError && messages.length === 0 && <p className="chat-react-thread-state">{t.noMessages}</p>}
             {!messagesLoading && !messagesError && messages.map((message, index) => {
               const outgoing = message.sender_id === user?.email
@@ -256,7 +264,7 @@ export default function Chat({ lang = 'en' }) {
             <button type="submit" aria-label={t.send} title={t.send} disabled={messagesLoading || Boolean(messagesError) || !messages.length || !draft.trim() || sending}>
               {sending ? <span className="chat-react-send-pending">…</span> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-6 18-3-8-9-2Z"/><path d="m12 13 9-10"/></svg>}
             </button>
-            {sendError && <p className="chat-react-compose-error" role="alert">{sendError}</p>}
+            {sendError && <p className="chat-react-compose-error" role="alert">{chatErrorText(sendError, t, 'sendMessageError')}</p>}
           </form>
         </> : <div className="chat-react-empty-thread"><p>{t.select}</p></div>}
       </section>
@@ -272,7 +280,7 @@ export default function Chat({ lang = 'en' }) {
           <input id="chat-react-admin-subject" value={adminSubject} onChange={(event) => setAdminSubject(event.target.value)} placeholder={t.subjectPlaceholder} required disabled={adminSending} />
           <label htmlFor="chat-react-admin-content">{t.message}</label>
           <textarea id="chat-react-admin-content" value={adminContent} onChange={(event) => setAdminContent(event.target.value)} placeholder={t.adminPlaceholder} rows="4" required disabled={adminSending} />
-          {adminError && <p className="chat-react-admin-error" role="alert">{adminError}</p>}
+          {adminError && <p className="chat-react-admin-error" role="alert">{chatErrorText(adminError, t, 'sendMessageError')}</p>}
           <div className="chat-react-admin-actions"><button type="button" disabled={adminSending} onClick={() => setAdminOpen(false)}>{t.cancel}</button><button type="submit" disabled={adminSending || !adminSubject.trim() || !adminContent.trim()}>{adminSending ? t.sending : t.sendAdmin}</button></div>
         </form>
       </section>
