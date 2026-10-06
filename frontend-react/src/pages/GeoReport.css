@@ -76,7 +76,7 @@
 .georeport-proximity-card { display: flex; min-width: 0; max-height: 300px; min-height: 205px; flex-direction: column; padding: 17px; }
 .georeport-proximity-icon { display: inline-flex; align-items: center; justify-content: center; margin-bottom: 7px; color: #2d6a4f; }
 .georeport-proximity-card > h3 { flex: 0 0 auto; }
-.georeport-proximity-list { display: grid; min-height: 0; max-height: 210px; flex: 1 1 auto; gap: 7px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0 6px 0 0; list-style: none; scrollbar-color: #a7b3a9 #dedbd2; scrollbar-width: thin; }
+.georeport-proximity-list { display: grid; min-height: 0; max-height: 210px; flex: 1 1 auto; gap: 7px; overflow-y: auto; margin: 0; padding: 0 6px 0 0; list-style: none; scrollbar-color: #a7b3a9 #dedbd2; scrollbar-width: thin; }
 .georeport-proximity-list li { display: flex; min-width: 0; justify-content: space-between; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid rgb(15 26 18 / 9%); }
 .georeport-proximity-list li:last-child { padding-bottom: 0; border: 0; }
 .georeport-proximity-list strong { overflow-wrap: anywhere; color: #263b2d; font-size: 13px; font-weight: 600; }
@@ -100,7 +100,7 @@
 .georeport-forecast strong { color: #1a4f8a; font: 500 10px 'DM Mono', Consolas, monospace; }
 .georeport-source { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 35px; padding-top: 12px; border-top: 1px solid rgb(15 26 18 / 13%); color: #718076; font: 10px 'DM Mono', Consolas, monospace; }
 @media (max-width: 900px) {
-  .georeport-month > span { font: 9px Figtree, 'Segoe UI', sans-serif; white-space: nowrap; }
+  .georeport-month > span { font: 10px Figtree, 'Segoe UI', sans-serif; white-space: nowrap; }
 }
 @media (max-width: 720px) {
   .georeport-page { padding: 20px 15px 42px; }
@@ -116,6 +116,15 @@
   .georeport-proximity-card .georeport-proximity-list, .georeport-proximity-card .georeport-no-data { grid-column: 2; }
   .georeport-proximity-list { max-height: 225px; }
   .georeport-proximity-list li { align-items: baseline; flex-wrap: wrap; }
+  .georeport-section-title { font-size: 11px; }
+  .georeport-stat-card > span, .georeport-stat-card > small { font-size: 11px; }
+  .georeport-slope-column > span { font-size: 10px; }
+  .georeport-map-callout small, .georeport-map-callout span { font-size: 11px; }
+  .georeport-panel > h3, .georeport-proximity-card > h3 { font-size: 11px; }
+  .georeport-month > span { font-size: 10px; }
+  .georeport-soil-card h3 { font-size: 11px; }
+  .georeport-soil-card > small { font-size: 10px; }
+  .georeport-source { font-size: 11px; }
 }
 @media (max-width: 420px) {
   .georeport-season-bar { gap: 1px; }
