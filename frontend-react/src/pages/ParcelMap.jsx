@@ -33,7 +33,10 @@ function loadArcGIS() {
     script.src = ARCGIS_SCRIPT
     script.async = true
     script.addEventListener('load', loadModules, { once: true })
-    script.addEventListener('error', () => reject(new Error('ArcGIS API failed to load.')), { once: true })
+    script.addEventListener('error', () => {
+      script.remove()
+      reject(new Error('ArcGIS API failed to load.'))
+    }, { once: true })
     if (!existing) document.head.appendChild(script)
   }).catch((error) => { arcgisReady = null; throw error })
   return arcgisReady
@@ -56,6 +59,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
   const modulesRef = useRef(null)
   const [ready, setReady] = useState(false)
   const [loadError, setLoadError] = useState(null)
+  const [initAttempt, setInitAttempt] = useState(0)
   const callbacksRef = useRef({ onGeometryComplete, onSelectParcel, onError })
   const languageRef = useRef(lang)
   useEffect(() => { callbacksRef.current = { onGeometryComplete, onSelectParcel, onError } }, [onGeometryComplete, onSelectParcel, onError])
@@ -70,6 +74,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
     let clickHandle
     let sketchHandle
     let view
+    let map
     loadArcGIS().then(async (modules) => {
       if (!live || !container.current) return
       modulesRef.current = modules
@@ -80,7 +85,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
       const Sketch = modules['esri/widgets/Sketch']
       const Expand = modules['esri/widgets/Expand']
       const Search = modules['esri/widgets/Search']
-      const map = new Map({ basemap: 'satellite' })
+      map = new Map({ basemap: 'satellite' })
       view = new MapView({ container: container.current, map, center: [35, 0.5], zoom: 4 })
       const focusLayer = new GraphicsLayer()
       const sketchLayer = new GraphicsLayer()
@@ -91,7 +96,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
       sketchLayerRef.current = sketchLayer
 
       const sketch = new Sketch({ layer: sketchLayer, view, creationMode: 'update', availableCreateTools: ['polygon'] })
-      const sketchExpand = new Expand({ expandIcon: 'pencil-mark-plus', view, content: sketch, expandTooltip: lang === 'fr' ? 'Dessiner une parcelle' : 'Draw a parcel' })
+      const sketchExpand = new Expand({ expandIcon: 'pencil-mark-plus', view, content: sketch, expandTooltip: languageRef.current === 'fr' ? 'Dessiner une parcelle' : 'Draw a parcel' })
       view.ui.add(sketchExpand, 'top-right')
       view.ui.add(new Search({ view }), { position: 'top-left' })
       sketchHandle = sketch.on('create', async (event) => {
@@ -114,27 +119,30 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
         if (id != null) callbacksRef.current.onSelectParcel(id)
       })
       await view.when()
-      if (live) setReady(true)
-    }).catch((error) => {
+      if (live) {
+        setLoadError(null)
+        setReady(true)
+      }
+    }).catch(() => {
       if (!live) return
-      setLoadError(error)
+      setLoadError(true)
       setReady(false)
-      onError?.(error)
     })
     return () => {
       live = false
       clickHandle?.remove()
       sketchHandle?.remove()
-      view?.destroy()
+      if (view) view.destroy()
+      else map?.destroy?.()
+      map = null
       mapRef.current = null
       viewRef.current = null
       layerRef.current = null
       focusLayerRef.current = null
       sketchLayerRef.current = null
     }
-  // ArcGIS controls are initialized once; event callbacks are read from the latest props below.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Event callbacks and locale are read from refs so retries only recreate ArcGIS resources.
+  }, [initAttempt])
 
   useEffect(() => {
     if (!ready || !mapRef.current) return undefined
@@ -205,9 +213,18 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
     sketchLayerRef.current?.removeAll()
   }, [resetDrawingKey])
 
+  const retryInitialization = () => {
+    setLoadError(null)
+    setReady(false)
+    setInitAttempt((attempt) => attempt + 1)
+  }
+
   return <div className="main-map-canvas" role="application" aria-label={lang === 'fr' ? 'Carte des parcelles' : 'Parcel map'}>
     <div className="main-map-host" ref={container} />
     {!ready && !loadError && <p className="main-map-loading" role="status">{lang === 'fr' ? 'Chargement de la carte…' : 'Loading map…'}</p>}
-    {loadError && <p className="main-map-load-error" role="alert">{lang === 'fr' ? 'La carte ArcGIS est indisponible. Vérifiez la connexion au service cartographique.' : 'The ArcGIS map is unavailable. Check the map service connection.'}</p>}
+    {loadError && <div className="main-map-load-error" role="alert">
+      <span>{lang === 'fr' ? 'Impossible de charger la carte. Veuillez réessayer.' : 'Unable to load the map. Please try again.'}</span>
+      <button type="button" onClick={retryInitialization}>{lang === 'fr' ? 'Réessayer' : 'Retry'}</button>
+    </div>}
   </div>
 }
