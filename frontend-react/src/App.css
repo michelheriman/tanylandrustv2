@@ -121,7 +121,8 @@
   .brand-copy h1 { margin-bottom: 12px; font-size: 34px; }
   .brand-copy p { font-size: 13px; line-height: 1.55; }
   .form-panel { min-height: 430px; padding: 82px 28px 38px; }
-  .back-link { top: 29px; right: 29px; }
+  .back-link { top: 29px; right: 29px; min-height: 44px; padding: 8px; }
+  .signup-prompt a, .signup-terms a { display: inline-flex; min-height: 44px; align-items: center; padding: 0 4px; vertical-align: middle; }
   .card-heading { margin-bottom: 22px; }
   .card-heading h1, .account-panel h1 { font-size: 34px; }
   .signup-prompt { margin-top: 21px; }
