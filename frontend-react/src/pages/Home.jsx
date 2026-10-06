@@ -26,9 +26,9 @@ const plans = [
   { name: 'p3_name', price: '$25', tagline: 'p3_tagline', features: ['p3_li1', 'p3_li2', 'p3_li3', 'p3_li4'], cta: 'p3_btn' },
 ]
 
-function Brand({ footer = false }) {
+function Brand({ footer = false, ariaLabel }) {
   return (
-    <a className={`home-brand${footer ? ' home-brand-footer' : ''}`} href="/" aria-label="Tany Landtrust, accueil">
+    <a className={`home-brand${footer ? ' home-brand-footer' : ''}`} href="/" aria-label={ariaLabel}>
       {!footer && <span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1.5 15.5 5.25v7.5L9 16.5l-6.5-3.75v-7.5L9 1.5Z" stroke="currentColor" strokeWidth="1.35"/><path d="M9 1.5v15m-6.5-11.25L9 9l6.5-3.75" stroke="currentColor" strokeWidth="1"/></svg></span>}
       <span>{footer ? <>Tany <em>Landtrust</em></> : <>tany <em>Landtrust</em></>}</span>
     </a>
@@ -106,24 +106,24 @@ function Home() {
     <div className="landing-page">
       <header className="home-nav">
         <div className="home-nav-inner">
-          <Brand />
-          <nav className="home-nav-links" aria-label="Main navigation">
+          <Brand ariaLabel={t('brand_home_aria')} />
+          <nav className="home-nav-links" aria-label={t('main_navigation_aria')}>
             <a href="#features">{t('nav_features')}</a><a href="#gis">{t('nav_gis')}</a><a href="#negotiation">{t('nav_negotiation')}</a><a href="#pricing">{t('nav_pricing')}</a>
           </nav>
           <div className="home-nav-actions">
             <a className="nav-signin" href="/signin">{t('nav_signin')}</a>
             <details className="language-menu">
-              <summary aria-label={lang === 'fr' ? 'Changer de langue, français sélectionné' : 'Change language, English selected'}>
+              <summary aria-label={t('language_selected_aria')}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
                 <span>{lang.toUpperCase()}</span><i aria-hidden="true" />
               </summary>
-              <div className="language-menu-options" role="group" aria-label="Switch language">
+              <div className="language-menu-options" role="group" aria-label={t('language_options_aria')}>
                 {['en', 'fr'].map((language) => <button key={language} type="button" lang={language} aria-pressed={lang === language} onClick={() => setLang(language)}>{language.toUpperCase()}</button>)}
               </div>
             </details>
             <details className="mobile-nav">
-              <summary aria-label={lang === 'fr' ? 'Ouvrir la navigation' : 'Open navigation'}><AppIcon name="menu" size={18}/></summary>
-              <nav aria-label="Mobile navigation">
+              <summary aria-label={t('open_navigation_aria')}><AppIcon name="menu" size={18}/></summary>
+              <nav aria-label={t('mobile_navigation_aria')}>
                 <a href="#features">{t('nav_features')}</a><a href="#gis">{t('nav_gis')}</a><a href="#negotiation">{t('nav_negotiation')}</a><a href="#pricing">{t('nav_pricing')}</a>
                 <a className="mobile-auth-link" href="/signin">{t('nav_signin')}</a><a className="mobile-auth-link" href="/signup">{t('nav_cta')}</a>
               </nav>
@@ -143,7 +143,7 @@ function Home() {
                 <a className="button button-amber" href="/signup">{t('hero_cta_primary')}<AppIcon name="arrow-right" size={15}/></a>
                 <a className="button button-outline" href="#features">{t('hero_cta_secondary')}</a>
               </div>
-              <div className="home-hero-stats" aria-label="Tany in numbers">
+              <div className="home-hero-stats" aria-label={t('stats_aria')}>
                 {[['stat0', 'stat0_label', '+'], ['stat1', 'stat1_label', '%'], ['stat2', 'stat2_label', '']].map(([id, label, suffix], index) => <div className="hero-stat" key={id}><strong>{counts[index].toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-US')}<span>{suffix}</span></strong><span>{t(label)}</span></div>)}
                 <p>{lang === 'fr' ? 'Chiffres indicatifs, à vérifier.' : 'Illustrative figures, pending verification.'}</p>
               </div>
@@ -152,7 +152,7 @@ function Home() {
           </div>
         </section>
 
-        <section className="trust-bar" id="trust" aria-label="Platform principles">
+        <section className="trust-bar" id="trust" aria-label={t('platform_principles_aria')}>
           <div className="home-container trust-items">{['trust1', 'trust2', 'trust3', 'trust4'].map((key) => <span key={key}><AppIcon name={trustIcons[key]} size={15}/>{t(key)}</span>)}</div>
         </section>
 
@@ -170,7 +170,7 @@ function Home() {
             <div className="gis-copy home-reveal"><p className="section-eyebrow">{t('gis_eyebrow')}</p><h2>{t('gis_h2_line1')}<br/><em>{t('gis_h2_line2')}</em></h2><p className="section-intro">{t('gis_intro')}</p><a className="gis-cta" href="/signup">{t('gis_dl_btn')}<AppIcon name="arrow-right" size={15}/></a>
               <div className="report-card home-reveal">
               <header><strong>{t('gis_panel_title')}</strong><span>Pro</span></header>
-              <div className="report-map" aria-label="Illustrative parcel topography map"><svg viewBox="0 0 320 176" fill="none" aria-hidden="true"><rect width="320" height="176" fill="#102820"/><g stroke="#4a8c5c"><ellipse cx="160" cy="88" rx="150" ry="80"/><ellipse cx="160" cy="88" rx="120" ry="62"/><ellipse cx="160" cy="88" rx="90" ry="46"/><ellipse cx="160" cy="88" rx="62" ry="32"/></g><path d="m80 40 160 15-15 80-160-15 15-80Z" fill="#e4a85a12" stroke="#e4a85a" strokeDasharray="6 3"/><circle cx="160" cy="88" r="4" fill="#8dcc85"/><text x="132" y="108" fill="#8dcc85" fontSize="9">Peak 1242 m</text></svg><span>Tany GIS</span></div>
+              <div className="report-map" aria-label={t('illustrative_map_aria')}><svg viewBox="0 0 320 176" fill="none" aria-hidden="true"><rect width="320" height="176" fill="#102820"/><g stroke="#4a8c5c"><ellipse cx="160" cy="88" rx="150" ry="80"/><ellipse cx="160" cy="88" rx="120" ry="62"/><ellipse cx="160" cy="88" rx="90" ry="46"/><ellipse cx="160" cy="88" rx="62" ry="32"/></g><path d="m80 40 160 15-15 80-160-15 15-80Z" fill="#e4a85a12" stroke="#e4a85a" strokeDasharray="6 3"/><circle cx="160" cy="88" r="4" fill="#8dcc85"/><text x="132" y="108" fill="#8dcc85" fontSize="9">{t('peak_label')} 1242 m</text></svg><span>Tany GIS</span></div>
               <div className="report-facts">{[['gis_d1_label', '12.4°', 'gis_d1_val'], ['gis_d2_label', 'Ferralsol', 'pH 5.8'], ['gis_d3_label', '3.2 km', 'Antananarivo'], ['gis_d4_label', 'gis_d4_val', 'Zone C']].map(([label, value, sub]) => <div key={label}><span>{t(label)}</span><strong>{label === 'gis_d4_label' ? t(value) : value}</strong><small>{label === 'gis_d1_label' ? t(sub) : sub}</small></div>)}</div>
               <p className="report-caption">{lang === 'fr' ? 'Exemple illustratif, données non vérifiées' : 'Illustrative example, data not verified'}</p>
               </div>
@@ -202,7 +202,7 @@ function Home() {
         <section className="home-section final-cta"><div className="home-container home-reveal"><h2>{t('cta_h2_line1')}<br/><em>{t('cta_h2_line2')}</em><br/>{t('cta_h2_line3')}</h2><p>{t('cta_sub')}</p><div><a className="button button-green" href="/signup">{t('cta_btn1')}</a><a className="button button-outline-light" href="#features">{t('cta_btn2')}</a></div></div></section>
       </main>
 
-      <footer className="home-footer"><div className="home-container"><div className="footer-grid"><div><Brand footer/><p>{t('footer_tagline')}</p></div>
+      <footer className="home-footer"><div className="home-container"><div className="footer-grid"><div><Brand footer ariaLabel={t('brand_home_aria')}/><p>{t('footer_tagline')}</p></div>
         {[[t('footer_col1'), [['footer_marketplace', '#features'], ['footer_gis', '#gis'], ['footer_negotiation', '#negotiation'], ['footer_api', '#pricing']]], [t('footer_col2'), [['footer_about'], ['footer_blog'], ['footer_careers'], ['footer_contact']]], [t('footer_col3'), [['footer_tos'], ['footer_privacy'], ['footer_security']]]].map(([heading, links]) => <div className="footer-column" key={heading}><h3>{heading}</h3>{links.map(([key, href]) => href ? <a href={href} key={key}>{t(key)}</a> : <span key={key}>{t(key)}</span>)}</div>)}
       </div><div className="footer-bottom"><span>{t('footer_copy')}</span><span>{t('footer_made')}</span></div></div></footer>
     </div>

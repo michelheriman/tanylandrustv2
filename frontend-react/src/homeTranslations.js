@@ -1,5 +1,16 @@
 export const HOME_TRANSLATIONS = {
   en: {
+    brand_home_aria: 'Tany Landtrust, home',
+    main_navigation_aria: 'Main navigation',
+    language_selected_aria: 'Change language, English selected',
+    language_options_aria: 'Switch language',
+    open_navigation_aria: 'Open navigation',
+    mobile_navigation_aria: 'Mobile navigation',
+    stats_aria: 'Tany in numbers',
+    platform_principles_aria: 'Platform principles',
+    illustrative_map_aria: 'Illustrative parcel topography map',
+    peak_label: 'Peak',
+
     nav_features: 'Features',
     nav_gis: 'GIS Platform',
     nav_negotiation: 'Negotiation',
@@ -138,6 +149,17 @@ export const HOME_TRANSLATIONS = {
   },
 
   fr: {
+    brand_home_aria: 'Tany Landtrust, accueil',
+    main_navigation_aria: 'Navigation principale',
+    language_selected_aria: 'Changer de langue, fran\u00e7ais s\u00e9lectionn\u00e9',
+    language_options_aria: 'Changer de langue',
+    open_navigation_aria: 'Ouvrir la navigation',
+    mobile_navigation_aria: 'Navigation mobile',
+    stats_aria: 'Tany en chiffres',
+    platform_principles_aria: 'Principes de la plateforme',
+    illustrative_map_aria: 'Carte topographique illustrative d\u2019une parcelle',
+    peak_label: 'Pic',
+
     nav_features: 'Fonctionnalités',
     nav_gis: 'Plateforme SIG',
     nav_negotiation: 'Négociation',
