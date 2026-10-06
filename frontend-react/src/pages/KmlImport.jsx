@@ -20,6 +20,8 @@ const copy = {
     parcelName: 'Parcel Name', owner: 'Parcel Owner', priceM2: 'Price per m²', currency: 'Currency',
     chooseCurrency: 'Select a currency', category: 'Category', chooseCategory: 'Select an option',
     status: 'Status of Land', price: 'Price Total', location: 'Location Name', description: 'Description',
+    saleToSell: 'For sale', saleSold: 'Sold', saleOther: 'Other', saleNA: '#NA',
+    titleStatus: 'Title', titleAndMarkers: 'Title and boundary markers', karanTany: 'Karan-tany', statusNA: '#NA',
     dropTitle: 'Drag and drop your KML file', browse: 'Browse Files', supported: 'KML files only, up to 10 MB.',
     remove: 'Remove selected file', upload: 'Import KML File', uploading: 'Importing…',
     fileRequired: 'Select a KML file to continue.', fileType: 'Please select a KML file (.kml).',
@@ -32,6 +34,8 @@ const copy = {
     parcelName: 'Nom de la parcelle', owner: 'Propriétaire', priceM2: 'Prix au m²', currency: 'Devise',
     chooseCurrency: 'Choisir une devise', category: 'Catégorie', chooseCategory: 'Choisir une option',
     status: 'Statut du terrain', price: 'Prix total', location: 'Localisation', description: 'Description',
+    saleToSell: 'A vendre', saleSold: 'Vendue', saleOther: 'Autre', saleNA: '#NA',
+    titleStatus: 'Titre', titleAndMarkers: 'Titre et borne', karanTany: 'Karan-tany', statusNA: '#NA',
     dropTitle: 'Déposez le fichier KML ici', browse: 'Parcourir les fichiers', supported: 'Fichiers KML uniquement, 10 Mo maximum.',
     remove: 'Retirer le fichier sélectionné', upload: 'Importer le fichier KML', uploading: 'Import en cours…',
     fileRequired: 'Sélectionnez un fichier KML pour continuer.', fileType: 'Sélectionnez un fichier KML (.kml).',
@@ -111,10 +115,10 @@ export default function KmlImport({ request, userEmail, onClose, onImported, lan
       </select></label>
       <div className="main-add-grid">
         <label>{labels.category}<select required value={fields.sell_category} onChange={(event) => setFields((current) => ({ ...current, sell_category: event.target.value }))}>
-          <option value="">{labels.chooseCategory}</option><option value="to_sell">A vendre</option><option value="vendu">Vendue</option><option value="autre">Autre</option><option value="na">#NA</option>
+          <option value="">{labels.chooseCategory}</option><option value="to_sell">{labels.saleToSell}</option><option value="vendu">{labels.saleSold}</option><option value="autre">{labels.saleOther}</option><option value="na">{labels.saleNA}</option>
         </select></label>
         <label>{labels.status}<select required value={fields.status_category} onChange={(event) => setFields((current) => ({ ...current, status_category: event.target.value }))}>
-          <option value="">{labels.chooseCategory}</option><option value="titre">Titre</option><option value="titre_borne">Titre et borne</option><option value="kt">Karan-tany</option><option value="na">#NA</option>
+          <option value="">{labels.chooseCategory}</option><option value="titre">{labels.titleStatus}</option><option value="titre_borne">{labels.titleAndMarkers}</option><option value="kt">{labels.karanTany}</option><option value="na">{labels.statusNA}</option>
         </select></label>
       </div>
       <label>{labels.location}<input required value={fields.location_name} onChange={(event) => setFields((current) => ({ ...current, location_name: event.target.value }))} /></label>
