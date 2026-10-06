@@ -333,6 +333,7 @@
   .home-nav-inner { width: calc(100% - 20px); }
   .home-nav-actions { gap: 7px; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .home-reveal { opacity: 1; transform: none; transition: none; }
   .hero-contours, .hero-scroll i { animation: none; }
@@ -520,4 +521,65 @@
 @media (max-width: 370px) {
   .home-nav-inner { width: calc(100% - 20px); }
   .home-nav-actions { gap: 7px; }
+}
+
+/* Keep compact Home copy readable and controls reachable on touch screens. */
+@media (max-width: 900px) and (min-width: 641px) {
+  .home-nav-links { font-size: 10px; }
+}
+
+@media (max-width: 640px) {
+  .home-nav-inner { min-width: 0; }
+  .home-brand { min-width: 0; flex-shrink: 1; font-size: 16px; }
+  .brand-mark { width: 27px; height: 27px; flex: 0 0 27px; }
+  .home-nav-actions { flex: 0 0 auto; gap: 8px; }
+  .nav-signin { min-width: 0; min-height: 44px; padding-inline: 10px; white-space: nowrap; }
+  .language-menu summary { min-width: 44px; min-height: 44px; justify-content: center; gap: 5px; padding-inline: 3px; }
+  .language-menu-options button { min-height: 44px; }
+  .mobile-nav summary { display: grid; width: 44px; height: 44px; min-width: 44px; min-height: 44px; place-items: center; }
+
+  .hero-badge,
+  .hero-stat > span,
+  .home-hero-stats > p,
+  .trust-items,
+  .hero-scroll,
+  .report-card > header > span,
+  .report-map > span,
+  .report-facts > div > span,
+  .report-facts small,
+  .report-caption,
+  .gis-feature > span,
+  .thread-message small,
+  .thread-status,
+  .thread-seal,
+  .pricing-heading .pricing-disclaimer,
+  .popular-badge,
+  .plan-name,
+  .plan-price span,
+  .plan-tagline,
+  .price-card li,
+  .price-card > .button,
+  .pricing-notes p,
+  .footer-grid > div:first-child > p,
+  .footer-column h3,
+  .footer-bottom {
+    font-size: 10px;
+  }
+
+  .hero-buttons .button { min-height: 44px; }
+  .gis-cta { min-height: 44px; align-items: center; justify-content: center; padding: 8px 12px; font-size: 10px; }
+  .price-card > .button { min-height: 44px; white-space: normal; }
+  .price-card li,
+  .pricing-notes p { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 380px) {
+  .home-nav-inner {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    row-gap: 4px;
+    padding-block: 6px;
+  }
+  .home-brand { flex: 1 0 100%; }
+  .home-nav-actions { flex: 1 0 100%; justify-content: flex-end; margin-left: 0; }
 }
