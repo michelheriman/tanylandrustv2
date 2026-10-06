@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { parcelsToFeatureCollection, parseParcelGeometry } from './parcelMapData.js'
+import { setArcGISLocale } from './parcelMapLocale.js'
 
 const ARCGIS_SCRIPT = 'https://js.arcgis.com/4.31/'
 const ARCGIS_CSS = 'https://js.arcgis.com/4.31/esri/themes/light/main.css'
 const MODULES = [
-  'esri/Map', 'esri/views/MapView', 'esri/layers/GraphicsLayer', 'esri/widgets/Sketch',
+  'esri/intl', 'esri/Map', 'esri/views/MapView', 'esri/layers/GraphicsLayer', 'esri/widgets/Sketch',
   'esri/widgets/Expand', 'esri/widgets/Search', 'esri/geometry/SpatialReference',
   'esri/geometry/operators/centroidOperator', 'esri/geometry/projection',
   'esri/geometry/geometryEngine', 'esri/Graphic', 'esri/layers/GeoJSONLayer',
@@ -56,7 +57,13 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
   const [ready, setReady] = useState(false)
   const [loadError, setLoadError] = useState(null)
   const callbacksRef = useRef({ onGeometryComplete, onSelectParcel, onError })
+  const languageRef = useRef(lang)
   useEffect(() => { callbacksRef.current = { onGeometryComplete, onSelectParcel, onError } }, [onGeometryComplete, onSelectParcel, onError])
+  useEffect(() => {
+    languageRef.current = lang
+    const intl = modulesRef.current?.['esri/intl']
+    if (intl) setArcGISLocale(intl, lang)
+  }, [lang])
 
   useEffect(() => {
     let live = true
@@ -66,6 +73,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
     loadArcGIS().then(async (modules) => {
       if (!live || !container.current) return
       modulesRef.current = modules
+      setArcGISLocale(modules['esri/intl'], languageRef.current)
       const Map = modules['esri/Map']
       const MapView = modules['esri/views/MapView']
       const GraphicsLayer = modules['esri/layers/GraphicsLayer']
