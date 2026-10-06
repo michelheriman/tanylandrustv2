@@ -33,7 +33,7 @@
 .chat-react-sidebar-heading { display: flex; min-height: 32px; align-items: center; justify-content: center; position: relative; margin-bottom: 8px; }
 .chat-react-sidebar-heading h2 { margin: 0; color: #fff; font-size: 15px; font-weight: 650; }
 .chat-react-admin-trigger { position: absolute; right: 0; display: grid; width: 28px; height: 28px; place-items: center; padding: 0; border: 1px solid rgb(242 247 238 / 88%); border-radius: 50%; color: #f7f7f0; background: transparent; cursor: pointer; }
-.chat-react-admin-trigger svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.chat-react-admin-trigger svg { display: block; width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .chat-react-admin-trigger:hover { color: #123b2d; background: #f1f0e6; }
 .chat-react-search { display: block; flex: 0 0 auto; margin-bottom: 13px; }
 .chat-react-search input { box-sizing: border-box; width: 100%; height: 25px; padding: 4px 11px; border: 1px solid rgb(233 241 232 / 80%); border-radius: 15px; color: #fff; background: rgb(13 111 67 / 82%); text-align: center; font-size: 9px; }
@@ -122,7 +122,8 @@
   .chat-react-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: 205px minmax(420px, 1fr); }
   .chat-react-sidebar { padding: 10px 12px; border-right: 0; border-bottom: 1px solid rgb(219 235 220 / 30%); }
   .chat-react-sidebar-heading { min-height: 28px; margin-bottom: 5px; }
-  .chat-react-admin-trigger { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  .chat-react-admin-trigger { width: 32px; height: 32px; min-width: 32px; min-height: 32px; }
+  .chat-react-admin-trigger svg { width: 14px; height: 14px; }
   .chat-react-search { margin-bottom: 6px; }
   .chat-react-search input { font-size: 10px; }
   .chat-react-conversation-list { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: 2px 2px 5px; }

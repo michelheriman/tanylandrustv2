@@ -46,9 +46,14 @@ test('mobile Chat secondary text is enlarged while desktop typography remains un
   assert.match(cssRule(chatCss, '.chat-react-bubble time'), /font-size:\s*7px/)
 })
 
-test('mobile Chat action controls have 44px targets without enlarging their icons', () => {
+test('mobile Chat keeps standard action targets and sizes the admin trigger independently', () => {
+  const desktopAdminTrigger = cssRule(chatCss, '.chat-react-admin-trigger')
+  assert.match(desktopAdminTrigger, /width:\s*28px;\s*height:\s*28px/)
+  assert.match(cssRule(chatCss, '.chat-react-admin-trigger svg'), /width:\s*17px;\s*height:\s*17px/)
+  assert.match(desktopAdminTrigger, /display:\s*grid[^}]*place-items:\s*center/)
+  assert.match(desktopAdminTrigger, /border-radius:\s*50%/)
+
   for (const selector of [
-    '.chat-react-admin-trigger',
     '.chat-react-compose button',
     '.chat-react-modal-close',
   ]) {
@@ -56,9 +61,13 @@ test('mobile Chat action controls have 44px targets without enlarging their icon
     assert.match(rule, /(?:min-)?width:\s*44px/)
     assert.match(rule, /(?:min-)?height:\s*44px/)
   }
+  const mobileAdminTrigger = cssRule(mobileChat, '.chat-react-admin-trigger')
+  assert.match(mobileAdminTrigger, /width:\s*32px;\s*height:\s*32px;\s*min-width:\s*32px;\s*min-height:\s*32px/)
   assert.match(cssRule(mobileChat, '.chat-react-admin-actions button'), /min-height:\s*44px/)
   assert.match(cssRule(mobileChat, '.chat-react-error button'), /min-height:\s*44px/)
-  assert.match(cssRule(chatCss, '.chat-react-admin-trigger svg'), /width:\s*16px;\s*height:\s*16px/)
+  assert.match(cssRule(chatCss, '.chat-react-admin-trigger svg'), /display:\s*block;\s*width:\s*17px;\s*height:\s*17px;[^}]*stroke-width:\s*2/)
+  assert.match(cssRule(mobileChat, '.chat-react-admin-trigger svg'), /width:\s*14px;\s*height:\s*14px/)
+  assert.match(chatSource, /<svg viewBox="2 2 20 20" aria-hidden="true"><path d="M20\.5 11\.5/)
   assert.match(cssRule(chatCss, '.chat-react-compose button svg'), /width:\s*17px;\s*height:\s*17px/)
 })
 

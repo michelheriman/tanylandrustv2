@@ -208,7 +208,7 @@ export default function Chat({ lang = 'en' }) {
         <div className="chat-react-sidebar-heading">
           <h2>{t.chat}</h2>
           <button type="button" className="chat-react-admin-trigger" aria-label={t.admin} title={t.admin} onClick={(event) => { adminTriggerRef.current = event.currentTarget; setAdminError(''); setAdminOpen(true) }}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.8 7.3L3 20l1.2-4.4A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8 11.5h8M12 8v7"/></svg>
+            <svg viewBox="2 2 20 20" aria-hidden="true"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.8 7.3L3 20l1.2-4.4A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8 11.5h8M12 8v7"/></svg>
           </button>
         </div>
         <label className="chat-react-search">
