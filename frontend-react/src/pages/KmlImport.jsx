@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import Icon from '../components/Icon.jsx'
+import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import {
   KML_CURRENCIES,
   KML_CURRENCY_LABELS,
@@ -90,7 +91,7 @@ export default function KmlImport({ request, userEmail, onClose, onImported, lan
       await uploadKmlParcel(request, { file, fields, ownerEmail: userEmail })
       onImported()
     } catch (failure) {
-      setError(failure?.message || labels.invalid)
+      setError(apiErrorMessage(failure, lang) || failure?.message || labels.invalid)
     } finally {
       setSaving(false)
     }

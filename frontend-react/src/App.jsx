@@ -9,6 +9,7 @@ import LegalPage from './pages/LegalPage.jsx'
 import { resolveAuthRoute } from './appRouteState.js'
 import { readLanguage } from './languageStorage.js'
 import { AUTH_TRANSLATIONS } from './authTranslations.js'
+import { apiErrorMessage } from './api/apiErrorMessages.js'
 import './App.css'
 
 function App() {
@@ -54,7 +55,7 @@ function App() {
         <section className="status-panel" aria-labelledby="restore-title">
           <p className="eyebrow">Tany | LandTrust</p>
           <h1 id="restore-title">{copy.unavailableTitle}</h1>
-          <p role="alert">{error?.message ?? copy.retryHelp}</p>
+          <p role="alert">{apiErrorMessage(error, language) || copy.retryHelp}</p>
           <button type="button" onClick={() => void restore({ retry: true })}>{copy.retry}</button>
         </section>
       </main>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
@@ -290,7 +291,7 @@ function Dashboard({ lang }) {
                   <label htmlFor="add-parcel-status_category">{lang === 'fr' ? 'Statut du titre' : 'Title status'}<select id="add-parcel-status_category" name="status_category" required value={addForm.status_category} onChange={(event) => setAddForm((current) => ({ ...current, status_category: event.target.value }))}><option value="">—</option>{PARCEL_STATUS_OPTIONS.status_category.map((option) => <option key={option.value} value={option.value}>{option[lang]}</option>)}</select></label>
                 </div>
               </div>
-              {addError && <p className="main-add-error" role="alert">{addError.message || (lang === 'fr' ? 'Échec de l’ajout.' : 'Unable to add parcel.')}</p>}
+              {addError && <p className="main-add-error" role="alert">{apiErrorMessage(addError, lang) || addError.message || (lang === 'fr' ? 'Échec de l’ajout.' : 'Unable to add parcel.')}</p>}
               <div className="main-add-actions">
                 <button type="button" onClick={closeAdd} disabled={savingAdd}>{lang === 'fr' ? 'Annuler' : 'Cancel'}</button>
                 {addStep === 1
@@ -309,7 +310,7 @@ function Dashboard({ lang }) {
             <label className="main-search"><span className="sr-only">{lang === 'fr' ? 'Rechercher une parcelle' : 'Search parcels'}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={lang === 'fr' ? 'Rechercher…' : 'Search parcels…'} /></label>
             <div className="main-sort-row"><span>{MAIN_LABELS.filter[lang]}</span><button type="button" className={`main-sort-pill${sort === 'date' ? ' is-selected' : ''}`} disabled={!hasParcelDates} aria-pressed={sort === 'date'} onClick={() => setSort((current) => current === 'date' ? 'name' : 'date')}>Date <Icon name={sort === 'date' ? 'arrow-down' : 'arrow-up'} size={12}/></button><button type="button" className={`main-sort-pill${sort === 'name' ? ' is-selected' : ''}`} aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setNameDescending((current) => !current) }}>{nameDescending ? 'Z–A' : 'A–Z'}</button></div>
             {loading && <p className="main-list-state" role="status">{lang === 'fr' ? 'Chargement…' : 'Loading parcels…'}</p>}
-            {error && <div className="main-list-state main-list-error" role="alert"><p>{error.message || (lang === 'fr' ? 'Impossible de charger les parcelles.' : 'Unable to load parcels.')}</p><button type="button" onClick={() => setReloadKey((key) => key + 1)}>{lang === 'fr' ? 'Réessayer' : 'Try again'}</button></div>}
+            {error && <div className="main-list-state main-list-error" role="alert"><p>{apiErrorMessage(error, lang) || error.message || (lang === 'fr' ? 'Impossible de charger les parcelles.' : 'Unable to load parcels.')}</p><button type="button" onClick={() => setReloadKey((key) => key + 1)}>{lang === 'fr' ? 'Réessayer' : 'Try again'}</button></div>}
             {notice && <p className="main-notice" role="status">{notice}</p>}
             {!loading && !error && parcels.length === 0 && <p className="main-list-state">{lang === 'fr' ? 'Aucune parcelle associée à ce compte.' : 'No parcels are associated with this account.'}</p>}
             {!loading && !error && parcels.length > 0 && visibleParcels.length === 0 && <p className="main-list-state">{lang === 'fr' ? 'Aucun résultat pour cette recherche.' : 'No parcels match this search.'}</p>}
@@ -346,7 +347,7 @@ function Dashboard({ lang }) {
             <button className="main-edit-close" type="button" aria-label={lang === 'fr' ? 'Fermer' : 'Close'} disabled={savingEdit} onClick={closeEdit}><Icon name="close" size={18}/></button>
             <h2 id="main-edit-title">{lang === 'fr' ? 'Modifier la parcelle' : 'Edit Parcel'}</h2>
             <div className="main-edit-table-wrap"><table className="main-edit-table"><thead><tr>{fields.map((field) => <th key={field.key} scope="col">{field[lang]}</th>)}</tr></thead><tbody><tr>{fields.map((field) => <td key={field.key}><ParcelCell row={row} field={field} lang={lang} value={editDraft[field.key]} disabled={savingEdit} onChange={(value) => setEditDraft((current) => ({ ...current, [field.key]: value }))} /></td>)}</tr></tbody></table></div>
-            {editError && <p className="main-edit-error" role="alert">{editError.message || (lang === 'fr' ? 'Échec de l’enregistrement.' : 'Unable to save parcel changes.')}</p>}
+            {editError && <p className="main-edit-error" role="alert">{apiErrorMessage(editError, lang) || editError.message || (lang === 'fr' ? 'Échec de l’enregistrement.' : 'Unable to save parcel changes.')}</p>}
             <button className="main-edit-submit" type="button" disabled={savingEdit} onClick={() => void submitEdit()}>{savingEdit ? (lang === 'fr' ? 'Enregistrement…' : 'Saving…') : (lang === 'fr' ? 'Valider' : 'Save')}</button>
           </section>
         </div>
@@ -402,7 +403,7 @@ export default function Main() {
         </details>
       </div>
     </div></header>
-    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <LandLaw lang={lang} />}{error && <p className="main-feedback main-error" role="status">{error.message}</p>}</main>
+    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <LandLaw lang={lang} />}{error && <p className="main-feedback main-error" role="status">{apiErrorMessage(error, lang) || error.message}</p>}</main>
     <nav className="main-mobile-nav" aria-label={lang === 'fr' ? 'Navigation mobile' : 'Mobile navigation'}>{nav()}</nav>
   </div>
 }

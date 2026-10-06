@@ -3,10 +3,13 @@ import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
 import { readLanguage } from '../languageStorage.js'
 import { AUTH_TRANSLATIONS } from '../authTranslations.js'
+import { apiErrorMessage } from '../api/apiErrorMessages.js'
+import { signInErrorMessage } from '../auth/authErrorMessages.js'
 
 export default function SignIn() {
   const { login, error: sessionError } = useAuth()
-  const copy = AUTH_TRANSLATIONS[readLanguage()].signIn
+  const lang = readLanguage()
+  const copy = AUTH_TRANSLATIONS[lang].signIn
   const [pending, setPending] = useState(false)
   const [error, setError] = useState(null)
   const submitting = useRef(false)
@@ -24,7 +27,7 @@ export default function SignIn() {
       await login(values.get('email').trim(), values.get('password'))
       form.reset()
     } catch (failure) {
-      setError(failure.kind === 'auth' ? copy.invalidCredentials : failure.message)
+      setError(signInErrorMessage(failure, lang))
       requestAnimationFrame(() => errorRef.current?.focus())
     } finally {
       submitting.current = false
@@ -56,7 +59,7 @@ export default function SignIn() {
         <p className="message error" role="alert" tabIndex={-1} ref={errorRef} hidden={!error}>{error}</p>
       </form>
       <p className="signup-prompt">{copy.noAccount} <a href="/signup">{copy.createAccount}</a></p>
-      {sessionError && !error && <p className="message" role="status">{sessionError.message}</p>}
+      {sessionError && !error && <p className="message" role="status">{apiErrorMessage(sessionError, lang) || copy.requestFailed}</p>}
     </>
   )
 }

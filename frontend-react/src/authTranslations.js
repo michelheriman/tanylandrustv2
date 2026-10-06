@@ -30,6 +30,7 @@ export const AUTH_TRANSLATIONS = {
       noAccount: "Don't have an account?",
       createAccount: 'Create one',
       invalidCredentials: 'The email address or password is incorrect.',
+      requestFailed: 'Sign-in failed. Please try again.',
     },
     signUp: {
       backToSignIn: 'Back to sign in',
@@ -98,6 +99,7 @@ export const AUTH_TRANSLATIONS = {
       noAccount: 'Vous n’avez pas de compte ?',
       createAccount: 'En créer un',
       invalidCredentials: 'L’adresse e-mail ou le mot de passe est incorrect.',
+      requestFailed: 'La connexion a échoué. Veuillez réessayer.',
     },
     signUp: {
       backToSignIn: 'Retour à la connexion',

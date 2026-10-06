@@ -134,7 +134,7 @@ test('rejects malformed conversation and message responses and filters by partic
   assert.throws(() => conversationReplyBody(conversation, [], 'buyer@example.test', 'Hello'), /with messages/)
 })
 
-test('Chat uses localized frontend error fallbacks while preserving API-provided messages', async () => {
+test('Chat localizes API errors and fallbacks without rendering raw error messages', async () => {
   const englishStart = chatSource.indexOf('  en: {')
   const frenchStart = chatSource.indexOf('  fr: {', englishStart)
   const dictionaryEnd = chatSource.indexOf('function contactName', frenchStart)
@@ -150,12 +150,13 @@ test('Chat uses localized frontend error fallbacks while preserving API-provided
   assert.match(english, /adminUuidUnavailable: 'A secure UUID generator is unavailable in this browser\.'/)
   assert.match(french, /adminUuidUnavailable: 'Un générateur d’UUID sécurisé n’est pas disponible dans ce navigateur\.'/)
   assert.match(chatSource, /const t = copy\[lang\]/)
-  assert.match(chatSource, /setConversationsError\(failure\?\.message \|\| \{ fallbackKey: 'conversationsError' \}\)/)
-  assert.match(chatSource, /setMessagesError\(failure\?\.message \|\| \{ fallbackKey: 'messagesError' \}\)/)
-  assert.match(chatSource, /setSendError\(failure\?\.message \|\| \{ fallbackKey: 'sendMessageError' \}\)/)
-  assert.match(chatSource, /setAdminError\(failure\?\.message \|\| \{ fallbackKey: failure\?\.fallbackKey \|\| 'sendMessageError' \}\)/)
-  assert.match(chatSource, /function chatErrorText\(error, labels, fallbackKey\)/)
-  assert.match(chatSource, /return typeof error === 'string' \? error : labels\[error\?\.fallbackKey \|\| fallbackKey\]/)
+  assert.match(chatSource, /setConversationsError\(failure \|\| \{ fallbackKey: 'conversationsError' \}\)/)
+  assert.match(chatSource, /setMessagesError\(failure \|\| \{ fallbackKey: 'messagesError' \}\)/)
+  assert.match(chatSource, /setSendError\(failure \|\| \{ fallbackKey: 'sendMessageError' \}\)/)
+  assert.match(chatSource, /setAdminError\(failure \|\| \{ fallbackKey: 'sendMessageError' \}\)/)
+  assert.match(chatSource, /function chatErrorText\(error, labels, fallbackKey, lang\)/)
+  assert.match(chatSource, /apiErrorMessage\(error, lang\) \|\| labels\[error\?\.fallbackKey \|\| fallbackKey\]/)
+  assert.doesNotMatch(chatSource, /return apiErrorMessage\(error, lang\) \|\| error\?\.message/)
   assert.match(chatSource, /throw Object\.assign\(new Error\(\), \{ fallbackKey: 'adminUuidUnavailable' \}\)/)
 
   assert.throws(() => conversationsFromResponse({ success: false, message: 'Backend conversation error' }), /Backend conversation error/)

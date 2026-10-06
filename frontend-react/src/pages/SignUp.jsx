@@ -4,10 +4,12 @@ import Icon from '../components/Icon.jsx'
 import { acquireSubmissionLock, releaseSubmissionLock } from './signupSubmission.js'
 import { readLanguage } from '../languageStorage.js'
 import { AUTH_TRANSLATIONS } from '../authTranslations.js'
+import { signUpErrorMessage } from '../auth/authErrorMessages.js'
 
 export default function SignUp() {
   const { register } = useAuth()
-  const copy = AUTH_TRANSLATIONS[readLanguage()].signUp
+  const lang = readLanguage()
+  const copy = AUTH_TRANSLATIONS[lang].signUp
   const [pending, setPending] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
@@ -42,9 +44,7 @@ export default function SignUp() {
       setSuccess(true)
       window.setTimeout(() => window.location.assign('/signin'), 2000)
     } catch (failure) {
-      if (failure.status === 409) setError(copy.accountInUse)
-      else if (failure.status === 400) setError(copy.requiredFields)
-      else setError(failure.message || copy.registrationFailed)
+      setError(signUpErrorMessage(failure, lang))
       requestAnimationFrame(() => errorRef.current?.focus())
     } finally {
       releaseSubmissionLock(submitting)

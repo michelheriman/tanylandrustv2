@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import {
   conversationMatchesSearch,
@@ -51,8 +52,9 @@ function ChatError({ error, onRetry, retryLabel }) {
   return <div className="chat-react-error" role="alert"><p>{error}</p>{onRetry && <button type="button" onClick={onRetry}>{retryLabel}</button>}</div>
 }
 
-function chatErrorText(error, labels, fallbackKey) {
-  return typeof error === 'string' ? error : labels[error?.fallbackKey || fallbackKey]
+function chatErrorText(error, labels, fallbackKey, lang) {
+  if (typeof error === 'string') return error
+  return apiErrorMessage(error, lang) || labels[error?.fallbackKey || fallbackKey]
 }
 
 export default function Chat({ lang = 'en' }) {
@@ -94,7 +96,7 @@ export default function Chat({ lang = 'en' }) {
       })
       .catch((failure) => {
         if (active) {
-          setConversationsError(failure?.message || { fallbackKey: 'conversationsError' })
+          setConversationsError(failure || { fallbackKey: 'conversationsError' })
           setConversationsLoading(false)
         }
       })
@@ -113,7 +115,7 @@ export default function Chat({ lang = 'en' }) {
       }
     }).catch((failure) => {
       if (active) {
-        setMessagesError(failure?.message || { fallbackKey: 'messagesError' })
+        setMessagesError(failure || { fallbackKey: 'messagesError' })
         setMessagesLoading(false)
       }
     })
@@ -169,7 +171,7 @@ export default function Chat({ lang = 'en' }) {
       setMessages((current) => [...current, { ...body, created_at: t.now, localEcho: true }])
       setDraft('')
     } catch (failure) {
-      setSendError(failure?.message || { fallbackKey: 'sendMessageError' })
+      setSendError(failure || { fallbackKey: 'sendMessageError' })
     } finally {
       setSending(false)
     }
@@ -189,7 +191,7 @@ export default function Chat({ lang = 'en' }) {
       setConversationsLoading(true)
       setConversationRetry((value) => value + 1)
     } catch (failure) {
-      setAdminError(failure?.message || { fallbackKey: failure?.fallbackKey || 'sendMessageError' })
+      setAdminError(failure || { fallbackKey: 'sendMessageError' })
     } finally {
       setAdminSending(false)
     }
@@ -216,7 +218,7 @@ export default function Chat({ lang = 'en' }) {
 
         <div className="chat-react-conversation-list" aria-live="polite" aria-busy={conversationsLoading}>
           {conversationsLoading && <p className="chat-react-list-state" role="status">{t.loading}</p>}
-          {!conversationsLoading && conversationsError && <ChatError error={chatErrorText(conversationsError, t, 'conversationsError')} retryLabel={t.retry} onRetry={() => { setConversationsLoading(true); setConversationsError(''); setConversationRetry((value) => value + 1) }} />}
+          {!conversationsLoading && conversationsError && <ChatError error={chatErrorText(conversationsError, t, 'conversationsError', lang)} retryLabel={t.retry} onRetry={() => { setConversationsLoading(true); setConversationsError(''); setConversationRetry((value) => value + 1) }} />}
           {!conversationsLoading && !conversationsError && conversations.length === 0 && <p className="chat-react-list-state">{t.noConversations}</p>}
           {!conversationsLoading && !conversationsError && conversations.length > 0 && visibleConversations.length === 0 && <p className="chat-react-list-state">{t.noSearchResults}</p>}
           {!conversationsLoading && !conversationsError && visibleConversations.map((conversation, index) => {
@@ -242,7 +244,7 @@ export default function Chat({ lang = 'en' }) {
         {selectedConversation ? <>
           <div className="chat-react-messages" aria-live="polite" aria-busy={messagesLoading}>
             {messagesLoading && <p className="chat-react-thread-state" role="status">{t.loadingMessages}</p>}
-            {!messagesLoading && messagesError && <ChatError error={chatErrorText(messagesError, t, 'messagesError')} retryLabel={t.retry} onRetry={() => { setMessagesLoading(true); setMessagesError(''); setMessageRetry((value) => value + 1) }} />}
+            {!messagesLoading && messagesError && <ChatError error={chatErrorText(messagesError, t, 'messagesError', lang)} retryLabel={t.retry} onRetry={() => { setMessagesLoading(true); setMessagesError(''); setMessageRetry((value) => value + 1) }} />}
             {!messagesLoading && !messagesError && messages.length === 0 && <p className="chat-react-thread-state">{t.noMessages}</p>}
             {!messagesLoading && !messagesError && messages.map((message, index) => {
               const outgoing = message.sender_id === user?.email
@@ -264,7 +266,7 @@ export default function Chat({ lang = 'en' }) {
             <button type="submit" aria-label={t.send} title={t.send} disabled={messagesLoading || Boolean(messagesError) || !messages.length || !draft.trim() || sending}>
               {sending ? <span className="chat-react-send-pending">…</span> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-6 18-3-8-9-2Z"/><path d="m12 13 9-10"/></svg>}
             </button>
-            {sendError && <p className="chat-react-compose-error" role="alert">{chatErrorText(sendError, t, 'sendMessageError')}</p>}
+            {sendError && <p className="chat-react-compose-error" role="alert">{chatErrorText(sendError, t, 'sendMessageError', lang)}</p>}
           </form>
         </> : <div className="chat-react-empty-thread"><p>{t.select}</p></div>}
       </section>
@@ -280,7 +282,7 @@ export default function Chat({ lang = 'en' }) {
           <input id="chat-react-admin-subject" value={adminSubject} onChange={(event) => setAdminSubject(event.target.value)} placeholder={t.subjectPlaceholder} required disabled={adminSending} />
           <label htmlFor="chat-react-admin-content">{t.message}</label>
           <textarea id="chat-react-admin-content" value={adminContent} onChange={(event) => setAdminContent(event.target.value)} placeholder={t.adminPlaceholder} rows="4" required disabled={adminSending} />
-          {adminError && <p className="chat-react-admin-error" role="alert">{chatErrorText(adminError, t, 'sendMessageError')}</p>}
+          {adminError && <p className="chat-react-admin-error" role="alert">{chatErrorText(adminError, t, 'sendMessageError', lang)}</p>}
           <div className="chat-react-admin-actions"><button type="button" disabled={adminSending} onClick={() => setAdminOpen(false)}>{t.cancel}</button><button type="submit" disabled={adminSending || !adminSubject.trim() || !adminContent.trim()}>{adminSending ? t.sending : t.sendAdmin}</button></div>
         </form>
       </section>

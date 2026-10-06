@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
+import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import ParcelMap from './ParcelMap.jsx'
 import { filterMarketplaceRows, interestMessageBody, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
@@ -26,7 +27,7 @@ const filterText = {
 }
 
 function MarketError({ error, onRetry, lang }) {
-  const message = typeof error === 'string' ? error : `${error?.message || text[lang].requestFailed}${error?.status ? ` (HTTP ${error.status})` : ''}`
+  const message = apiErrorMessage(error, lang) || (typeof error === 'string' ? error : text[lang].requestFailed)
   return <div className="market-react-error" role="alert"><p>{message}</p>{onRetry && <button type="button" onClick={onRetry}>{text[lang].retry}</button>}</div>
 }
 
@@ -44,7 +45,7 @@ function ProductInterest({ uuid, lang, onBack }) {
     let live = true
     request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid)) })
       .then((response) => { if (live) setProduct(productFromResponse(response)) })
-      .catch((failure) => { if (live) setError(failure.message) })
+      .catch((failure) => { if (live) setError(failure) })
       .finally(() => { if (live) setLoading(false) })
     return () => { live = false }
   }, [request, uuid])
@@ -56,14 +57,14 @@ function ProductInterest({ uuid, lang, onBack }) {
     try {
       await request('/messages_w', { method: 'POST', body: JSON.stringify(interestMessageBody(product, user, message)) })
       setSent(true)
-    } catch (failure) { setError(failure.message) }
+    } catch (failure) { setError(failure) }
     finally { setSaving(false) }
   }
 
   return <section className="market-react-detail" aria-labelledby="market-product-title">
     <button className="market-react-back" type="button" onClick={onBack}><Icon name="arrow-left" size={15}/>{labels.back}</button>
     {loading && <p role="status">{labels.loadProduct}</p>}
-    {!loading && error && <MarketError error={error} onRetry={() => { setProduct(null); setLoading(true); setError(null); request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid)) }).then((response) => setProduct(productFromResponse(response))).catch((failure) => setError(failure.message)).finally(() => setLoading(false)) }} lang={lang} />}
+    {!loading && error && <MarketError error={error} onRetry={() => { setProduct(null); setLoading(true); setError(null); request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid)) }).then((response) => setProduct(productFromResponse(response))).catch((failure) => setError(failure)).finally(() => setLoading(false)) }} lang={lang} />}
     {!loading && !error && !product && <p role="status">{labels.missing}</p>}
     {product && <>
       <h2 id="market-product-title">{product.parcel_name || '—'}</h2>
