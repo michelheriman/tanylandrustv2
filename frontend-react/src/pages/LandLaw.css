@@ -151,7 +151,6 @@
   .land-law-country-content .country-subtitle { font-size: 9px; }
   .land-law-country-content .summary-card { padding: 11px 12px; }
   .land-law-country-content .law-section { padding: 10px; overflow-x: auto; }
-  .land-law-country-content .key-laws { min-width: 520px; }
   .land-law-country-content .two-col { grid-template-columns: 1fr; }
   .land-law-topic { min-height: 29px; padding-inline: 9px; }
 }
@@ -382,4 +381,69 @@
   .land-law-country-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .land-law-country-content .two-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
   .land-law-country-content .info-box { width: 100%; }
+}
+
+@media (max-width: 700px) {
+  .land-law-title-card p {
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .land-law-country-tab,
+  .land-law-page .land-law-country-tab {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 5px;
+    font-size: 11px;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .land-law-country-content .country-subtitle { font-size: 10px; }
+  .land-law-country-content .summary-card p { font-size: 11px; line-height: 1.5; }
+  .land-law-country-content .law-section { min-width: 0; overflow-x: visible; }
+  .land-law-country-content .law-section h3 { font-size: 12px; line-height: 1.35; }
+  .land-law-country-content .law-section p { font-size: 11px; overflow-wrap: anywhere; }
+  .land-law-country-content .key-laws {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    font-size: 10px;
+  }
+  .land-law-country-content .key-laws th,
+  .land-law-country-content .key-laws td {
+    padding: 5px 4px;
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+  .land-law-country-content .doc-link { font-size: 10px; }
+  .land-law-country-content .info-box h4 { font-size: 11px; }
+  .land-law-country-content .info-box ul { font-size: 10px; }
+  .land-law-country-content .alert { font-size: 10px; }
+
+  .land-law-topic,
+  .land-law-page .land-law-topic {
+    display: flex;
+    min-width: 0;
+    min-height: 44px;
+    flex: 1 1 132px;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 10px;
+    line-height: 1.35;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .land-law-disclaimer { font-size: 10px; }
+  .land-law-footer { font-size: 10px; }
+  .land-law-footer strong { font-size: 11px; }
 }
