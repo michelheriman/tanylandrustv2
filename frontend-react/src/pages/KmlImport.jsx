@@ -136,7 +136,7 @@ export default function KmlImport({ request, userEmail, onClose, onImported, lan
         <input ref={fileInput} type="file" accept=".kml,application/vnd.google-earth.kml+xml" aria-label={labels.kml} onChange={(event) => selectFile(event.target.files?.[0])} />
         <button type="button" onClick={() => fileInput.current?.click()} disabled={saving}>{labels.browse}</button>
       </div>
-      {file && <div className="main-kml-file-info"><span><strong>{file.name}</strong><small>{formatFileSize(file.size)} · ≤ {MAX_KML_FILE_SIZE / (1024 * 1024)} MB</small></span><button type="button" aria-label={labels.remove} disabled={saving} onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}><Icon name="close" size={14}/></button></div>}
+      {file && <div className="main-kml-file-info"><span><strong title={file.name}>{file.name}</strong><small>{formatFileSize(file.size)} · ≤ {MAX_KML_FILE_SIZE / (1024 * 1024)} MB</small></span><button type="button" aria-label={labels.remove} disabled={saving} onClick={() => { setFile(null); if (fileInput.current) fileInput.current.value = '' }}><Icon name="close" size={14}/></button></div>}
       {error && <p className="main-add-error" role="alert">{error}</p>}
       {saving && <div className="main-kml-progress" role="status"><span />{labels.uploading}</div>}
       <div className="main-add-actions">

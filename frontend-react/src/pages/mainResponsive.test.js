@@ -5,6 +5,7 @@ import test from 'node:test'
 
 const mainSource = await readFile(fileURLToPath(new URL('./Main.jsx', import.meta.url)), 'utf8')
 const marketplaceSource = await readFile(fileURLToPath(new URL('./Marketplace.jsx', import.meta.url)), 'utf8')
+const kmlImportSource = await readFile(fileURLToPath(new URL('./KmlImport.jsx', import.meta.url)), 'utf8')
 const mainCss = await readFile(fileURLToPath(new URL('./Main.css', import.meta.url)), 'utf8')
 const marketplaceCss = await readFile(fileURLToPath(new URL('./Marketplace.css', import.meta.url)), 'utf8')
 const globalCss = await readFile(fileURLToPath(new URL('../index.css', import.meta.url)), 'utf8')
@@ -108,4 +109,25 @@ test('all requested mobile widths use the natural-flow breakpoint and desktop ru
   assert.match(marketplaceCss, /@media \(min-width: 1024px\)/)
   assert.match(marketplaceCss, /@media \(max-width: 767px\)/)
   assert.match(mobileMain, /\.main-mobile-nav \{[^}]*position: fixed/)
+})
+
+test('mobile KML controls are readable, long names wrap, and the form remains before the map', () => {
+  for (const width of [390, 375, 360, 320]) assert.ok(width <= 700, `${width}px uses the mobile KML rules`)
+  assert.match(mobileMain, /\.main-kml-dropzone span,\s*\.main-kml-dropzone button,\s*\.main-kml-file-info,\s*\.main-kml-file-info small,\s*\.main-kml-progress\s*\{\s*font-size:\s*10px;/)
+  const browseButton = rule(mobileMain, '.main-kml-dropzone button')
+  assert.match(browseButton, /min-height:\s*44px/)
+
+  const filename = rule(mobileMain, '.main-kml-file-info strong')
+  assert.match(filename, /overflow-wrap:\s*anywhere/)
+  assert.match(filename, /white-space:\s*normal/)
+  assert.match(kmlImportSource, /<strong title=\{file\.name\}>\{file\.name\}<\/strong>/)
+
+  const importer = mainSource.indexOf('<KmlImport layout="manager-column"')
+  const map = mainSource.indexOf('<div className="main-map-wrap">', importer)
+  assert.ok(importer >= 0 && map > importer, 'KML form must remain before the map in Main')
+  assert.match(rule(mobileMain, '.main-map-wrap, .main-map-canvas'), /min-height:\s*49svh/)
+  assert.match(rule(mobileMain, '.main-mobile-nav'), /position:\s*fixed/)
+
+  assert.match(rule(mainCss, '.main-kml-dropzone button'), /font-size:\s*9px/)
+  assert.match(rule(mainCss, '.main-kml-file-info'), /font-size:\s*9px/)
 })

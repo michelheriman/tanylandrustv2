@@ -197,6 +197,13 @@
   .main-add-panel.main-kml-panel.is-manager-column,
   .main-add-panel.main-kml-panel.is-manager-column.is-drawing-step { position: relative; inset: auto; width: 100%; max-height: none; }
   .main-kml-form { gap: 7px; }
+  .main-kml-dropzone span,
+  .main-kml-dropzone button,
+  .main-kml-file-info,
+  .main-kml-file-info small,
+  .main-kml-progress { font-size: 10px; }
+  .main-kml-dropzone button { min-height: 44px; }
+  .main-kml-file-info strong { overflow: visible; overflow-wrap: anywhere; text-overflow: clip; white-space: normal; }
   .main-parcel-details { grid-template-columns: 1fr; }
   .main-edit-dialog { width: 96vw; height: min(424px, 82svh); }
   .main-edit-table-wrap { right: 3%; left: 3%; }
