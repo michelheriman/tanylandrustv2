@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test \"src/**/*.test.js\"",
+    "test:legacy": "node --test \"tests/legacy/**/*.test.js\"",
     "preview": "vite preview"
   },
   "dependencies": {
