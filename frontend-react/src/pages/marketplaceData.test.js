@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 import { apiUrl } from '../api/client.js'
 import { createAuthService } from '../auth/authService.js'
-import { filterMarketplaceRows, geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, interestMessageBody, loadMarketplaceRows, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
+import { filterMarketplaceRows, geoReportErrorMessage, geoReportFromResponse, geoReportLookupBody, hasMarketplaceUuid, interestMessageBody, loadMarketplaceRows, normalizeMarketplaceRows, productFromResponse, productLookupBody } from './marketplaceData.js'
 
 const viteConfig = await readFile(fileURLToPath(new URL('../../vite.config.js', import.meta.url)), 'utf8')
 const marketplaceComponent = await readFile(new URL('./Marketplace.jsx', import.meta.url), 'utf8')
@@ -183,6 +183,19 @@ test('Marketplace rows require real identity and supported polygon geometry', ()
   const rows = normalizeMarketplaceRows([{ uuid: 'parcel-uuid', parcel_name: 'Plot', geojson: polygon }])
   assert.equal(rows[0].id, 'parcel-uuid')
   assert.throws(() => normalizeMarketplaceRows([{ uuid: 'broken', geojson: '{' }]), /invalid geometry or identity/i)
+})
+
+test('Marketplace keeps id-only listings but neutralizes UUID-dependent actions', () => {
+  const [row] = normalizeMarketplaceRows([{ id: 17, parcel_name: 'No UUID plot', geojson: polygon }])
+  assert.equal(row.id, 17)
+  assert.equal(hasMarketplaceUuid(row), false)
+  assert.equal(hasMarketplaceUuid({ ...row, uuid: 'parcel-uuid' }), true)
+  assert.throws(() => productLookupBody(undefined), /parcel UUID is required/)
+  assert.match(marketplaceComponent, /if \(!hasMarketplaceUuid\(row\)\) return/)
+  assert.match(marketplaceComponent, /disabled=\{!hasMarketplaceUuid\(row\)\}/)
+  assert.match(marketplaceComponent, /hasMarketplaceUuid\(row\)\s*\?\s*<a className="market-react-report-link"/)
+  assert.match(marketplaceComponent, /uuidUnavailable: 'Parcel reference unavailable\.'/)
+  assert.match(marketplaceComponent, /uuidUnavailable: '.+indisponible\.'/)
 })
 
 test('Marketplace location filter is a text match against location_name and composes with search', () => {

@@ -68,6 +68,21 @@ export function conversationMatchesSearch(conversation, query) {
     .some((value) => String(value ?? '').toLocaleLowerCase().includes(needle))
 }
 
+function conversationIdentity(conversation) {
+  const uuidPost = String(conversation?.uuid_post ?? '').trim()
+  const subject = String(conversation?.objet ?? '').trim()
+  const participant = String(conversation?.main_user ?? '').trim()
+  if (!uuidPost || !subject || !participant) return null
+  return JSON.stringify([uuidPost, subject, participant])
+}
+
+export function findRefreshedConversation(selected, rows) {
+  const identity = conversationIdentity(selected)
+  if (!identity || !Array.isArray(rows)) return null
+  const matches = rows.filter((row) => conversationIdentity(row) === identity)
+  return matches.length === 1 ? matches[0] : null
+}
+
 const conversationFlights = new Map()
 const messageFlights = new Map()
 

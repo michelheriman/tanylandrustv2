@@ -43,6 +43,42 @@ test('GeoReport parses the backend envelope and JSON geoinfos without inventing 
   assert.throws(() => geoReportFromResponse({ success: true, data: [{ geoinfos: '{}' }] }), /incomplete or unsupported/)
 })
 
+test('GeoReport normalizes finite numeric coordinate strings and rejects invalid coordinate values', () => {
+  const responseWithCoordinates = (latitude, longitude) => ({
+    success: true,
+    data: [{ geoinfos: {
+      ...report,
+      flood: { ...report.flood, coordinate: { latitude, longitude } },
+    } }],
+  })
+
+  const numericCoordinates = geoReportFromResponse(responseWithCoordinates(-18.9, 47.5))
+  assert.equal(numericCoordinates.flood.coordinate.latitude, -18.9)
+  assert.equal(typeof numericCoordinates.flood.coordinate.latitude, 'number')
+
+  const stringCoordinates = geoReportFromResponse(responseWithCoordinates('-18.9', '47.5'))
+  assert.equal(stringCoordinates.flood.coordinate.latitude, -18.9)
+  assert.equal(stringCoordinates.flood.coordinate.longitude, 47.5)
+  assert.equal(typeof stringCoordinates.flood.coordinate.latitude, 'number')
+  assert.equal(typeof stringCoordinates.flood.coordinate.longitude, 'number')
+
+  for (const invalid of [null, undefined, '', '   ', NaN, Infinity, -Infinity, 'not-a-number', 'NaN', 'Infinity', '-Infinity']) {
+    assert.throws(() => geoReportFromResponse(responseWithCoordinates(invalid, 47.5)), /incomplete or unsupported/)
+  }
+})
+
+test('GeoReport rejects a returned record whose parcel UUID differs from the requested UUID', () => {
+  const response = {
+    success: true,
+    data: [{ uuid_parcel: 'another-parcel', geoinfos: report }],
+  }
+  assert.throws(
+    () => geoReportFromResponse(response, 'requested-parcel'),
+    (error) => error.kind === 'protocol' && /does not match/.test(error.message),
+  )
+  assert.deepEqual(geoReportFromResponse({ success: true, data: [{ geoinfos: report }] }, 'requested-parcel').flood.coordinate, report.flood.coordinate)
+})
+
 test('GeoReport localizes descriptive unit fragments and return-period text without changing API values', () => {
   const labelsStart = pageSource.indexOf('const labels = {')
   const englishStart = pageSource.indexOf('  en: {', labelsStart)

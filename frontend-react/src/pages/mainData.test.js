@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { loadParcels, saveParcelField } from './mainData.js'
+import { readFile } from 'node:fs/promises'
+import { loadParcels, saveParcelField, saveParcelFields } from './mainData.js'
+
+const mainSource = await readFile(new URL('./Main.jsx', import.meta.url), 'utf8')
 
 test('loads real parcel rows from the protected map-data endpoint', async () => {
   const rows = [{ id: 7, parcel_name: 'Lot A' }]
@@ -57,6 +60,32 @@ test('sends the existing update_t payload without changing other fields', async 
   assert.equal(call.path, '/update_t')
   assert.equal(call.options.method, 'POST')
   assert.deepEqual(JSON.parse(call.options.body), { element: { price: '1200' }, id: 7 })
+})
+
+test('reconciles a partial multi-field edit from map-data and preserves the write error', async () => {
+  const serverRows = [{ id: 7, parcel_name: 'Lot A', price: '1200', location_name: 'Old location' }]
+  const calls = []
+  const writeFailure = Object.assign(new Error('Second field failed.'), { kind: 'server', status: 503 })
+  const request = async (path, options = {}) => {
+    calls.push({ path, options })
+    if (path === '/update_t' && JSON.parse(options.body).element.price) return { success: true }
+    if (path === '/update_t') throw writeFailure
+    if (path === '/map-data') return { success: true, data: serverRows }
+    throw new Error(`Unexpected request ${path}`)
+  }
+
+  let localRows = [{ id: 7, parcel_name: 'Lot A', price: '1000', location_name: 'Old location' }]
+  const result = await saveParcelFields(request, 7, [{ key: 'price' }, { key: 'location_name' }], {
+    price: '1200',
+    location_name: 'New location',
+  })
+  if (result.reconciledRows) localRows = result.reconciledRows
+
+  assert.deepEqual(calls.map(({ path }) => path), ['/update_t', '/update_t', '/map-data'])
+  assert.equal(result.error, writeFailure)
+  assert.deepEqual(localRows, serverRows)
+  assert.match(mainSource, /if \(result\.reconciledRows\) setParcels\(result\.reconciledRows\)/)
+  assert.match(mainSource, /setEditError\(result\.error\)/)
 })
 
 test('rejects an unexpected list and fields outside the legacy editor', async () => {

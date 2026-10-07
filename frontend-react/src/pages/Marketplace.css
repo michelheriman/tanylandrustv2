@@ -206,6 +206,7 @@
 .market-react-card-actions svg { display: block; width: 10px; height: 10px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .market-react-card-actions button:hover,
 .market-react-card-actions .market-react-report-link:hover { color: #173d30; background: #edf1e6; }
+.market-react-card-actions button:disabled { opacity: .55; cursor: not-allowed; }
 .market-react-card-actions .market-react-report-link { text-decoration: none; }
 .market-react-card-actions .market-react-map-button { color: #f5f7f2; background: transparent; }
 .market-react-card-actions .market-react-map-button:hover { color: #173d30; background: #edf1e6; }

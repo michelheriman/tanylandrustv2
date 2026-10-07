@@ -7,6 +7,7 @@ import {
   conversationMatchesSearch,
   conversationReplyBody,
   conversationsFromResponse,
+  findRefreshedConversation,
   loadConversations,
   loadMessages,
   messagesFromResponse,
@@ -85,6 +86,21 @@ test('prevents duplicate in-flight loads for a conversation', async () => {
   assert.deepEqual(await first, thread)
   assert.deepEqual(await second, thread)
   assert.equal(calls, 1)
+})
+
+test('reconciles a selected conversation to its refreshed row without assuming subject uniqueness', () => {
+  const selected = { ...conversation }
+  const refreshedSameSubject = { ...conversation, uuid_post: 'another-parcel', main_user: 'other@example.test' }
+  const refreshedSelected = { ...conversation }
+  const rows = [refreshedSameSubject, refreshedSelected]
+
+  assert.strictEqual(findRefreshedConversation(selected, rows), refreshedSelected)
+  assert.equal(findRefreshedConversation(selected, [refreshedSameSubject]), null)
+  assert.equal(findRefreshedConversation(selected, [refreshedSelected, { ...refreshedSelected }]), null)
+  assert.equal(findRefreshedConversation({ objet: 'Parcel enquiry', main_user: 'buyer@example.test' }, rows), null)
+  assert.match(chatSource, /findRefreshedConversation\(selectedConversationRef\.current, rows\)/)
+  assert.match(chatSource, /setSelectedConversation\(refreshedSelection\)/)
+  assert.match(chatSource, /if \(!selectedConversation\) return undefined/)
 })
 
 test('builds and sends a reply to the other participant with the existing parcel/thread fields', async () => {

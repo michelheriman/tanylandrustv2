@@ -19,6 +19,13 @@ export function proximityPlaces(results, category) {
   })
 }
 
+function finiteCoordinate(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value !== 'string' || value.trim() === '') return null
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
+}
+
 export function geoReportFromResponse(response, parcelUuid = null) {
   if (!Array.isArray(response?.data)) throw new Error('The GeoReport response did not contain a data list.')
   if (response.data.length === 0) {
@@ -29,6 +36,15 @@ export function geoReportFromResponse(response, parcelUuid = null) {
     throw error
   }
   const record = response.data[0]
+  if (parcelUuid && record?.uuid_parcel != null) {
+    const requestedUuid = String(parcelUuid).trim().toLowerCase()
+    const returnedUuid = String(record.uuid_parcel).trim().toLowerCase()
+    if (returnedUuid !== requestedUuid) {
+      const error = new Error('The GeoReport record does not match the requested parcel.')
+      error.kind = 'protocol'
+      throw error
+    }
+  }
   if (!record || (typeof record.geoinfos !== 'string' && (!record.geoinfos || typeof record.geoinfos !== 'object'))) {
     throw new Error('The GeoReport record is missing geoinfos.')
   }
@@ -37,8 +53,8 @@ export function geoReportFromResponse(response, parcelUuid = null) {
     try { report = JSON.parse(report) }
     catch { throw new Error('The GeoReport geoinfos value is not valid JSON.') }
   }
-  const latitude = Number(report?.flood?.coordinate?.latitude)
-  const longitude = Number(report?.flood?.coordinate?.longitude)
+  const latitude = finiteCoordinate(report?.flood?.coordinate?.latitude)
+  const longitude = finiteCoordinate(report?.flood?.coordinate?.longitude)
   if (!report || typeof report !== 'object' || Array.isArray(report) ||
       !report.flood || typeof report.flood !== 'object' ||
       !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
@@ -49,7 +65,17 @@ export function geoReportFromResponse(response, parcelUuid = null) {
       !Array.isArray(report.individual_slopes) || !Array.isArray(report.soil_value)) {
     throw new Error('The GeoReport geoinfos structure is incomplete or unsupported.')
   }
-  return report
+  return {
+    ...report,
+    flood: {
+      ...report.flood,
+      coordinate: {
+        ...report.flood.coordinate,
+        latitude,
+        longitude,
+      },
+    },
+  }
 }
 
 export function loadGeoReport(request, uuid) {

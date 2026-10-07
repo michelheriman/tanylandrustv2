@@ -11,6 +11,10 @@ export function normalizeMarketplaceRows(data) {
   })
 }
 
+export function hasMarketplaceUuid(row) {
+  return typeof row?.uuid === 'string' && row.uuid.trim() !== ''
+}
+
 const marketplaceLoadFlights = new WeakMap()
 
 export function loadMarketplaceRows(request) {
@@ -89,7 +93,10 @@ export function productFromResponse(response) {
   return response.data[0] ?? null
 }
 
-export function productLookupBody(uuid) { return { data: uuid } }
+export function productLookupBody(uuid) {
+  if (typeof uuid !== 'string' || uuid.trim() === '') throw new Error('A parcel UUID is required to look up its product.')
+  return { data: uuid }
+}
 
 export function interestMessageBody(product, user, content) {
   return {

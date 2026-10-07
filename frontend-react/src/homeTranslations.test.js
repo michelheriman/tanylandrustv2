@@ -29,6 +29,8 @@ test('Home translations preserve numeric statistics and existing bilingual copy'
   const source = await readFile(homeSourceUrl, 'utf8')
 
   assert.match(source, /const numbers = \[12400, 98, 34\]/)
+  assert.match(source, /useState\(numbers\)/)
+  assert.doesNotMatch(source, /useState\(\[12400, 100, 24\]\)/)
   assert.match(source, /\{counts\[index\]\.toLocaleString/)
   assert.equal(HOME_TRANSLATIONS.en.stat0_label, 'Parcels listed')
   assert.equal(HOME_TRANSLATIONS.fr.stat0_label, 'Parcelles enregistrées')

@@ -34,6 +34,6 @@ test('Main keeps the existing backend status keys and payload fields', () => {
   assert.match(main, /name="status_category"/)
   assert.match(main, /value=\{addForm\.sell_category\}/)
   assert.match(main, /value=\{addForm\.status_category\}/)
-  assert.match(main, /saveParcelField\(request, row\.id, field\.key, editDraft\[field\.key\]\)/)
+  assert.match(main, /saveParcelFields\(request, row\.id, changedFields, editDraft\)/)
   assert.match(main, /createParcel\(request, addForm, draftGeometry, user\?\.email\)/)
 })

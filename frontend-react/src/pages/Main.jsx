@@ -4,7 +4,7 @@ import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
-import { loadParcels, saveParcelField } from './mainData.js'
+import { loadParcels, saveParcelFields } from './mainData.js'
 import { MAIN_LABELS, PARCEL_STATUS_OPTIONS, parcelStatusLabel } from './mainLabels.js'
 import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
 import { applyPageMetadata } from '../seoMetadata.js'
@@ -116,7 +116,13 @@ function Dashboard({ lang }) {
     setError(null)
     setNotice('')
     try {
-      for (const field of changedFields) await saveParcelField(request, row.id, field.key, editDraft[field.key])
+      const result = await saveParcelFields(request, row.id, changedFields, editDraft)
+      if (!result.success) {
+        if (result.reconciledRows) setParcels(result.reconciledRows)
+        if (result.reconciliationError) setError(result.reconciliationError)
+        setEditError(result.error)
+        return
+      }
       setParcels((current) => current.map((parcel) => parcel.id === row.id ? { ...parcel, ...editDraft } : parcel))
       setNotice(lang === 'fr' ? 'Parcelle mise à jour.' : 'Parcel updated.')
       setEditingParcelId(null)

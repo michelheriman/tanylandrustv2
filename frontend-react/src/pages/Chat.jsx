@@ -4,6 +4,7 @@ import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import {
   conversationMatchesSearch,
+  findRefreshedConversation,
   loadConversations,
   loadMessages,
   sendAdminMessage as postAdminMessage,
@@ -81,6 +82,7 @@ export default function Chat({ lang = 'en' }) {
   const endOfMessages = useRef(null)
   const adminDialogRef = useRef(null)
   const adminTriggerRef = useRef(null)
+  const selectedConversationRef = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -90,6 +92,12 @@ export default function Chat({ lang = 'en' }) {
       .then((rows) => {
         if (active) {
           setConversations(rows)
+          const refreshedSelection = findRefreshedConversation(selectedConversationRef.current, rows)
+          selectedConversationRef.current = refreshedSelection
+          setSelectedConversation(refreshedSelection)
+          setMessages([])
+          setMessagesError('')
+          setMessagesLoading(Boolean(refreshedSelection))
           setConversationsError('')
           setConversationsLoading(false)
         }
@@ -153,6 +161,7 @@ export default function Chat({ lang = 'en' }) {
   )
 
   function selectConversation(conversation) {
+    selectedConversationRef.current = conversation
     setSelectedConversation(conversation)
     setMessages([])
     setMessagesError('')

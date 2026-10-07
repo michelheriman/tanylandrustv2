@@ -31,3 +31,18 @@ export async function saveParcelField(request, rowId, field, value) {
     body: JSON.stringify({ element: { [field]: value }, id: rowId }),
   })
 }
+
+export async function saveParcelFields(request, rowId, changedFields, values) {
+  try {
+    for (const field of changedFields) {
+      await saveParcelField(request, rowId, field.key, values[field.key])
+    }
+    return { success: true }
+  } catch (error) {
+    try {
+      return { success: false, error, reconciledRows: await loadParcels(request) }
+    } catch (reconciliationError) {
+      return { success: false, error, reconciliationError, reconciledRows: null }
+    }
+  }
+}

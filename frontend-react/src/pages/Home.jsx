@@ -44,7 +44,7 @@ function Icon({ name }) {
 
 function Home() {
   const [lang, setLang] = useState(readLanguage)
-  const [counts, setCounts] = useState([12400, 100, 24])
+  const [counts, setCounts] = useState(numbers)
   const t = (key) => HOME_TRANSLATIONS[lang][key] ?? HOME_TRANSLATIONS.en[key] ?? key
   const rich = (key) => ({ __html: t(key) })
 
