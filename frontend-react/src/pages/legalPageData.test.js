@@ -127,7 +127,7 @@ test('Sign up and the React app expose direct public Terms and Privacy routes', 
   assert.match(signUpSource, /href="\/privacy"/)
   assert.match(appSource, /pathname === '\/terms'/)
   assert.match(appSource, /pathname === '\/privacy'/)
-  assert.match(appSource, /if \(legalDocument\) return <LegalPage document=\{legalDocument\} \/>/)
+  assert.match(appSource, /if \(legalDocument\) return <Suspense fallback=\{pageLoadingFallback\}><LegalPage document=\{legalDocument\} \/><\/Suspense>/)
 })
 
 test('Terms and Privacy read and save the canonical language preference', async () => {
@@ -151,7 +151,7 @@ test('Terms and Privacy read and save the canonical language preference', async 
   assert.match(legalPageSource, /language === 'en'/)
   assert.match(appSource, /pathname === '\/terms'/)
   assert.match(appSource, /pathname === '\/privacy'/)
-  assert.match(appSource, /<LegalPage document=\{legalDocument\} \/>/)
+  assert.match(appSource, /if \(legalDocument\) return <Suspense fallback=\{pageLoadingFallback\}><LegalPage document=\{legalDocument\} \/><\/Suspense>/)
 
   writeLanguage('en', storage)
   assert.equal(readLanguage(storage), 'en')

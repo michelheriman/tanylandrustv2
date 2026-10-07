@@ -224,8 +224,8 @@ test('GeoReport reuses the shared one-time refresh flow for an expired access to
   assert.deepEqual(session, { accessToken: 'renewed-access', refreshToken: 'rotated-refresh', user: null })
 })
 
-test('the app protects a dedicated GeoReport route and the page bundles local Leaflet', () => {
-  assert.match(appSource, /GeoReport from '\.\/pages\/GeoReport\.jsx'/)
+test('the app protects a dedicated lazy GeoReport route and the page bundles local Leaflet', () => {
+  assert.match(appSource, /const GeoReport = lazy\(\(\) => import\('\.\/pages\/GeoReport\.jsx'\)\)/)
   assert.match(appSource, /georeport\\\/\(\[\^\/\]\+\)/)
   assert.match(appSource, /<GeoReport parcelUuid=\{parcelUuid\}/)
   assert.match(marketplaceSource, /href=\{`\/georeport\/\$\{encodeURIComponent\(row\.uuid\)\}`\}/)

@@ -1,16 +1,17 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useAuth } from './auth/useAuth.js'
 import SignIn from './pages/SignIn.jsx'
 import SignUp from './pages/SignUp.jsx'
 import Home from './pages/Home.jsx'
 import Main from './pages/Main.jsx'
-import GeoReport from './pages/GeoReport.jsx'
-import LegalPage from './pages/LegalPage.jsx'
 import { resolveAuthRoute } from './appRouteState.js'
 import { readLanguage } from './languageStorage.js'
 import { AUTH_TRANSLATIONS } from './authTranslations.js'
 import { apiErrorMessage } from './api/apiErrorMessages.js'
 import './App.css'
+
+const GeoReport = lazy(() => import('./pages/GeoReport.jsx'))
+const LegalPage = lazy(() => import('./pages/LegalPage.jsx'))
 
 function App() {
   const { status, error, restore } = useAuth()
@@ -28,6 +29,11 @@ function App() {
   }
   const isGeoReport = Boolean(reportMatch && parcelUuid)
   const routeView = resolveAuthRoute(pathname, status, { isGeoReport })
+  const pageLoadingFallback = (
+    <main className="status-screen" role="status" aria-live="polite">
+      {language === 'fr' ? 'Chargement…' : 'Loading…'}
+    </main>
+  )
 
   useEffect(() => {
     if (isHome || legalDocument || status === 'authenticated') return
@@ -43,7 +49,7 @@ function App() {
   // Keep the landing page public even when restoring a saved session is unavailable.
   if (isHome) return <Home />
   // Legal documents are public and should not wait for session restoration.
-  if (legalDocument) return <LegalPage document={legalDocument} />
+  if (legalDocument) return <Suspense fallback={pageLoadingFallback}><LegalPage document={legalDocument} /></Suspense>
 
   if (routeView === 'restoring') {
     return <main className="status-screen" role="status" aria-live="polite">{copy.restoring}</main>
@@ -62,7 +68,7 @@ function App() {
     )
   }
 
-  if (routeView === 'georeport') return <GeoReport parcelUuid={parcelUuid} />
+  if (routeView === 'georeport') return <Suspense fallback={pageLoadingFallback}><GeoReport parcelUuid={parcelUuid} /></Suspense>
 
   if (routeView === 'main') return <Main />
 

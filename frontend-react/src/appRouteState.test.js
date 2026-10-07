@@ -47,7 +47,14 @@ test('authenticated Main and GeoReport routes render their React pages', () => {
   assert.equal(resolveAuthRoute('/main', 'authenticated'), 'main')
   assert.equal(resolveAuthRoute('/georeport/parcel-uuid', 'authenticated', { isGeoReport: true }), 'georeport')
   assert.match(appSource, /if \(routeView === 'main'\) return <Main \/>/)
-  assert.match(appSource, /if \(routeView === 'georeport'\) return <GeoReport parcelUuid=\{parcelUuid\} \/>/)
+  assert.match(appSource, /if \(routeView === 'georeport'\) return <Suspense fallback=\{pageLoadingFallback\}><GeoReport parcelUuid=\{parcelUuid\} \/><\/Suspense>/)
+})
+
+test('GeoReport and legal pages are lazy-loaded with an accessible localized fallback', () => {
+  assert.match(appSource, /const GeoReport = lazy\(\(\) => import\('\.\/pages\/GeoReport\.jsx'\)\)/)
+  assert.match(appSource, /const LegalPage = lazy\(\(\) => import\('\.\/pages\/LegalPage\.jsx'\)\)/)
+  assert.match(appSource, /role="status" aria-live="polite">\s*\{language === 'fr' \? 'Chargement…' : 'Loading…'\}/)
+  assert.match(appSource, /if \(legalDocument\) return <Suspense fallback=\{pageLoadingFallback\}><LegalPage document=\{legalDocument\} \/><\/Suspense>/)
 })
 
 test('auth route resolution is pure and does not alter the saved session', () => {
