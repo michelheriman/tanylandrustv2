@@ -100,7 +100,7 @@ export function legalPageMarkup(source, documentType) {
   const markup = body
     .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
     .replace(/\s+on(?:click|keydown|keypress|keyup)\s*=\s*(['"]).*?\1/gi, '')
-    .replaceAll('src="./logo_.png"', 'src="/legacy/logo_.png"')
+    .replaceAll('src="./logo_.png"', 'src="/assets/logo_.png"')
     .replaceAll('href="./terms.html"', 'href="/terms"')
     .replaceAll('href="./privacy.html"', 'href="/privacy"')
     .replaceAll('href="./signin.html"', 'href="/signin"')

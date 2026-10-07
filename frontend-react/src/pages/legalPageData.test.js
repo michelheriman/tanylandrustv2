@@ -59,6 +59,28 @@ test('Terms React content retains both language versions and accordion sections 
   assert.match(source, new RegExp(TERMS_QR_LIBRARY_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
 })
 
+test('Terms and Privacy use the React-owned logo asset without legacy URLs', async () => {
+  const [termsSource, privacySource] = await Promise.all([
+    readFile(new URL('terms.html', legalContentDirectory), 'utf8'),
+    readFile(new URL('privacy.html', legalContentDirectory), 'utf8'),
+  ])
+  const [termsMarkup, privacyMarkup] = [
+    legalPageMarkup(termsSource, 'terms'),
+    legalPageMarkup(privacySource, 'privacy'),
+  ]
+
+  for (const markup of [termsMarkup, privacyMarkup]) {
+    assert.match(markup, /src="\/assets\/logo_\.png"/)
+    assert.doesNotMatch(markup, /\/legacy\//)
+  }
+})
+
+test('Vite no longer configures publishing of the Vanilla legacy directory', async () => {
+  const config = await readFile(new URL('../../vite.config.js', import.meta.url), 'utf8')
+  assert.match(config, /plugins:\s*\[react\(\)\]/)
+  assert.doesNotMatch(config, /legacyPages|legacyFiles|tany-legacy-pages|generateBundle/)
+})
+
 test('Privacy React content retains bilingual policy and contact sections with React routes', async () => {
   const source = await readFile(new URL('privacy.html', legalContentDirectory), 'utf8')
   const markup = legalPageMarkup(source, 'privacy')

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { parcelsToFeatureCollection, parseParcelGeometry } from './parcelMapData.js'
-import { setArcGISLocale } from './parcelMapLocale.js'
+import { sanitizeArcGISError, setArcGISLocale } from './parcelMapLocale.js'
 
 const ARCGIS_SCRIPT = 'https://js.arcgis.com/4.31/'
 const ARCGIS_CSS = 'https://js.arcgis.com/4.31/esri/themes/light/main.css'
@@ -110,7 +110,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
           const centroid = modules['esri/geometry/operators/centroidOperator'].execute(geometry)
           const areaHa = modules['esri/geometry/geometryEngine'].geodesicArea(geometry, 'hectares')
           callbacksRef.current.onGeometryComplete({ geometry: geometry.toJSON(), centroid, areaHa })
-        } catch (error) { callbacksRef.current.onError?.(error) }
+        } catch (error) { callbacksRef.current.onError?.(sanitizeArcGISError(error, languageRef.current)) }
       })
       clickHandle = view.on('click', async (event) => {
         const hit = await view.hitTest(event)
@@ -179,7 +179,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
     const previous = layerRef.current
     layerRef.current = layer
     if (previous) mapRef.current.remove(previous)
-    layer.when().catch((error) => { if (live) callbacksRef.current.onError?.(error) })
+    layer.when().catch((error) => { if (live) callbacksRef.current.onError?.(sanitizeArcGISError(error, languageRef.current)) })
     return () => {
       live = false
       if (layerRef.current === layer) layerRef.current = null
@@ -205,7 +205,7 @@ export default function ParcelMap({ parcels, selectedParcel, focusVersion, onSel
       attributes: selectedParcel,
       symbol: new SimpleFillSymbol({ color: [0, 255, 0, 0.2], outline: { color: [0, 0, 0, 1], width: 1 } }),
     }))
-    viewRef.current.goTo({ target: graphic, zoom: 18 }).catch((error) => callbacksRef.current.onError?.(error))
+    viewRef.current.goTo({ target: graphic, zoom: 18 }).catch((error) => callbacksRef.current.onError?.(sanitizeArcGISError(error, languageRef.current)))
   }, [selectedParcel, ready, focusVersion, lang])
 
   useEffect(() => {
