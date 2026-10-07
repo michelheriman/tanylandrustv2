@@ -110,6 +110,9 @@
 .status-panel h1 { margin-bottom: 18px; font-size: 32px; }
 .status-panel > p:not(.eyebrow) { margin: 0 0 24px; color: rgb(255 255 255 / 84%); line-height: 1.55; }
 .status-panel button { width: 100%; }
+.status-home-link { display: inline-flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; padding: 0 20px; border-radius: 999px; color: #23352e; background: var(--gold); font-weight: 700; text-decoration: none; transition: background-color 150ms ease, transform 150ms ease; }
+.status-home-link:hover { background: #f1cd82; }
+.status-home-link:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
 @keyframes card-arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 

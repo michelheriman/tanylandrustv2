@@ -4,10 +4,12 @@ import SignIn from './pages/SignIn.jsx'
 import SignUp from './pages/SignUp.jsx'
 import Home from './pages/Home.jsx'
 import Main from './pages/Main.jsx'
+import NotFound from './pages/NotFound.jsx'
 import { resolveAuthRoute } from './appRouteState.js'
 import { readLanguage } from './languageStorage.js'
 import { AUTH_TRANSLATIONS } from './authTranslations.js'
 import { apiErrorMessage } from './api/apiErrorMessages.js'
+import { applyPageMetadata } from './seoMetadata.js'
 import './App.css'
 
 const GeoReport = lazy(() => import('./pages/GeoReport.jsx'))
@@ -20,6 +22,7 @@ function App() {
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
   const isHome = pathname === '/'
   const isMain = pathname === '/main' || pathname === '/main.html'
+  const isSignIn = pathname === '/signin'
   const isSignUp = pathname === '/signup'
   const legalDocument = pathname === '/terms' ? 'terms' : pathname === '/privacy' ? 'privacy' : null
   const reportMatch = pathname.match(/^\/georeport\/([^/]+)$/)
@@ -29,6 +32,7 @@ function App() {
   }
   const isGeoReport = Boolean(reportMatch && parcelUuid)
   const routeView = resolveAuthRoute(pathname, status, { isGeoReport })
+  const metadataPage = isHome ? 'home' : legalDocument || (routeView === 'notFound' ? 'notFound' : routeView === 'georeport' || isGeoReport ? 'geoReport' : routeView === 'main' || isMain ? 'main' : isSignUp ? 'signUp' : 'signIn')
   const pageLoadingFallback = (
     <main className="status-screen" role="status" aria-live="polite">
       {language === 'fr' ? 'Chargement…' : 'Loading…'}
@@ -36,20 +40,21 @@ function App() {
   )
 
   useEffect(() => {
-    if (isHome || legalDocument || status === 'authenticated') return
-    document.title = isSignUp ? copy.signUpTitle : copy.signInTitle
-  }, [isHome, isSignUp, legalDocument, status, copy.signInTitle, copy.signUpTitle])
+    applyPageMetadata(metadataPage, language)
+  }, [metadataPage, language])
 
   useEffect(() => {
     if (isHome) return
-    if (status === 'authenticated' && !isMain && !isGeoReport && !legalDocument) window.history.replaceState(null, '', '/main')
+    if (status === 'authenticated' && (isSignIn || isSignUp)) window.history.replaceState(null, '', '/main')
     if (status === 'anonymous' && (isMain || isGeoReport)) window.location.replace('/signin')
-  }, [isHome, isMain, isGeoReport, legalDocument, status])
+  }, [isHome, isMain, isSignIn, isSignUp, isGeoReport, status])
 
   // Keep the landing page public even when restoring a saved session is unavailable.
   if (isHome) return <Home />
   // Legal documents are public and should not wait for session restoration.
   if (legalDocument) return <Suspense fallback={pageLoadingFallback}><LegalPage document={legalDocument} /></Suspense>
+
+  if (routeView === 'notFound') return <NotFound lang={language} />
 
   if (routeView === 'restoring') {
     return <main className="status-screen" role="status" aria-live="polite">{copy.restoring}</main>

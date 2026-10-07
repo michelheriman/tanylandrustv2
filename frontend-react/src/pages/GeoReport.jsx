@@ -5,6 +5,7 @@ import { useAuth } from '../auth/useAuth.js'
 import Icon from '../components/Icon.jsx'
 import { iconMarkup } from '../components/iconPaths.js'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
+import { applyPageMetadata } from '../seoMetadata.js'
 import { geoReportErrorMessage, loadGeoReport, proximityPlaces } from './geoReportData.js'
 import './GeoReport.css'
 
@@ -108,8 +109,7 @@ export default function GeoReport({ parcelUuid }) {
   }, [request, parcelUuid, retryVersion])
 
   useEffect(() => {
-    document.title = `${t.eyebrow} | Tany LandTrust`
-    document.documentElement.lang = lang
+    applyPageMetadata('geoReport', lang, { title: `${t.eyebrow} | Tany LandTrust` })
   }, [lang, t.eyebrow])
 
   const climate = report?.climates

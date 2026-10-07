@@ -50,6 +50,14 @@ test('authenticated Main and GeoReport routes render their React pages', () => {
   assert.match(appSource, /if \(routeView === 'georeport'\) return <Suspense fallback=\{pageLoadingFallback\}><GeoReport parcelUuid=\{parcelUuid\} \/><\/Suspense>/)
 })
 
+test('unknown paths render a dedicated NotFound page regardless of session state', () => {
+  for (const status of ['anonymous', 'authenticated', 'restoring', 'unavailable']) {
+    assert.equal(resolveAuthRoute('/does-not-exist', status), 'notFound')
+  }
+  assert.match(appSource, /if \(routeView === 'notFound'\) return <NotFound lang=\{language\} \/>/)
+  assert.match(appSource, /status === 'authenticated' && \(isSignIn \|\| isSignUp\)/)
+})
+
 test('GeoReport and legal pages are lazy-loaded with an accessible localized fallback', () => {
   assert.match(appSource, /const GeoReport = lazy\(\(\) => import\('\.\/pages\/GeoReport\.jsx'\)\)/)
   assert.match(appSource, /const LegalPage = lazy\(\(\) => import\('\.\/pages\/LegalPage\.jsx'\)\)/)

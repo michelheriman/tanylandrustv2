@@ -3,11 +3,12 @@ import termsDocument from '../legal-content/terms.html?raw'
 import privacyDocument from '../legal-content/privacy.html?raw'
 import { legalPageMarkup, TERMS_DOCUMENT_URL, TERMS_QR_LIBRARY_URL } from './legalPageData.js'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
+import { applyPageMetadata } from '../seoMetadata.js'
 import './LegalPage.css'
 
 const documents = {
-  terms: { source: termsDocument, title: 'Terms of Use | Tany LandTrust' },
-  privacy: { source: privacyDocument, title: 'Privacy Policy | Tany LandTrust' },
+  terms: { source: termsDocument },
+  privacy: { source: privacyDocument },
 }
 
 const qrErrorMessages = {
@@ -24,9 +25,7 @@ export default function LegalPage({ document: documentType }) {
   const markup = useMemo(() => legalPageMarkup(current.source, documentType), [current.source, documentType])
 
   useEffect(() => {
-    document.title = current.title
-    const previousLanguage = document.documentElement.lang
-    document.documentElement.lang = language
+    applyPageMetadata(documentType, language)
     const container = host.current
     if (container) {
       container.querySelectorAll('.lang-fr').forEach((element) => element.classList.toggle('visible', language === 'fr'))
@@ -40,8 +39,7 @@ export default function LegalPage({ document: documentType }) {
         header.setAttribute('aria-expanded', String(Boolean(header.closest('.term-card')?.classList.contains('open'))))
       })
     }
-    return () => { document.documentElement.lang = previousLanguage }
-  }, [current.title, language, markup])
+  }, [documentType, language, markup])
 
   useEffect(() => {
     if (documentType !== 'terms') return undefined

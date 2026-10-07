@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { HOME_TRANSLATIONS } from '../homeTranslations.js'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
+import { applyPageMetadata } from '../seoMetadata.js'
 import AppIcon from '../components/Icon.jsx'
 import './Home.css'
 
@@ -48,8 +49,7 @@ function Home() {
   const rich = (key) => ({ __html: t(key) })
 
   useEffect(() => {
-    document.documentElement.lang = lang
-    document.title = lang === 'fr' ? 'Tany | Landtrust — Le Marché Foncier' : 'Tany | Landtrust — The Land Marketplace'
+    applyPageMetadata('home', lang)
     writeLanguage(lang)
   }, [lang])
 
@@ -203,7 +203,7 @@ function Home() {
       </main>
 
       <footer className="home-footer"><div className="home-container"><div className="footer-grid"><div><Brand footer ariaLabel={t('brand_home_aria')}/><p>{t('footer_tagline')}</p></div>
-        {[[t('footer_col1'), [['footer_marketplace', '#features'], ['footer_gis', '#gis'], ['footer_negotiation', '#negotiation'], ['footer_api', '#pricing']]], [t('footer_col2'), [['footer_about'], ['footer_blog'], ['footer_careers'], ['footer_contact']]], [t('footer_col3'), [['footer_tos'], ['footer_privacy'], ['footer_security']]]].map(([heading, links]) => <div className="footer-column" key={heading}><h3>{heading}</h3>{links.map(([key, href]) => href ? <a href={href} key={key}>{t(key)}</a> : <span key={key}>{t(key)}</span>)}</div>)}
+        {[[t('footer_col1'), [['footer_marketplace', '#features'], ['footer_gis', '#gis'], ['footer_negotiation', '#negotiation'], ['footer_api', '#pricing']]], [t('footer_col2'), [['footer_about'], ['footer_blog'], ['footer_careers'], ['footer_contact']]], [t('footer_col3'), [['footer_tos', '/terms'], ['footer_privacy', '/privacy'], ['footer_security']]]].map(([heading, links]) => <div className="footer-column" key={heading}><h3>{heading}</h3>{links.map(([key, href]) => href ? <a href={href} key={key}>{t(key)}</a> : <span key={key}>{t(key)}</span>)}</div>)}
       </div><div className="footer-bottom"><span>{t('footer_copy')}</span><span>{t('footer_made')}</span></div></div></footer>
     </div>
   )

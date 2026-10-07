@@ -7,6 +7,7 @@ import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from '
 import { loadParcels, saveParcelField } from './mainData.js'
 import { MAIN_LABELS, PARCEL_STATUS_OPTIONS, parcelStatusLabel } from './mainLabels.js'
 import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
+import { applyPageMetadata } from '../seoMetadata.js'
 import ParcelMap from './ParcelMap.jsx'
 import KmlImport from './KmlImport.jsx'
 import Marketplace from './Marketplace.jsx'
@@ -369,8 +370,7 @@ export default function Main() {
   }, [])
 
   useEffect(() => {
-    document.title = `${tab === 'dashboard' ? 'Dashboard' : pages[tab]?.[lang]?.[0] || 'Tany'} | Tany`
-    document.documentElement.lang = lang
+    applyPageMetadata('main', lang, { title: `${tab === 'dashboard' ? 'Dashboard' : pages[tab]?.[lang]?.[0] || 'Tany'} | Tany` })
     writeLanguage(lang)
   }, [tab, lang])
 
