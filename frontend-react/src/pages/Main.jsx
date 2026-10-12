@@ -29,7 +29,6 @@ const pages = {
 }
 
 const fields = [
-  { key: 'owner', en: 'Owner', fr: 'Propriétaire' },
   { key: 'parcel_name', en: 'Parcel name', fr: 'Nom de la parcelle' },
   { key: 'price_m2', en: 'Price / m²', fr: 'Prix / m²', type: 'number' },
   { key: 'price', en: 'Price', fr: 'Prix', type: 'number' },
@@ -38,6 +37,8 @@ const fields = [
   { key: 'sell_category', en: 'Sale status', fr: 'Statut de vente', options: PARCEL_STATUS_OPTIONS.sell_category },
   { key: 'status_category', en: 'Title status', fr: 'Statut du titre', options: PARCEL_STATUS_OPTIONS.status_category },
 ]
+const fieldLabels = Object.fromEntries(fields.map((field) => [field.key, field]))
+const ownerLabel = { en: 'Owner', fr: 'Propri\u00e9taire' }
 
 const currencies = ['USD', 'EUR', 'KES', 'TZS', 'UGX', 'RWF', 'BIF', 'SOS', 'ETB', 'DJF', 'EGP', 'SDG', 'SSP', 'MGA']
 const emptyNewParcel = () => ({ owner: '', parcel_name: '', price_m2: '0', price: '', currency: 'USD', location_name: '', description: '', sell_category: 'to_sell', status_category: '' })
@@ -329,14 +330,14 @@ function Dashboard({ lang }) {
                   <span className="main-parcel-status">{parcelStatusLabel('status_category', row.status_category, lang)}</span>
                 </button>
                 {expandedParcelId === row.id && <dl className="main-parcel-details">
-                  <div><dt>{fields[1][lang]}</dt><dd>{row.parcel_name || '—'}</dd></div>
-                  <div><dt>{fields[0][lang]}</dt><dd>{row.owner || '—'}</dd></div>
-                  <div><dt>{fields[4][lang]}</dt><dd>{row.location_name || '—'}</dd></div>
-                  <div><dt>{fields[2][lang]}</dt><dd>{row.price_m2 ?? '—'}</dd></div>
-                  <div><dt>{fields[3][lang]}</dt><dd>{row.price ?? '—'}</dd></div>
-                  <div className="main-parcel-description"><dt>{fields[5][lang]}</dt><dd>{row.description || '—'}</dd></div>
-                  <div><dt>{fields[6][lang]}</dt><dd>{parcelStatusLabel('sell_category', row.sell_category, lang)}</dd></div>
-                  <div><dt>{fields[7][lang]}</dt><dd>{parcelStatusLabel('status_category', row.status_category, lang)}</dd></div>
+                  <div><dt>{fieldLabels.parcel_name[lang]}</dt><dd>{row.parcel_name || '—'}</dd></div>
+                  <div><dt>{ownerLabel[lang]}</dt><dd>{row.owner || '—'}</dd></div>
+                  <div><dt>{fieldLabels.location_name[lang]}</dt><dd>{row.location_name || '—'}</dd></div>
+                  <div><dt>{fieldLabels.price_m2[lang]}</dt><dd>{row.price_m2 ?? '—'}</dd></div>
+                  <div><dt>{fieldLabels.price[lang]}</dt><dd>{row.price ?? '—'}</dd></div>
+                  <div className="main-parcel-description"><dt>{fieldLabels.description[lang]}</dt><dd>{row.description || '—'}</dd></div>
+                  <div><dt>{fieldLabels.sell_category[lang]}</dt><dd>{parcelStatusLabel('sell_category', row.sell_category, lang)}</dd></div>
+                  <div><dt>{fieldLabels.status_category[lang]}</dt><dd>{parcelStatusLabel('status_category', row.status_category, lang)}</dd></div>
                 </dl>}
               </article>)}
             </div>

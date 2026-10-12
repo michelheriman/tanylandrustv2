@@ -1,5 +1,5 @@
 const EDITABLE_FIELDS = new Set([
-  'owner', 'parcel_name', 'price_m2', 'price', 'location_name',
+  'parcel_name', 'price_m2', 'price', 'location_name',
   'description', 'sell_category', 'status_category',
 ])
 
