@@ -51,9 +51,12 @@ test('a rejected registration releases the lock so the user can retry', async ()
   assert.equal(lock.current, false)
 })
 
-test('Sign Up keeps its existing registration payload and success flow', () => {
+test('Sign Up omits the plan from its registration payload and keeps its success flow', () => {
   assert.match(signUpSource, /if \(!acquireSubmissionLock\(submitting\)\) return/)
-  assert.match(signUpSource, /await register\(\{\s*name: values\.get\('name'\)\.trim\(\),\s*email: values\.get\('email'\)\.trim\(\),\s*password,\s*username: values\.get\('username'\)\.trim\(\),\s*mobile: values\.get\('mobile'\)\.trim\(\),\s*account: values\.get\('account'\),\s*\}\)/)
+  assert.match(signUpSource, /await register\(\{\s*name: values\.get\('name'\)\.trim\(\),\s*email: values\.get\('email'\)\.trim\(\),\s*password,\s*username: values\.get\('username'\)\.trim\(\),\s*mobile: values\.get\('mobile'\)\.trim\(\),?\s*\}\)/)
+  assert.doesNotMatch(signUpSource, /account:\s*values\.get\('account'\)/)
+  assert.doesNotMatch(signUpSource, /<option[^>]+value="(?:pro5|pro10|pro)"/)
+  assert.match(signUpSource, /assigned by default/)
   assert.match(signUpSource, /form\.reset\(\)\s*setSuccess\(true\)/)
   assert.match(signUpSource, /window\.location\.assign\('\/signin'\)/)
   assert.match(signUpSource, /releaseSubmissionLock\(submitting\)\s*setPending\(false\)/)

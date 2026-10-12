@@ -87,6 +87,7 @@
 .signup-prompt { margin: 25px 0 0; color: rgb(255 255 255 / 88%); font-size: 13px; text-align: center; }
 .signup-prompt a { margin-left: 3px; font-weight: 700; }
 .signup-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.signup-form .signup-phone-field { grid-column: 1 / -1; }
 .signup-form .signup-terms, .signup-form button, .signup-form .message { grid-column: 1 / -1; }
 .signup-terms { margin: 0; color: rgb(255 255 255 / 76%); font-size: 11px; line-height: 1.55; }
 .signup-terms a { color: #f1cd82; text-underline-offset: 2px; }

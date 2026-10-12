@@ -38,7 +38,6 @@ export default function SignUp() {
         password,
         username: values.get('username').trim(),
         mobile: values.get('mobile').trim(),
-        account: values.get('account'),
       })
       form.reset()
       setSuccess(true)
@@ -78,18 +77,9 @@ export default function SignUp() {
           <label className="sr-only" htmlFor="signup-password">{copy.passwordLabel}</label>
           <input id="signup-password" name="password" type="password" autoComplete="new-password" placeholder={copy.passwordPlaceholder} required minLength={6} readOnly={pending || success} />
         </div>
-        <div className="form-field">
+        <div className="form-field signup-phone-field">
           <label className="sr-only" htmlFor="signup-mobile">{copy.phoneLabel}</label>
           <input id="signup-mobile" name="mobile" type="tel" autoComplete="tel" placeholder={copy.phonePlaceholder} required readOnly={pending || success} />
-        </div>
-        <div className="form-field">
-          <label className="sr-only" htmlFor="signup-account">{copy.accountPlanLabel}</label>
-          <select id="signup-account" name="account" defaultValue="free" required disabled={pending || success}>
-            <option value="free">{copy.freePlan}</option>
-            <option value="pro5">{copy.proTier1}</option>
-            <option value="pro10">{copy.proTier2}</option>
-            <option value="pro">{copy.proTier3}</option>
-          </select>
         </div>
         <p className="signup-terms">
           {copy.termsPrefix} <a href="/terms" target="_blank" rel="noreferrer">{copy.termsLink}</a> {copy.termsJoin} <a href="/privacy" target="_blank" rel="noreferrer">{copy.privacyLink}</a>{copy.termsSuffix}
