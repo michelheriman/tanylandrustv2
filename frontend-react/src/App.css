@@ -1,0 +1,146 @@
+.auth-scene {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(20px, 5vw, 64px);
+}
+
+.auth-scene::before {
+  position: fixed;
+  z-index: -1;
+  inset: -10px;
+  background: linear-gradient(120deg, rgb(15 24 20 / 42%), rgb(12 25 20 / 52%)), url('./assets/fond-signin.jpeg') center / cover no-repeat;
+  content: '';
+  filter: blur(4px) brightness(0.72);
+  transform: scale(1.025);
+}
+
+.auth-card {
+  display: grid;
+  width: min(1080px, 100%);
+  min-height: min(640px, calc(100svh - 80px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 34px;
+  background: rgb(13 43 34 / 78%);
+  box-shadow: 0 28px 90px rgb(0 0 0 / 34%);
+  animation: card-arrive 440ms ease-out both;
+}
+
+.brand-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(42px, 6vw, 76px) clamp(28px, 5vw, 66px);
+  color: #fff;
+  background: rgb(70 75 73 / 66%);
+  text-align: center;
+}
+
+.brand-name { margin: 0; font-size: 17px; font-weight: 500; }
+.brand-copy { width: min(100%, 400px); margin: auto 0; }
+.brand-copy h1 { margin: 0 0 20px; color: #fff; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(34px, 4vw, 49px); font-weight: 400; line-height: 1.12; }
+.brand-copy p { max-width: 360px; margin: 0 auto; color: rgb(255 255 255 / 86%); font-size: 15px; line-height: 1.7; }
+
+.form-panel {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 82px clamp(32px, 5.5vw, 76px) 58px;
+  color: #fff;
+  background: rgb(8 54 42 / 88%);
+}
+
+.back-link { position: absolute; top: 36px; right: clamp(28px, 4vw, 54px); display: inline-flex; align-items: center; gap: 8px; color: rgb(255 255 255 / 86%); font-size: 13px; text-decoration: none; }
+.back-link svg { flex: 0 0 auto; }
+.back-link:hover, .login-options a:hover, .signup-prompt a:hover { color: #ffe2a3; text-decoration: underline; text-underline-offset: 3px; }
+.card-heading, .form-panel form, .account-panel { width: min(100%, 380px); }
+.card-heading { margin: 0 0 26px; text-align: center; }
+.card-heading h1, .account-panel h1, .status-panel h1 { margin: 0; color: #fff; font-family: Georgia, 'Times New Roman', serif; font-size: 39px; font-weight: 400; line-height: 1.15; }
+
+.form-panel form { display: grid; gap: 16px; }
+.form-field { display: grid; gap: 9px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+.form-field input, .form-field select { width: 100%; min-width: 0; min-height: 52px; padding: 0 21px; border: 1px solid rgb(255 255 255 / 74%); border-radius: 999px; color: #23352e; background: rgb(255 255 255 / 94%); font: inherit; font-size: 14px; transition: border-color 140ms ease, box-shadow 140ms ease; }
+.form-field input::placeholder { color: #78847d; opacity: 1; }
+.form-field input:focus, .form-field select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(232 189 105 / 24%); outline: 0; }
+.form-field input[readonly], .form-field select:disabled { opacity: 0.7; }
+.login-options { margin-top: -5px; text-align: right; }
+.login-options a, .signup-prompt a { color: #f1cd82; font-size: 13px; text-decoration: none; }
+.login-options-unavailable { color: rgb(255 255 255 / 58%); font-size: 12px; }
+
+.form-panel button, .status-panel button, .signout-button { min-height: 52px; padding: 0 20px; border: 0; border-radius: 999px; color: #23352e; background: var(--gold); font-weight: 700; cursor: pointer; transition: background-color 150ms ease, transform 150ms ease; }
+.form-panel button:hover:not(:disabled), .status-panel button:hover, .signout-button:hover:not(:disabled) { background: #f1cd82; }
+.form-panel button:active:not(:disabled), .status-panel button:active { transform: translateY(1px); }
+.form-panel button:disabled, .signout-button:disabled { cursor: wait; opacity: 0.72; }
+.message { color: rgb(255 255 255 / 82%); font-size: 13px; line-height: 1.5; }
+.message.error { margin: 0; color: var(--error); }
+.signup-prompt { margin: 25px 0 0; color: rgb(255 255 255 / 88%); font-size: 13px; text-align: center; }
+.signup-prompt a { margin-left: 3px; font-weight: 700; }
+.signup-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.signup-form .signup-phone-field { grid-column: 1 / -1; }
+.signup-form .signup-terms, .signup-form button, .signup-form .message { grid-column: 1 / -1; }
+.signup-terms { margin: 0; color: rgb(255 255 255 / 76%); font-size: 11px; line-height: 1.55; }
+.signup-terms a { color: #f1cd82; text-underline-offset: 2px; }
+.signup-success { color: #d7f4d4; }
+
+.account-panel { align-self: center; text-align: center; }
+.account-kicker { margin: 0 0 20px; color: #f1cd82; font-size: 13px; font-weight: 600; }
+.account-panel h1 { overflow-wrap: anywhere; }
+.account-email { margin: 12px 0 0; color: rgb(255 255 255 / 80%); font-size: 14px; }
+.account-details { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 32px 0; padding: 17px 0; border-block: 1px solid var(--line); }
+.account-details p { margin: 0; color: rgb(255 255 255 / 88%); font-size: 13px; }
+.status-mark { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: #8dcc85; }
+.signout-button { width: 100%; }
+.account-panel .message { margin-top: 18px; }
+
+.status-screen { position: relative; isolation: isolate; display: grid; min-height: 100svh; place-items: center; padding: 24px; }
+.status-screen::before { position: fixed; z-index: -1; inset: -10px; background: linear-gradient(rgb(10 28 21 / 66%), rgb(10 28 21 / 66%)), url('./assets/fond-signin.jpeg') center / cover; content: ''; filter: blur(4px); }
+.status-screen[role='status'] { color: #fff; }
+.status-panel { width: min(100%, 480px); padding: 40px; border: 1px solid rgb(255 255 255 / 20%); border-radius: 24px; background: rgb(8 54 42 / 92%); box-shadow: 0 16px 48px rgb(0 0 0 / 24%); }
+.status-panel .eyebrow { margin: 0 0 18px; color: #f1cd82; font-size: 13px; }
+.status-panel h1 { margin-bottom: 18px; font-size: 32px; }
+.status-panel > p:not(.eyebrow) { margin: 0 0 24px; color: rgb(255 255 255 / 84%); line-height: 1.55; }
+.status-panel button { width: 100%; }
+.status-home-link { display: inline-flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; padding: 0 20px; border-radius: 999px; color: #23352e; background: var(--gold); font-weight: 700; text-decoration: none; transition: background-color 150ms ease, transform 150ms ease; }
+.status-home-link:hover { background: #f1cd82; }
+.status-home-link:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+@keyframes card-arrive { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 700px) {
+  .auth-scene { padding: 18px; }
+  .auth-card { grid-template-columns: 1fr; min-height: auto; border-radius: 26px; }
+  .brand-panel { min-height: 255px; padding: 30px 26px; }
+  .brand-copy { margin: 38px 0 4px; }
+  .brand-copy h1 { margin-bottom: 12px; font-size: 34px; }
+  .brand-copy p { font-size: 13px; line-height: 1.55; }
+  .form-panel { min-height: 430px; padding: 82px 28px 38px; }
+  .back-link { top: 29px; right: 29px; min-height: 44px; padding: 8px; }
+  .signup-prompt a, .signup-terms a { display: inline-flex; min-height: 44px; align-items: center; padding: 0 4px; vertical-align: middle; }
+  .card-heading { margin-bottom: 22px; }
+  .card-heading h1, .account-panel h1 { font-size: 34px; }
+  .signup-prompt { margin-top: 21px; }
+  .signup-form { grid-template-columns: 1fr; }
+  .signup-form .signup-terms, .signup-form button, .signup-form .message { grid-column: auto; }
+}
+
+@media (max-width: 360px) {
+  .auth-scene { padding: 12px; }
+  .brand-panel { min-height: 238px; }
+  .form-panel { padding-inline: 22px; }
+  .brand-copy h1 { font-size: 31px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
