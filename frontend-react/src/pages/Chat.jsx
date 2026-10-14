@@ -4,6 +4,7 @@ import { apiErrorMessage } from '../api/apiErrorMessages.js'
 import Icon from '../components/Icon.jsx'
 import {
   conversationMatchesSearch,
+  conversationDisplay,
   findRefreshedConversation,
   loadConversations,
   loadMessages,
@@ -156,9 +157,12 @@ export default function Chat({ lang = 'en' }) {
   }, [adminOpen, adminSending])
 
   const visibleConversations = useMemo(
-    () => conversations.filter((conversation) => conversationMatchesSearch(conversation, query)),
-    [conversations, query],
+    () => conversations.filter((conversation) => conversationMatchesSearch(conversation, query, user?.email)),
+    [conversations, query, user?.email],
   )
+  const selectedConversationDisplay = selectedConversation
+    ? conversationDisplay(selectedConversation, user?.email)
+    : null
 
   function selectConversation(conversation) {
     selectedConversationRef.current = conversation
@@ -233,19 +237,20 @@ export default function Chat({ lang = 'en' }) {
           {!conversationsLoading && !conversationsError && visibleConversations.map((conversation, index) => {
             const isSelected = selectedConversation === conversation
             const key = `${conversation.uuid_post ?? ''}:${conversation.objet ?? ''}:${conversation.main_user ?? ''}:${index}`
+            const display = conversationDisplay(conversation, user?.email)
             return <button key={key} type="button" className={`chat-react-conversation${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} onClick={() => selectConversation(conversation)}>
-              <span className="chat-react-avatar chat-react-conversation-avatar" aria-hidden="true">{initials(conversation.main_user)}</span>
-              <span className="chat-react-conversation-copy"><strong>{contactName(conversation.main_user) || conversation.objet || '—'}</strong><small>{conversation.objet || conversation.main_user || '—'}</small></span>
+              <span className="chat-react-avatar chat-react-conversation-avatar" aria-hidden="true">{initials(display.title)}</span>
+              <span className="chat-react-conversation-copy"><strong>{display.title}</strong><small>{display.subtitle}</small></span>
             </button>
           })}
         </div>
       </aside>
 
-      <section className="chat-react-thread" aria-label={selectedConversation?.objet || t.chat}>
+      <section className="chat-react-thread" aria-label={selectedConversationDisplay?.title || t.chat}>
         <header className="chat-react-thread-header">
           {selectedConversation ? <>
-            <span className="chat-react-avatar chat-react-contact-avatar" aria-hidden="true">{initials(selectedConversation.main_user)}</span>
-            <div className="chat-react-contact-copy"><h2>{contactName(selectedConversation.main_user) || selectedConversation.objet}</h2><p>{selectedConversation.main_user || selectedConversation.objet}</p></div>
+            <span className="chat-react-avatar chat-react-contact-avatar" aria-hidden="true">{initials(selectedConversationDisplay.title)}</span>
+            <div className="chat-react-contact-copy"><h2>{selectedConversationDisplay.title}</h2><p>{selectedConversationDisplay.subtitle}</p></div>
             <span className="chat-react-online"><i aria-hidden="true" />{t.online}</span>
           </> : <div className="chat-react-unselected-title"><h2>{t.chat}</h2></div>}
         </header>

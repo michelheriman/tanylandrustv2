@@ -85,7 +85,7 @@ function App() {
         <aside className="brand-panel">
           <p className="brand-name">Tany | LandTrust</p>
           <div className="brand-copy">
-            <h1>{isSignUp ? copy.signUpHeading : copy.signInHeading}</h1>
+            <h2>{isSignUp ? copy.signUpHeading : copy.signInHeading}</h2>
             <p>{isSignUp ? copy.signUpDescription : copy.signInDescription}</p>
           </div>
         </aside>

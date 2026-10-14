@@ -34,16 +34,17 @@ test('mobile Chat secondary text is enlarged while desktop typography remains un
     assert.ok(width <= 700, `${width}x${height} uses the mobile Chat breakpoint`)
   }
 
-  assert.match(cssRule(mobileChat, '.chat-react-conversation-copy strong, .chat-react-conversation-copy small'), /font-size:\s*10px/)
-  assert.match(cssRule(mobileChat, '.chat-react-contact-copy p, .chat-react-online'), /font-size:\s*10px/)
-  assert.match(cssRule(mobileChat, '.chat-react-bubble strong'), /font-size:\s*10px/)
-  assert.match(cssRule(mobileChat, '.chat-react-bubble time'), /font-size:\s*9px/)
-  assert.match(cssRule(mobileChat, '.chat-react-search input'), /font-size:\s*10px/)
-  assert.match(cssRule(mobileChat, '.chat-react-compose-error'), /font-size:\s*10px/)
+  assert.match(cssRule(mobileChat, '.chat-react-conversation-copy strong'), /font-size:\s*var\(--text-small\)/)
+  assert.match(cssRule(mobileChat, '.chat-react-conversation-copy small'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobileChat, '.chat-react-contact-copy p, .chat-react-online'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobileChat, '.chat-react-bubble strong'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobileChat, '.chat-react-bubble time'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobileChat, '.chat-react-search input'), /font-size:\s*var\(--text-small\)/)
+  assert.match(cssRule(mobileChat, '.chat-react-compose-error'), /font-size:\s*var\(--text-caption\)/)
 
-  assert.match(cssRule(chatCss, '.chat-react-conversation-copy strong'), /font-size:\s*9px/)
-  assert.match(chatCss, /\.chat-react-conversation-copy small\s*\{[^}]*font-size:\s*8px/)
-  assert.match(cssRule(chatCss, '.chat-react-bubble time'), /font-size:\s*7px/)
+  assert.match(cssRule(chatCss, '.chat-react-conversation-copy strong'), /font-size:\s*var\(--text-small\)/)
+  assert.match(chatCss, /\.chat-react-conversation-copy small\s*\{[^}]*font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(chatCss, '.chat-react-bubble time'), /font-size:\s*var\(--text-caption\)/)
 })
 
 test('mobile Chat keeps standard action targets and sizes the admin trigger independently', () => {
@@ -95,7 +96,7 @@ test('mobile conversation carousel, message history, composer and navigation cle
   assert.match(cssRule(chatCss, '.chat-react-workspace'), /overflow:\s*hidden/)
   assert.match(cssRule(chatCss, '.chat-react-bubble'), /overflow-wrap:\s*anywhere/)
   assert.match(cssRule(chatCss, '.chat-react-messages'), /overflow-y:\s*auto/)
-  assert.match(cssRule(chatCss, '.chat-react-compose input'), /height:\s*37px/)
+  assert.match(cssRule(chatCss, '.chat-react-compose input'), /height:\s*40px/)
   assert.match(cssRule(mobileMain, '.main-content'), /padding:\s*10px\s+10px\s+88px/)
   assert.match(cssRule(mobileMain, '.main-mobile-nav'), /position:\s*fixed[^}]*z-index:\s*25/)
 })

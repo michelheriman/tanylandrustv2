@@ -14,5 +14,5 @@ test('Forgot password is clearly unavailable and is not rendered as an action', 
   assert.equal(AUTH_TRANSLATIONS.fr.signIn.forgotUnavailable, 'Mot de passe oublié ? — Pas encore disponible')
   assert.doesNotMatch(notice[0], /href=|onClick=|tabIndex=/i)
   assert.doesNotMatch(signInSource, /<a[^>]*>Forgot password\?/i)
-  assert.match(appStyles, /\.login-options-unavailable\s*\{\s*color:\s*rgb\(255 255 255 \/ 58%\);\s*font-size:\s*12px;/)
+  assert.match(appStyles, /\.login-options-unavailable\s*\{\s*color:\s*rgb\(255 255 255 \/ 72%\);\s*font-size:\s*var\(--text-small\);/)
 })

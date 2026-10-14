@@ -5,12 +5,15 @@ import { createAuthService } from '../auth/authService.js'
 import {
   ADMIN_RECIPIENT,
   conversationMatchesSearch,
+  conversationDisplay,
   conversationReplyBody,
   conversationsFromResponse,
   findRefreshedConversation,
   loadConversations,
   loadMessages,
   messagesFromResponse,
+  otherUserEmail,
+  participantDisplayName,
   sendAdminMessage,
   sendConversationReply,
 } from './chatData.js'
@@ -35,6 +38,40 @@ test('loads conversations through the authenticated React request with the legac
   assert.equal(call.options.method, 'POST')
   assert.deepEqual(JSON.parse(call.options.body), { data: 'seller@example.test' })
   assert.deepEqual(result, rows)
+})
+
+test('resolves the other participant when the signed-in user is the sender or receiver', () => {
+  assert.equal(otherUserEmail({
+    sender_id: 'signed-in@example.test',
+    receiver_id: 'other@example.test',
+  }, 'signed-in@example.test'), 'other@example.test')
+
+  assert.equal(otherUserEmail({
+    sender_id: 'other@example.test',
+    receiver_id: 'signed-in@example.test',
+  }, 'signed-in@example.test'), 'other@example.test')
+})
+
+test('uses the other participant username, then name, then email as display fallback', () => {
+  assert.equal(participantDisplayName({ username: 'michel-raherimanantsoa', name: 'Michel' }, 'michel@example.test'), 'michel-raherimanantsoa')
+  assert.equal(participantDisplayName({ name: 'Michel' }, 'michel@example.test'), 'Michel')
+  assert.equal(participantDisplayName({}, 'michel@example.test'), 'michel@example.test')
+})
+
+test('conversation title excludes the signed-in user and uses the parcel name instead of objet', () => {
+  const row = {
+    main_user: 'signed-in@example.test',
+    objet: 'buyer@example.test | Ampefy 2 | signed-in@example.test',
+  }
+  const display = conversationDisplay(row, 'signed-in@example.test')
+
+  assert.equal(display.title, 'buyer@example.test')
+  assert.equal(display.subtitle, 'Ampefy 2')
+  assert.notEqual(display.title, 'signed-in@example.test')
+  assert.notEqual(display.title, row.objet)
+  assert.match(chatSource, /<strong>\{display\.title\}<\/strong>/)
+  assert.match(chatSource, /<small>\{display\.subtitle\}<\/small>/)
+  assert.doesNotMatch(chatSource, /<strong>\{[^}]*\.objet[^}]*<\/strong>/)
 })
 
 test('loads the conversation list with the React session bearer token', async () => {

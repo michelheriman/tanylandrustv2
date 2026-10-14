@@ -149,7 +149,7 @@ export default function Marketplace({ lang = 'en' }) {
       <div className="market-react-workspace">
         <header className="market-react-manager-header">{labels.fieldDataManager}</header>
         <aside className="market-react-sidebar" aria-label={labels.title}>
-          <div className="market-react-sidebar-head"><h1 id="market-react-title">{lang === 'fr' ? 'Parcelles' : 'Parcel add'}</h1></div>
+          <div className="market-react-sidebar-head"><h2 id="market-react-title">{lang === 'fr' ? 'Parcelles' : 'Parcels'}</h2></div>
           <label className="market-react-search"><span className="sr-only">{labels.search}</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={labels.search} /></label>
           <div className="market-react-filters"><span>{labels.filter}</span><button type="button" aria-pressed={sort === 'date'} disabled={!hasDates} onClick={() => setSort((value) => value === 'date' ? 'name' : 'date')}>{labels.date} <Icon name={sort === 'date' ? 'arrow-down' : 'arrow-up'} size={12}/></button><button type="button" aria-pressed={sort === 'name'} onClick={() => { setSort('name'); setDescending((value) => !value) }}>{labels.name} <Icon name={descending ? 'arrow-down' : 'arrow-up'} size={12}/></button><span className="market-react-count">{loading ? '…' : parcels.length}</span></div>
           <details className="market-react-filter-panel">

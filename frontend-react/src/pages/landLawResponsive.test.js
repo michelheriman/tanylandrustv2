@@ -64,19 +64,19 @@ test('all requested phone viewports use the mobile and narrow-screen layout rule
 
 test('mobile legal text uses readable minimum sizes and wraps within its content width', () => {
   const expectedSizes = [
-    ['.land-law-title-card p', '11px'],
-    ['.land-law-country-content .country-subtitle', '10px'],
-    ['.land-law-country-content .summary-card p', '11px'],
-    ['.land-law-country-content .law-section h3', '12px'],
-    ['.land-law-country-content .law-section p', '11px'],
-    ['.land-law-country-content .key-laws', '10px'],
-    ['.land-law-country-content .key-laws th', '10px'],
-    ['.land-law-country-content .key-laws td', '10px'],
-    ['.land-law-country-content .info-box h4', '11px'],
-    ['.land-law-country-content .info-box ul', '10px'],
-    ['.land-law-country-content .alert', '10px'],
-    ['.land-law-disclaimer', '10px'],
-    ['.land-law-footer', '10px'],
+    ['.land-law-title-card p', 'var(--text-small)'],
+    ['.land-law-country-content .country-subtitle', 'var(--text-small)'],
+    ['.land-law-country-content .summary-card p', 'var(--text-small)'],
+    ['.land-law-country-content .law-section h3', 'var(--text-small)'],
+    ['.land-law-country-content .law-section p', 'var(--text-small)'],
+    ['.land-law-country-content .key-laws', 'var(--text-small)'],
+    ['.land-law-country-content .key-laws th', 'var(--text-small)'],
+    ['.land-law-country-content .key-laws td', 'var(--text-small)'],
+    ['.land-law-country-content .info-box h4', 'var(--text-small)'],
+    ['.land-law-country-content .info-box ul', 'var(--text-small)'],
+    ['.land-law-country-content .alert', 'var(--text-small)'],
+    ['.land-law-disclaimer', 'var(--text-small)'],
+    ['.land-law-footer', 'var(--text-caption)'],
   ]
 
   for (const [selector, size] of expectedSizes) {

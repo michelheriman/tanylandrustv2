@@ -117,6 +117,6 @@ test('mobile auth forms keep a natural scroll layout and fit the narrowest suppo
   assert.match(mobileStyles, /\.signup-form\s*\{\s*grid-template-columns:\s*1fr;/)
   assert.match(appStyles, /\.form-field input, \.form-field select\s*\{[^}]*width:\s*100%;\s*min-width:\s*0;\s*min-height:\s*52px;/s)
   assert.match(appStyles, /\.form-panel button, \.status-panel button, \.signout-button\s*\{\s*min-height:\s*52px;/)
-  assert.match(appStyles, /\.message\s*\{[^}]*font-size:\s*13px;\s*line-height:\s*1\.5;/s)
+  assert.match(appStyles, /\.message\s*\{[^}]*font-size:\s*var\(--text-small\);\s*line-height:\s*1\.5;/s)
   assert.doesNotMatch(appStyles, /\.message\s*\{[^}]*white-space:\s*nowrap/s)
 })

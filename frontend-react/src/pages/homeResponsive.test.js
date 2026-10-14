@@ -41,7 +41,7 @@ test('Home mobile typography and key touch targets meet the responsive minimums'
 
   const readableCopy = mobile.match(/\.hero-badge,[\s\S]*?\.footer-bottom\s*\{([^}]*)\}/)
   assert.ok(readableCopy, 'mobile readable-copy rule should be present')
-  assert.match(readableCopy[1], /font-size:\s*10px;/)
+  assert.match(readableCopy[1], /font-size:\s*var\(--text-caption\);/)
   for (const selector of [
     '.hero-badge', '.hero-stat > span', '.home-hero-stats > p', '.trust-items',
     '.report-card > header > span', '.report-map > span', '.report-facts > div > span',
@@ -56,7 +56,7 @@ test('Home mobile typography and key touch targets meet the responsive minimums'
   assert.match(mobile, /\.gis-cta\s*\{[^}]*min-height:\s*44px;/s)
   assert.match(mobile, /\.price-card > \.button\s*\{[^}]*min-height:\s*44px;/s)
   assert.match(mobile, /\.hero-buttons \.button\s*\{[^}]*min-height:\s*44px;/s)
-  assert.match(tablet, /\.home-nav-links\s*\{[^}]*font-size:\s*10px;/s)
+  assert.match(tablet, /\.home-nav-links\s*\{[^}]*font-size:\s*var\(--text-caption\);/s)
   assert.equal(HOME_TRANSLATIONS.en.nav_signin, 'Sign in')
   assert.equal(HOME_TRANSLATIONS.fr.nav_signin, 'Se connecter')
 })

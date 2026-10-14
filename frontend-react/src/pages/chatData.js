@@ -61,10 +61,70 @@ export function adminMessageBody(sender, subject, content, uuid) {
   }
 }
 
-export function conversationMatchesSearch(conversation, query) {
+function cleanText(value) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function sameEmail(left, right) {
+  return cleanText(left).toLocaleLowerCase() === cleanText(right).toLocaleLowerCase()
+}
+
+function isEmailLike(value) {
+  return cleanText(value).includes('@')
+}
+
+export function otherUserEmail(conversation, currentUserEmail) {
+  const currentEmail = cleanText(currentUserEmail)
+  if (!currentEmail) return ''
+
+  const sender = cleanText(conversation?.sender_id)
+  const receiver = cleanText(conversation?.receiver_id)
+  if (sender && receiver) {
+    const otherEmail = sameEmail(currentEmail, sender) ? receiver : sender
+    return sameEmail(otherEmail, currentEmail) ? '' : otherEmail
+  }
+
+  // Existing conversation rows have main_user + an objet formatted as
+  // "buyer email | parcel name | seller email"; main_user is the signed-in user.
+  const parts = cleanText(conversation?.objet).split('|').map((part) => part.trim())
+  const lastPart = parts[parts.length - 1]
+  if (parts.length >= 3 && isEmailLike(parts[0]) && isEmailLike(lastPart)) {
+    const otherEmail = [parts[0], lastPart].find((email) => !sameEmail(email, currentEmail))
+    if (otherEmail) return otherEmail
+  }
+
+  const mainUser = cleanText(conversation?.main_user)
+  return mainUser && !sameEmail(mainUser, currentEmail) ? mainUser : ''
+}
+
+export function participantDisplayName(profile, email) {
+  return cleanText(profile?.username) || cleanText(profile?.name) || cleanText(email) || '—'
+}
+
+export function conversationDisplay(conversation, currentUserEmail) {
+  const otherEmail = otherUserEmail(conversation, currentUserEmail)
+  const profile = conversation?.other_user_profile ?? {}
+  const title = otherEmail ? participantDisplayName(profile, otherEmail) : '—'
+  const parts = cleanText(conversation?.objet).split('|').map((part) => part.trim())
+  const lastPart = parts[parts.length - 1]
+  const parcelName = cleanText(conversation?.parcel_name) || (
+    parts.length >= 3 && isEmailLike(parts[0]) && isEmailLike(lastPart)
+      ? parts.slice(1, -1).join(' | ').trim()
+      : ''
+  )
+
+  return {
+    email: otherEmail,
+    title,
+    subtitle: parcelName || otherEmail || '—',
+  }
+}
+
+export function conversationMatchesSearch(conversation, query, currentUserEmail) {
   const needle = String(query ?? '').trim().toLocaleLowerCase()
   if (!needle) return true
-  return [conversation?.main_user, conversation?.objet]
+  const display = conversationDisplay(conversation, currentUserEmail)
+  return [conversation?.main_user, conversation?.objet, display.title, display.email, display.subtitle]
     .some((value) => String(value ?? '').toLocaleLowerCase().includes(needle))
 }
 

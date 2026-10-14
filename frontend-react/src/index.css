@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  font-family: var(--font-ui);
   color: #f7f5ed;
   background: #17221e;
   font-synthesis: none;
@@ -17,6 +17,38 @@
   --gold: #e8bd69;
   --error: #ffd0c7;
   --focus: #f1cc7f;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Inter', 'Segoe UI', sans-serif;
+
+  --text-display: 48px;
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-body: 16px;
+  --text-small: 14px;
+  --text-caption: 12px;
+
+  --line-display: 1.1;
+  --line-heading: 1.2;
+  --line-body: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
 }
 
 * { box-sizing: border-box; }
@@ -25,13 +57,16 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: var(--line-body);
 }
 
 #root { min-height: 100svh; }
 
-button, input { font: inherit; }
+button, input, select, textarea { font: inherit; }
 
-button:focus-visible, input:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
 }

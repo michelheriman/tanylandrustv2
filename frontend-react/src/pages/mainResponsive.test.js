@@ -53,7 +53,7 @@ test('mobile Marketplace uses a natural document flow instead of fixed-height cl
   const section = rule(mobileMarketplace, '.main-content-marketplace > .main-market-section')
   assert.match(section, /height:\s*auto/)
   assert.match(section, /min-height:\s*0/)
-  assert.match(section, /grid-template-rows:\s*57px\s+auto/)
+  assert.match(section, /grid-template-rows:\s*76px\s+auto/)
   assert.doesNotMatch(section, /minmax\(720px|height:\s*100%/)
 
   const workspace = rule(mobileMarketplace, '.market-react-workspace')
@@ -113,9 +113,9 @@ test('all requested mobile widths use the natural-flow breakpoint and desktop ru
 
 test('mobile KML controls are readable, long names wrap, and the form remains before the map', () => {
   for (const width of [390, 375, 360, 320]) assert.ok(width <= 700, `${width}px uses the mobile KML rules`)
-  assert.match(mobileMain, /\.main-kml-dropzone span,\s*\.main-kml-dropzone button,\s*\.main-kml-file-info,\s*\.main-kml-file-info small,\s*\.main-kml-progress\s*\{\s*font-size:\s*10px;/)
-  const browseButton = rule(mobileMain, '.main-kml-dropzone button')
-  assert.match(browseButton, /min-height:\s*44px/)
+  assert.match(mobileMain, /\.main-kml-dropzone span,\s*\.main-kml-dropzone button\s*\{\s*font-size:\s*var\(--text-small\);/)
+  assert.match(mobileMain, /\.main-kml-file-info,\s*\.main-kml-file-info small,\s*\.main-kml-progress\s*\{\s*font-size:\s*var\(--text-caption\);/)
+  assert.match(mobileMain, /\.main-kml-dropzone button\s*\{[^}]*min-height:\s*44px;/s)
 
   const filename = rule(mobileMain, '.main-kml-file-info strong')
   assert.match(filename, /overflow-wrap:\s*anywhere/)
@@ -128,6 +128,6 @@ test('mobile KML controls are readable, long names wrap, and the form remains be
   assert.match(rule(mobileMain, '.main-map-wrap, .main-map-canvas'), /min-height:\s*49svh/)
   assert.match(rule(mobileMain, '.main-mobile-nav'), /position:\s*fixed/)
 
-  assert.match(rule(mainCss, '.main-kml-dropzone button'), /font-size:\s*9px/)
-  assert.match(rule(mainCss, '.main-kml-file-info'), /font-size:\s*9px/)
+  assert.match(rule(mainCss, '.main-kml-dropzone button'), /font-size:\s*var\(--text-small\)/)
+  assert.match(rule(mainCss, '.main-kml-file-info'), /font-size:\s*var\(--text-caption\)/)
 })

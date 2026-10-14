@@ -45,11 +45,11 @@ export default function SignIn() {
       </header>
       <form onSubmit={handleSubmit} aria-busy={pending}>
         <div className="form-field">
-          <label className="sr-only" htmlFor="email">{copy.emailLabel}</label>
+          <label htmlFor="email">{copy.emailLabel}</label>
           <input id="email" name="email" type="email" autoComplete="email" required spellCheck="false" placeholder={copy.emailPlaceholder} readOnly={pending} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="password">{copy.passwordLabel}</label>
+          <label htmlFor="password">{copy.passwordLabel}</label>
           <input id="password" name="password" type="password" autoComplete="current-password" required placeholder={copy.passwordPlaceholder} readOnly={pending} />
         </div>
         <div className="login-options">

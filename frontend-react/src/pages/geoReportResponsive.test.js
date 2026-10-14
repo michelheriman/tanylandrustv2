@@ -41,18 +41,18 @@ test('Proximity lists keep internal scrolling while allowing normal scroll chain
 })
 
 test('mobile GeoReport labels use larger type without changing desktop base sizes', () => {
-  assert.match(cssRule(css, '.georeport-section-title'), /font:\s*500 10px/)
-  assert.match(cssRule(css, '.georeport-stat-card > span, .georeport-stat-card > small'), /font:\s*10px/)
-  assert.match(cssRule(css, '.georeport-panel > h3, .georeport-proximity-card > h3'), /font:\s*500 10px/)
-  assert.match(cssRule(tabletAndMobile, '.georeport-month > span'), /font:\s*10px/)
+  assert.match(cssRule(css, '.georeport-section-title'), /font:\s*600 var\(--text-small\) var\(--font-ui\)/)
+  assert.match(cssRule(css, '.georeport-stat-card > span, .georeport-stat-card > small'), /font:\s*var\(--text-caption\) var\(--font-ui\)/)
+  assert.match(cssRule(css, '.georeport-panel > h3, .georeport-proximity-card > h3'), /font:\s*600 var\(--text-small\) var\(--font-ui\)/)
+  assert.match(cssRule(tabletAndMobile, '.georeport-month > span'), /font:\s*var\(--text-caption\) var\(--font-ui\)/)
 
-  assert.match(cssRule(mobile, '.georeport-section-title'), /font-size:\s*11px/)
-  assert.match(cssRule(mobile, '.georeport-stat-card > span, .georeport-stat-card > small'), /font-size:\s*11px/)
-  assert.match(cssRule(mobile, '.georeport-panel > h3, .georeport-proximity-card > h3'), /font-size:\s*11px/)
-  assert.match(cssRule(mobile, '.georeport-month > span'), /font-size:\s*10px/)
-  assert.match(cssRule(mobile, '.georeport-slope-column > span'), /font-size:\s*10px/)
-  assert.match(cssRule(mobile, '.georeport-soil-card h3'), /font-size:\s*11px/)
-  assert.match(cssRule(mobile, '.georeport-soil-card > small'), /font-size:\s*10px/)
+  assert.match(cssRule(mobile, '.georeport-section-title'), /font-size:\s*var\(--text-small\)/)
+  assert.match(cssRule(mobile, '.georeport-stat-card > span, .georeport-stat-card > small'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobile, '.georeport-panel > h3, .georeport-proximity-card > h3'), /font-size:\s*var\(--text-small\)/)
+  assert.match(cssRule(mobile, '.georeport-month > span'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobile, '.georeport-slope-column > span'), /font-size:\s*var\(--text-caption\)/)
+  assert.match(cssRule(mobile, '.georeport-soil-card h3'), /font-size:\s*var\(--text-small\)/)
+  assert.match(cssRule(mobile, '.georeport-soil-card > small'), /font-size:\s*var\(--text-caption\)/)
 })
 
 test('requested mobile viewports remain in the stacked, width-constrained layout and Leaflet styles are unchanged', () => {

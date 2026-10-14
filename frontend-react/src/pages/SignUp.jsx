@@ -62,23 +62,23 @@ export default function SignUp() {
       </header>
       <form className="signup-form" onSubmit={handleSubmit} aria-busy={pending}>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-name">{copy.nameLabel}</label>
+          <label htmlFor="signup-name">{copy.nameLabel}</label>
           <input id="signup-name" name="name" type="text" autoComplete="name" placeholder={copy.namePlaceholder} required readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-email">{copy.emailLabel}</label>
+          <label htmlFor="signup-email">{copy.emailLabel}</label>
           <input id="signup-email" name="email" type="email" autoComplete="email" placeholder={copy.emailPlaceholder} required spellCheck="false" readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-username">{copy.usernameLabel}</label>
+          <label htmlFor="signup-username">{copy.usernameLabel}</label>
           <input id="signup-username" name="username" type="text" autoComplete="username" placeholder={copy.usernamePlaceholder} required spellCheck="false" readOnly={pending || success} />
         </div>
         <div className="form-field">
-          <label className="sr-only" htmlFor="signup-password">{copy.passwordLabel}</label>
+          <label htmlFor="signup-password">{copy.passwordLabel}</label>
           <input id="signup-password" name="password" type="password" autoComplete="new-password" placeholder={copy.passwordPlaceholder} required minLength={6} readOnly={pending || success} />
         </div>
         <div className="form-field signup-phone-field">
-          <label className="sr-only" htmlFor="signup-mobile">{copy.phoneLabel}</label>
+          <label htmlFor="signup-mobile">{copy.phoneLabel}</label>
           <input id="signup-mobile" name="mobile" type="tel" autoComplete="tel" placeholder={copy.phonePlaceholder} required readOnly={pending || success} />
         </div>
         <p className="signup-terms">
