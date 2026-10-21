@@ -33,6 +33,17 @@ test('500 and 503 share localized temporary-unavailability copy', () => {
   }
 })
 
+test('parcel quota errors display the server offer and usage without reading profile.account', () => {
+  const quota = { plan: 'pro', limit: 20, used: 20, requested: 1 }
+  const error = new ApiError('quota', 'private message', 409, { code: 'parcel_quota_exceeded', quota })
+
+  assert.equal(apiErrorMessage(error, 'en'), 'Pro parcel quota reached: 20 parcel(s) stored out of 20; requested: 1.')
+  assert.equal(apiErrorMessage(error, 'fr'), 'Quota Pro atteint : 20 parcelle(s) enregistrée(s) sur 20 ; demande : 1.')
+  assert.equal(apiErrorMessage(new ApiError('quota', 'internal', 409, {
+    code: 'parcel_quota_exceeded', quota: { ...quota, limit: 5 },
+  }), 'en'), 'The request could not be completed. Check the information and try again.')
+})
+
 test('localized presentation preserves the technical status and ignores internal messages', () => {
   const error = new ApiError('server', 'PRIVATE backend detail', 503)
   const message = apiErrorMessage(error, 'en')
@@ -52,6 +63,7 @@ test('Main, KML, App, Marketplace, Chat and auth forms use localized API present
   const signIn = source('../pages/SignIn.jsx')
   const signUp = source('../pages/SignUp.jsx')
 
+  assert.doesNotMatch(main, /checkParcelLimit|request\(['"]\/account['"]\)/)
   assert.match(main, /apiErrorMessage\(addError, lang\)/)
   assert.match(main, /apiErrorMessage\(editError, lang\)/)
   assert.match(main, /apiErrorMessage\(error, lang\)/)

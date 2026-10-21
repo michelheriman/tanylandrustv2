@@ -40,5 +40,17 @@ export function apiErrorMessage(error, lang = 'en') {
   if (error.kind === 'protocol') return copy.invalidResponse
   if (error.kind === 'cancelled') return copy.sessionChanged
   if (error.kind === 'logout') return copy.logout
+  if (error.kind === 'quota' && error.code === 'parcel_quota_exceeded') {
+    const quota = error.quota
+    const expectedLimit = quota?.plan === 'free' ? 2 : quota?.plan === 'pro' ? 20 : null
+    if (quota && expectedLimit === quota.limit && Number.isSafeInteger(quota.used) && quota.used >= 0 &&
+        Number.isSafeInteger(quota.requested) && quota.requested > 0 && quota.used + quota.requested > quota.limit) {
+      const plan = quota.plan === 'pro' ? 'Pro' : 'Free'
+      if (language === 'fr') {
+        return `Quota ${plan} atteint : ${quota.used} parcelle(s) enregistrée(s) sur ${quota.limit} ; demande : ${quota.requested}.`
+      }
+      return `${plan} parcel quota reached: ${quota.used} parcel(s) stored out of ${quota.limit}; requested: ${quota.requested}.`
+    }
+  }
   return copy.request
 }

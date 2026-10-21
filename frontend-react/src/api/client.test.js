@@ -23,6 +23,46 @@ test('requestJson preserves HTTP statuses and never exposes backend error bodies
   }
 })
 
+test('requestJson exposes only validated server quota details for parcel creation conflicts', async () => {
+  await assert.rejects(
+    requestJson('/parcels_w', {}, async () => Response.json({
+      message: 'private backend detail',
+      code: 'parcel_quota_exceeded',
+      quota: { plan: 'pro', limit: 20, used: 20, requested: 1, extra: 'ignored' },
+    }, { status: 409 })),
+    (error) => {
+      assert.equal(error.kind, 'quota')
+      assert.equal(error.status, 409)
+      assert.equal(error.code, 'parcel_quota_exceeded')
+      assert.deepEqual(error.quota, { plan: 'pro', limit: 20, used: 20, requested: 1 })
+      assert.equal(error.message.includes('private backend detail'), false)
+      return true
+    },
+  )
+})
+
+test('requestJson keeps malformed or unrelated 409 bodies generic', async () => {
+  for (const body of [
+    { code: 'parcel_quota_exceeded', quota: { plan: 'pro', limit: 5, used: 4, requested: 2 } },
+    { code: 'other_conflict', quota: { plan: 'free', limit: 2, used: 2, requested: 1 } },
+  ]) {
+    await assert.rejects(
+      requestJson('/parcels_w', {}, async () => Response.json(body, { status: 409 })),
+      (error) => error.kind === 'request' && error.status === 409 && error.quota === null,
+    )
+  }
+})
+
+test('requestJson exposes only the allowlisted parcel-reference conflict code', async () => {
+  await assert.rejects(
+    requestJson('/parcels/12/delete', {}, async () => Response.json({
+      code: 'legacy_references_require_review', message: 'private reference data',
+    }, { status: 409 })),
+    (error) => error.status === 409 && error.code === 'legacy_references_require_review' &&
+      !error.message.includes('private reference data'),
+  )
+})
+
 test('requestJson classifies malformed and empty successful responses as protocol errors', async () => {
   for (const response of [
     new Response('not-json', { status: 200 }),
