@@ -10,16 +10,19 @@ import { readLanguage } from './languageStorage.js'
 import { AUTH_TRANSLATIONS } from './authTranslations.js'
 import { apiErrorMessage } from './api/apiErrorMessages.js'
 import { applyPageMetadata } from './seoMetadata.js'
+import { getAdminReturnPath, resolveAdminRoute } from './admin/adminRoutes.js'
 import './App.css'
 
 const GeoReport = lazy(() => import('./pages/GeoReport.jsx'))
 const LegalPage = lazy(() => import('./pages/LegalPage.jsx'))
+const AdminApp = lazy(() => import('./admin/AdminApp.jsx'))
 
 function App() {
   const { status, error, restore } = useAuth()
   const language = readLanguage()
   const copy = AUTH_TRANSLATIONS[language].app
   const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
+  const adminRoute = resolveAdminRoute(pathname)
   const isHome = pathname === '/'
   const isMain = pathname === '/main' || pathname === '/main.html'
   const isSignIn = pathname === '/signin'
@@ -31,8 +34,8 @@ function App() {
     try { parcelUuid = decodeURIComponent(reportMatch[1]) } catch { parcelUuid = null }
   }
   const isGeoReport = Boolean(reportMatch && parcelUuid)
-  const routeView = resolveAuthRoute(pathname, status, { isGeoReport })
-  const metadataPage = isHome ? 'home' : legalDocument || (routeView === 'notFound' ? 'notFound' : routeView === 'georeport' || isGeoReport ? 'geoReport' : routeView === 'main' || isMain ? 'main' : isSignUp ? 'signUp' : 'signIn')
+  const routeView = resolveAuthRoute(pathname, status, { isGeoReport, isAdminRoute: Boolean(adminRoute) })
+  const metadataPage = isHome ? 'home' : legalDocument || (routeView === 'notFound' ? 'notFound' : adminRoute ? 'admin' : routeView === 'georeport' || isGeoReport ? 'geoReport' : routeView === 'main' || isMain ? 'main' : isSignUp ? 'signUp' : 'signIn')
   const pageLoadingFallback = (
     <main className="status-screen" role="status" aria-live="polite">
       {language === 'fr' ? 'Chargement…' : 'Loading…'}
@@ -45,7 +48,11 @@ function App() {
 
   useEffect(() => {
     if (isHome) return
-    if (status === 'authenticated' && (isSignIn || isSignUp)) window.history.replaceState(null, '', '/main')
+    if (status === 'authenticated' && (isSignIn || isSignUp)) {
+      const adminReturnPath = getAdminReturnPath(new URLSearchParams(window.location.search).get('next'))
+      if (adminReturnPath) window.location.replace(adminReturnPath)
+      else window.history.replaceState(null, '', '/main')
+    }
     if (status === 'anonymous' && (isMain || isGeoReport)) window.location.replace('/signin')
   }, [isHome, isMain, isSignIn, isSignUp, isGeoReport, status])
 
@@ -74,6 +81,8 @@ function App() {
   }
 
   if (routeView === 'georeport') return <Suspense fallback={pageLoadingFallback}><GeoReport parcelUuid={parcelUuid} /></Suspense>
+
+  if (routeView === 'admin' || routeView === 'adminAccess') return <Suspense fallback={pageLoadingFallback}><AdminApp route={adminRoute} /></Suspense>
 
   if (routeView === 'main') return <Main />
 

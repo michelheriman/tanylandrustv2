@@ -8,7 +8,7 @@ const appSource = await readFile(new URL('./App.jsx', import.meta.url), 'utf8')
 test('unavailable session keeps Sign In and Sign Up routes accessible', () => {
   assert.equal(resolveAuthRoute('/signin', 'unavailable'), 'signin')
   assert.equal(resolveAuthRoute('/signup', 'unavailable'), 'signup')
-  assert.match(appSource, /const routeView = resolveAuthRoute\(pathname, status, \{ isGeoReport \}\)/)
+  assert.match(appSource, /const routeView = resolveAuthRoute\(pathname, status, \{ isGeoReport, isAdminRoute: Boolean\(adminRoute\) \}\)/)
   assert.match(appSource, /\{isSignUp \? <SignUp \/> : <SignIn \/>\}/)
 })
 
@@ -48,6 +48,15 @@ test('authenticated Main and GeoReport routes render their React pages', () => {
   assert.equal(resolveAuthRoute('/georeport/parcel-uuid', 'authenticated', { isGeoReport: true }), 'georeport')
   assert.match(appSource, /if \(routeView === 'main'\) return <Main \/>/)
   assert.match(appSource, /if \(routeView === 'georeport'\) return <Suspense fallback=\{pageLoadingFallback\}><GeoReport parcelUuid=\{parcelUuid\} \/><\/Suspense>/)
+})
+
+test('admin routes show an access screen before login and remain separate from user routes', () => {
+  assert.equal(resolveAuthRoute('/admin', 'anonymous', { isAdminRoute: true }), 'adminAccess')
+  assert.equal(resolveAuthRoute('/admin/users/3', 'authenticated', { isAdminRoute: true }), 'admin')
+  assert.equal(resolveAuthRoute('/admin', 'restoring', { isAdminRoute: true }), 'restoring')
+  assert.equal(resolveAuthRoute('/main', 'anonymous'), 'redirect')
+  assert.equal(resolveAuthRoute('/main', 'authenticated'), 'main')
+  assert.match(appSource, /if \(routeView === 'admin' \|\| routeView === 'adminAccess'\)/)
 })
 
 test('unknown paths render a dedicated NotFound page regardless of session state', () => {

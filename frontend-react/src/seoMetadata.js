@@ -17,6 +17,7 @@ const pageCopy = {
       description: 'Learn how Tany Landtrust collects, uses and protects your personal information.',
     },
     main: { title: 'Land dashboard | Tany Landtrust', description: 'Private Tany Landtrust workspace for managing parcels and land services.' },
+    admin: { title: 'Administration | Tany Landtrust', description: 'Secure access to the Tany Landtrust administration workspace.' },
     geoReport: { title: 'GeoReport | Tany Landtrust', description: 'Parcel information and geographic indicators from Tany Landtrust.' },
     notFound: {
       title: 'Page not found | Tany Landtrust',
@@ -39,6 +40,7 @@ const pageCopy = {
       description: 'Découvrez comment Tany Landtrust collecte, utilise et protège vos données personnelles.',
     },
     main: { title: 'Espace foncier | Tany Landtrust', description: 'Espace privé Tany Landtrust pour gérer les parcelles et les services fonciers.' },
+    admin: { title: 'Administration | Tany Landtrust', description: 'Accès sécurisé à l’espace administrateur Tany Landtrust.' },
     geoReport: { title: 'GeoReport | Tany Landtrust', description: 'Données de parcelle et indicateurs géographiques de Tany Landtrust.' },
     notFound: {
       title: 'Page introuvable | Tany Landtrust',
