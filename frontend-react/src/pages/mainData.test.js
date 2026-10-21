@@ -6,11 +6,25 @@ import { loadParcels, saveParcelField, saveParcelFields } from './mainData.js'
 const mainSource = await readFile(new URL('./Main.jsx', import.meta.url), 'utf8')
 
 test('loads real parcel rows from the protected map-data endpoint', async () => {
-  const rows = [{ id: 7, parcel_name: 'Lot A' }]
+  const rows = [{ id: 7, parcel_name: 'Lot A', admin_visibility_hidden: true }]
   assert.deepEqual(await loadParcels(async (path) => {
     assert.equal(path, '/map-data')
     return { success: true, data: rows }
 }), rows)
+  assert.match(mainSource, /row\.admin_visibility_hidden &&/)
+  assert.match(mainSource, /Masquée par l’administration/)
+})
+
+test('owner delete control requires a fresh effective-rights result, waits for confirmation, and never trusts account fields', () => {
+  assert.match(mainSource, /loadOwnerParcelDeletionRights\(request\)/)
+  assert.match(mainSource, /showOwnerDelete\(row\.id\) && <div className="main-parcel-delete-wrap"/)
+  assert.match(mainSource, /deleteOwnedParcel\(request, parcelId, \{ confirmed: true \}\)/)
+  assert.match(mainSource, /deleteFlightRef\.current = true/)
+  assert.match(mainSource, /onClick=\{cancelDeleteParcel\}/)
+  assert.match(mainSource, /setParcels\(\(current\) => current\.filter/)
+  assert.match(mainSource, /setOwnerDeletionRights\(\{ status: 'loading', canDeleteOwnedParcels: false \}\)/)
+  assert.doesNotMatch(mainSource, /user\?\.account|profiles\.account/)
+  assert.match(mainSource, /protected archive/)
 })
 
 test('shares one in-flight map-data load and starts a fresh load after it resolves', async () => {

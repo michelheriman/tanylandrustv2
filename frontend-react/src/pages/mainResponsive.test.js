@@ -29,6 +29,7 @@ function rule(source, selector) {
 }
 
 const mobileMain = block(mainCss, '@media (max-width: 700px)')
+const mobileNavMain = block(mainCss, '@media (max-width: 860px)')
 const mobileMarketplace = block(marketplaceCss, '@media (max-width: 767px)')
 
 test('Main renders Marketplace as the mobile Main tab and places its sidebar before the map', () => {
@@ -88,7 +89,7 @@ test('the document can grow, bottom navigation clearance remains, and the map re
   assert.doesNotMatch(body, /\n\s*height:\s*100|overflow(?:-y)?:\s*hidden/)
   assert.doesNotMatch(root, /\n\s*height:\s*100|overflow(?:-y)?:\s*hidden/)
 
-  const nav = rule(mobileMain, '.main-mobile-nav')
+  const nav = rule(mobileNavMain, '.main-mobile-nav')
   assert.match(nav, /position:\s*fixed/)
   assert.match(nav, /bottom:\s*0/)
   assert.match(nav, /min-height:\s*62px/)
@@ -108,7 +109,7 @@ test('all requested mobile widths use the natural-flow breakpoint and desktop ru
 
   assert.match(marketplaceCss, /@media \(min-width: 1024px\)/)
   assert.match(marketplaceCss, /@media \(max-width: 767px\)/)
-  assert.match(mobileMain, /\.main-mobile-nav \{[^}]*position: fixed/)
+  assert.match(mobileNavMain, /\.main-mobile-nav \{[^}]*position: fixed/)
 })
 
 test('mobile KML controls are readable, long names wrap, and the form remains before the map', () => {
@@ -126,7 +127,7 @@ test('mobile KML controls are readable, long names wrap, and the form remains be
   const map = mainSource.indexOf('<div className="main-map-wrap">', importer)
   assert.ok(importer >= 0 && map > importer, 'KML form must remain before the map in Main')
   assert.match(rule(mobileMain, '.main-map-wrap, .main-map-canvas'), /min-height:\s*49svh/)
-  assert.match(rule(mobileMain, '.main-mobile-nav'), /position:\s*fixed/)
+  assert.match(rule(mobileNavMain, '.main-mobile-nav'), /position:\s*fixed/)
 
   assert.match(rule(mainCss, '.main-kml-dropzone button'), /font-size:\s*var\(--text-small\)/)
   assert.match(rule(mainCss, '.main-kml-file-info'), /font-size:\s*var\(--text-caption\)/)

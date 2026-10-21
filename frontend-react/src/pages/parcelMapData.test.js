@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary, makeParcelPayload, parseParcelGeometry, parcelsToFeatureCollection } from './parcelMapData.js'
+import { addParcelStepForField, createParcel, findInvalidAddParcelControl, isValidParcelBoundary, makeParcelPayload, parseParcelGeometry, parcelsToFeatureCollection } from './parcelMapData.js'
 
 test('parcel map GeoJSON accepts the stored Polygon and MultiPolygon formats', () => {
   const polygon = { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[0, 0], [2, 0], [2, 2], [0, 2]]] }, properties: { parcel_name: 'Field' } }
@@ -68,11 +68,4 @@ test('final Add Parcel submission sends one combined payload with geometry and b
   calls.length = 0
   assert.throws(() => createParcel(request, form, null, 'owner@example.test'), /valid parcel boundary/)
   assert.equal(calls.length, 0)
-})
-
-test('parcel quota uses the backend profile account and legacy thresholds', () => {
-  assert.deepEqual(checkParcelLimit({ data: [{ account: 'free' }] }, 1), { allowed: true, limit: 2, plan: 'free' })
-  assert.equal(checkParcelLimit({ data: [{ account: 'pro5' }] }, 5).allowed, false)
-  assert.equal(checkParcelLimit({ data: [{ account: 'pro10' }] }, 14).allowed, true)
-  assert.throws(() => checkParcelLimit({ data: [] }, 0), /plan could not be checked/)
 })

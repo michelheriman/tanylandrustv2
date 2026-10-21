@@ -1,12 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/useAuth.js'
 import { apiErrorMessage } from '../api/apiErrorMessages.js'
+import { isLocalBackendConfigured } from '../api/backendMode.js'
+import AccountPage from '../account/AccountPage.jsx'
+import { ACCOUNT_LABELS } from '../account/accountLabels.js'
+import { accountDisplayName, accountPageFromHash, accountPageHash, isAccountMenuEscape, isOutsideAccountMenu } from '../account/accountMenu.js'
+import {
+  canShowOwnerParcelDelete,
+  deleteOwnedParcel,
+  effectiveOfferSummary,
+  loadOwnerParcelDeletionRights,
+  markOwnerParcelDeleteDenied,
+  parcelDeletionErrorMessage,
+} from '../api/parcelDeletion.js'
 import Icon from '../components/Icon.jsx'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { focusFirstDialogField, handleDialogKeydown, restoreDialogFocus } from './mainDialogFocus.js'
 import { loadParcels, saveParcelFields } from './mainData.js'
 import { MAIN_LABELS, PARCEL_STATUS_OPTIONS, parcelStatusLabel } from './mainLabels.js'
-import { addParcelStepForField, checkParcelLimit, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
+import { addParcelStepForField, createParcel, findInvalidAddParcelControl, isValidParcelBoundary } from './parcelMapData.js'
 import { applyPageMetadata } from '../seoMetadata.js'
 import ParcelMap from './ParcelMap.jsx'
 import KmlImport from './KmlImport.jsx'
@@ -48,6 +60,10 @@ function readTab() {
   return tabs.some((tab) => tab.id === hash) ? hash : 'dashboard'
 }
 
+function readAccountPage() {
+  return accountPageFromHash(window.location.hash)
+}
+
 function ParcelCell({ row, field, lang, value, onChange, disabled }) {
 
   const label = `${field[lang]}, ${row.parcel_name || row.id}`
@@ -62,6 +78,12 @@ function ParcelCell({ row, field, lang, value, onChange, disabled }) {
 
 function Dashboard({ lang }) {
   const { request, user, downloadKml } = useAuth()
+  const localBackend = isLocalBackendConfigured()
+  const [ownerDeletionRights, setOwnerDeletionRights] = useState(() => ({
+    status: localBackend ? 'loading' : 'unavailable',
+    canDeleteOwnedParcels: false,
+  }))
+  const [ownerDeletionDeniedIds, setOwnerDeletionDeniedIds] = useState(() => new Set())
   const [parcels, setParcels] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -87,12 +109,28 @@ function Dashboard({ lang }) {
   const [savingAdd, setSavingAdd] = useState(false)
   const [addError, setAddError] = useState(null)
   const [resetDrawingKey, setResetDrawingKey] = useState(0)
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState(null)
+  const [deletePending, setDeletePending] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
+  const deleteFlightRef = useRef(false)
   useEffect(() => {
     let live = true
     requestAnimationFrame(() => { if (live) { setLoading(true); setError(null) } })
     loadParcels(request).then((rows) => { if (live) setParcels(rows) }).catch((failure) => { if (live) setError(failure) }).finally(() => { if (live) setLoading(false) })
+    if (localBackend) {
+      setOwnerDeletionRights({ status: 'loading', canDeleteOwnedParcels: false })
+      loadOwnerParcelDeletionRights(request)
+        .then((rights) => {
+          if (live) setOwnerDeletionRights({ status: 'ready', ...rights })
+        })
+        .catch(() => {
+          if (live) setOwnerDeletionRights({ status: 'error', canDeleteOwnedParcels: false })
+        })
+    } else {
+      setOwnerDeletionRights({ status: 'unavailable', canDeleteOwnedParcels: false })
+    }
     return () => { live = false }
-  }, [request, reloadKey])
+  }, [request, reloadKey, localBackend])
   function openEdit(id, trigger) {
     const row = parcels.find((parcel) => parcel.id === id)
     if (!row) return
@@ -194,10 +232,6 @@ function Dashboard({ lang }) {
       })
       return
     }
-    if (loading || error) {
-      setAddError(new Error(lang === 'fr' ? 'Impossible de vérifier le nombre actuel de parcelles.' : 'Cannot verify the current parcel count.'))
-      return
-    }
     if (!isValidParcelBoundary(draftGeometry)) {
       setAddError(new Error(lang === 'fr' ? 'Draw the parcel boundary on the map first.' : 'Draw the parcel boundary on the map first.'))
       return
@@ -205,11 +239,6 @@ function Dashboard({ lang }) {
     setSavingAdd(true)
     setAddError(null)
     try {
-      const latestParcels = await loadParcels(request)
-      setParcels(latestParcels)
-      const account = await request('/account')
-      const quota = checkParcelLimit(account, latestParcels.length)
-      if (!quota.allowed) throw new Error(`The ${quota.plan} plan limit of ${quota.limit} parcels has been reached.`)
       const response = await createParcel(request, addForm, draftGeometry, user?.email)
       if (!response.success) throw new Error(response.message || 'The parcel could not be saved.')
       setAddMode(false)
@@ -220,6 +249,50 @@ function Dashboard({ lang }) {
       setNotice(lang === 'fr' ? 'Parcelle ajoutée.' : 'Parcel added.')
     } catch (failure) { setAddError(failure) }
     finally { setSavingAdd(false) }
+  }
+  function beginDeleteParcel(id) {
+    if (!localBackend || deletePending || deleteFlightRef.current) return
+    setDeleteError(null)
+    setDeleteConfirmationId(String(id))
+  }
+  function cancelDeleteParcel() {
+    if (deletePending || deleteFlightRef.current) return
+    setDeleteConfirmationId(null)
+    setDeleteError(null)
+  }
+  async function confirmDeleteParcel(id) {
+    const parcelId = String(id)
+    if (!canShowOwnerParcelDelete({
+      localBackend,
+      rights: ownerDeletionRights,
+      parcelId,
+      deniedParcelIds: ownerDeletionDeniedIds,
+    }) || deletePending || deleteFlightRef.current || deleteConfirmationId !== parcelId) return
+    deleteFlightRef.current = true
+    setDeletePending(true)
+    setDeleteError(null)
+    try {
+      await deleteOwnedParcel(request, parcelId, { confirmed: true })
+      setParcels((current) => current.filter((parcel) => String(parcel.id) !== parcelId))
+      setSelectedParcelId((current) => String(current) === parcelId ? null : current)
+      setExpandedParcelId((current) => String(current) === parcelId ? null : current)
+      setDeleteConfirmationId(null)
+      setReloadKey((key) => key + 1)
+      setNotice(lang === 'fr'
+        ? 'Parcelle supprimée des listes actives ; sa copie complète reste archivée.'
+        : 'Parcel removed from active lists; its complete record remains archived.')
+    } catch (failure) {
+      setDeleteError(failure)
+      if (Number(failure?.status) === 403) {
+        setOwnerDeletionDeniedIds((current) => markOwnerParcelDeleteDenied(current, parcelId, failure.status))
+        setDeleteConfirmationId(null)
+        setOwnerDeletionRights({ status: 'loading', canDeleteOwnedParcels: false })
+        setReloadKey((key) => key + 1)
+      }
+    } finally {
+      deleteFlightRef.current = false
+      setDeletePending(false)
+    }
   }
   async function exportParcels() {
     setError(null)
@@ -270,6 +343,12 @@ function Dashboard({ lang }) {
       return nameDescending ? -order : order
     })
   const hasParcelDates = parcels.some((row) => ['updated_at', 'updatedAt', 'created_at', 'createdAt'].some((key) => Number.isFinite(Date.parse(row[key] ?? ''))))
+  const showOwnerDelete = (parcelId) => canShowOwnerParcelDelete({
+    localBackend,
+    rights: ownerDeletionRights,
+    parcelId,
+    deniedParcelIds: ownerDeletionDeniedIds,
+  })
   return (
     <section className="main-section" aria-labelledby="main-dashboard-title">
       <div className="main-title-card">
@@ -309,6 +388,10 @@ function Dashboard({ lang }) {
             </form> : kmlImportOpen ? <KmlImport layout="manager-column" request={request} userEmail={user?.email} lang={lang} onClose={closeKmlImport} onImported={completeKmlImport} /> :
           <aside className="main-parcel-sidebar" aria-label={lang === 'fr' ? 'Gestion des parcelles' : 'Parcel manager'}>
             <div className="main-sidebar-heading"><h3>{lang === 'fr' ? 'Gestionnaire de parcelles' : 'Parcel Manager'}</h3><span>{loading ? '…' : parcels.length}</span></div>
+            {localBackend && ownerDeletionRights.status === 'loading' && <p className="main-rights-state" role="status">{lang === 'fr' ? 'Vérification du droit de suppression…' : 'Checking parcel deletion rights…'}</p>}
+            {localBackend && ownerDeletionRights.status === 'error' && <div className="main-rights-state main-list-error" role="alert"><p>{lang === 'fr' ? 'Le droit de suppression est indisponible ; l’action reste masquée.' : 'Deletion rights are unavailable; the action remains hidden.'}</p><button type="button" onClick={() => setReloadKey((key) => key + 1)}>{lang === 'fr' ? 'Réessayer' : 'Retry'}</button></div>}
+            {localBackend && ownerDeletionRights.status === 'ready' && <p className="main-rights-state" aria-live="polite">{effectiveOfferSummary(ownerDeletionRights, lang)}</p>}
+            {deleteError && deleteConfirmationId === null && <p className="main-parcel-delete-error" role="alert">{parcelDeletionErrorMessage(deleteError, lang, 'pro')}</p>}
             <div className="main-actions">
               <button type="button" onClick={beginAdd}>{lang === 'fr' ? 'Ajouter' : 'Add'}</button>
               <button type="button" onClick={beginKmlImport}>{lang === 'fr' ? 'Importer KML' : 'Import KML'}</button>
@@ -326,10 +409,11 @@ function Dashboard({ lang }) {
               {visibleParcels.map((row) => <article className={`main-parcel-card${selectedParcelId === row.id ? ' is-selected' : ''}`} key={row.id}>
                 <button className="main-parcel-summary" type="button" onClick={() => { setSelectedParcelId(row.id); setFocusVersion((version) => version + 1); setExpandedParcelId((current) => current === row.id ? null : row.id) }} aria-expanded={expandedParcelId === row.id} aria-pressed={selectedParcelId === row.id}>
                   <span className="main-parcel-mark" aria-hidden="true">{(row.parcel_name || 'P').slice(0, 1).toUpperCase()}</span>
-                  <span className="main-parcel-copy"><strong>{row.parcel_name || (lang === 'fr' ? 'Parcelle sans nom' : 'Unnamed parcel')}</strong><small>{row.location_name || row.owner || '—'}</small></span>
+                  <span className="main-parcel-copy"><strong>{row.parcel_name || (lang === 'fr' ? 'Parcelle sans nom' : 'Unnamed parcel')}</strong><small>{row.location_name || row.owner || '—'}</small>{row.admin_visibility_hidden && <small className="main-parcel-hidden-note">{lang === 'fr' ? 'Masquée par l’administration' : 'Hidden by admin'}</small>}</span>
                   <span className="main-parcel-status">{parcelStatusLabel('status_category', row.status_category, lang)}</span>
                 </button>
-                {expandedParcelId === row.id && <dl className="main-parcel-details">
+                {expandedParcelId === row.id && <>
+                <dl className="main-parcel-details">
                   <div><dt>{fieldLabels.parcel_name[lang]}</dt><dd>{row.parcel_name || '—'}</dd></div>
                   <div><dt>{ownerLabel[lang]}</dt><dd>{row.owner || '—'}</dd></div>
                   <div><dt>{fieldLabels.location_name[lang]}</dt><dd>{row.location_name || '—'}</dd></div>
@@ -337,8 +421,27 @@ function Dashboard({ lang }) {
                   <div><dt>{fieldLabels.price[lang]}</dt><dd>{row.price ?? '—'}</dd></div>
                   <div className="main-parcel-description"><dt>{fieldLabels.description[lang]}</dt><dd>{row.description || '—'}</dd></div>
                   <div><dt>{fieldLabels.sell_category[lang]}</dt><dd>{parcelStatusLabel('sell_category', row.sell_category, lang)}</dd></div>
+                  {row.admin_visibility_hidden && <div><dt>{lang === 'fr' ? 'Visibilité Marketplace' : 'Marketplace visibility'}</dt><dd>{lang === 'fr' ? 'Masquée par l’administration' : 'Hidden by admin'}</dd></div>}
                   <div><dt>{fieldLabels.status_category[lang]}</dt><dd>{parcelStatusLabel('status_category', row.status_category, lang)}</dd></div>
-                </dl>}
+                </dl>
+                {showOwnerDelete(row.id) && <div className="main-parcel-delete-wrap">
+                  {String(deleteConfirmationId) === String(row.id)
+                    ? <div className="main-parcel-delete-confirm" role="group" aria-labelledby={`owner-delete-title-${row.id}`}>
+                      <h4 id={`owner-delete-title-${row.id}`}>{lang === 'fr' ? 'Confirmer la suppression' : 'Confirm deletion'}</h4>
+                      <p>{lang === 'fr'
+                        ? 'Cette parcelle sera retirée des listes actives. Sa copie complète et l’identité de l’auteur resteront dans les archives protégées. Cette action ne peut pas être annulée depuis l’application.'
+                        : 'This parcel will be removed from active lists. Its complete record and the actor identity will remain in the protected archive. This action cannot be undone in the app.'}</p>
+                      {deleteError && <p className="main-parcel-delete-error" role="alert">{parcelDeletionErrorMessage(deleteError, lang, 'pro')}</p>}
+                      <div className="main-parcel-delete-actions">
+                        <button type="button" disabled={deletePending} onClick={cancelDeleteParcel}>{lang === 'fr' ? 'Annuler' : 'Cancel'}</button>
+                        <button type="button" className="is-danger" disabled={deletePending} onClick={() => void confirmDeleteParcel(row.id)}>{deletePending ? (lang === 'fr' ? 'Suppression…' : 'Deleting…') : (lang === 'fr' ? 'Confirmer la suppression' : 'Confirm deletion')}</button>
+                      </div>
+                    </div>
+                    : <>
+                      <button className="main-parcel-delete-button" type="button" disabled={deletePending} onClick={() => beginDeleteParcel(row.id)}>{lang === 'fr' ? 'Supprimer la parcelle' : 'Delete parcel'}</button>
+                    </>}
+                </div>}
+                </>}
               </article>)}
             </div>
           </aside>}
@@ -365,26 +468,70 @@ function Dashboard({ lang }) {
 }
 
 export default function Main() {
-  const { logout, status, error } = useAuth()
+  const { logout, request, user, status, error } = useAuth()
   const [tab, setTab] = useState(readTab)
+  const [accountPage, setAccountPage] = useState(readAccountPage)
   const [lang, setLang] = useState(readLanguage)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef(null)
+  const accountMenuTriggerRef = useRef(null)
+  const labels = ACCOUNT_LABELS[lang]
+  const displayName = accountDisplayName(user)
 
   useEffect(() => {
-    const sync = () => setTab(readTab())
+    const sync = () => { setTab(readTab()); setAccountPage(readAccountPage()) }
     window.addEventListener('popstate', sync)
     window.addEventListener('hashchange', sync)
     return () => { window.removeEventListener('popstate', sync); window.removeEventListener('hashchange', sync) }
   }, [])
 
   useEffect(() => {
-    applyPageMetadata('main', lang, { title: `${tab === 'dashboard' ? 'Dashboard' : pages[tab]?.[lang]?.[0] || 'Tany'} | Tany` })
+    if (!accountMenuOpen) return undefined
+    const onPointerDown = (event) => {
+      if (isOutsideAccountMenu(event.target, accountMenuRef.current)) setAccountMenuOpen(false)
+    }
+    const onKeyDown = (event) => {
+      if (!isAccountMenuEscape(event.key)) return
+      setAccountMenuOpen(false)
+      accountMenuTriggerRef.current?.focus()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [accountMenuOpen])
+
+  useEffect(() => {
+    const title = accountPage
+      ? accountPage === 'profile' ? labels.profileTitle : labels.offerTitle
+      : tab === 'dashboard' ? 'Dashboard' : pages[tab]?.[lang]?.[0] || 'Tany'
+    applyPageMetadata('main', lang, { title: `${title} | Tany` })
     writeLanguage(lang)
-  }, [tab, lang])
+  }, [tab, accountPage, lang, labels])
 
   function switchTab(event, next) {
     event.preventDefault()
     window.history.pushState(null, '', next === 'dashboard' ? '/main' : `/main#${next}`)
     setTab(next)
+    setAccountPage(null)
+    setAccountMenuOpen(false)
+  }
+
+  function openAccountPage(event, page) {
+    event.preventDefault()
+    window.history.pushState(null, '', accountPageHash(page))
+    setTab('dashboard')
+    setAccountPage(page)
+    setAccountMenuOpen(false)
+  }
+
+  function returnToParcels(event) {
+    event.preventDefault()
+    window.history.pushState(null, '', '/main')
+    setTab('dashboard')
+    setAccountPage(null)
   }
 
   async function signOut() {
@@ -392,13 +539,12 @@ export default function Main() {
     window.location.replace('/signin')
   }
 
-  const nav = () => tabs.map((item) => <a key={item.id} href={item.id === 'dashboard' ? '/main' : `/main#${item.id}`} aria-current={tab === item.id ? 'page' : undefined} className={tab === item.id ? 'is-active' : ''} onClick={(event) => switchTab(event, item.id)}><span className="main-nav-icon"><Icon name={item.icon} size={17}/></span><span>{item[lang]}</span></a>)
+  const nav = () => tabs.map((item) => <a key={item.id} href={item.id === 'dashboard' ? '/main' : `/main#${item.id}`} aria-current={!accountPage && tab === item.id ? 'page' : undefined} className={!accountPage && tab === item.id ? 'is-active' : ''} onClick={(event) => switchTab(event, item.id)}><span className="main-nav-icon"><Icon name={item.icon} size={17}/></span><span>{item[lang]}</span></a>)
   return <div className={`main-page${tab === 'crops' ? ' main-page-marketplace' : ''}`}>
     <header className="main-header"><div className="main-header-inner">
       <a className="main-brand" href="/" aria-label="Tany Landtrust, home"><span className="main-brand-name">tany Landtrust</span></a>
       <nav className="main-desktop-nav" aria-label={lang === 'fr' ? 'Navigation principale' : 'Main navigation'}>{nav()}</nav>
       <div className="main-header-actions">
-        <button className="main-logout" type="button" onClick={() => void signOut()} disabled={status === 'signingOut'}>{status === 'signingOut' ? '…' : lang === 'fr' ? 'Déconnexion' : 'Log Out'}</button>
         <details className="main-language-menu">
             <summary aria-label={MAIN_LABELS.languageMenu[lang]}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
@@ -408,9 +554,41 @@ export default function Main() {
             {['en', 'fr'].map((language) => <button key={language} type="button" lang={language} aria-pressed={lang === language} onClick={(event) => { setLang(language); event.currentTarget.closest('details')?.removeAttribute('open') }}>{language.toUpperCase()}</button>)}
           </div>
         </details>
+        <div className="main-account-menu" ref={accountMenuRef}>
+          <button
+            ref={accountMenuTriggerRef}
+            className="main-account-trigger"
+            type="button"
+            aria-expanded={accountMenuOpen}
+            aria-controls="main-account-panel"
+            aria-label={`${labels.menu}: ${displayName}`}
+            onClick={() => setAccountMenuOpen((open) => !open)}
+          >
+            <span className="main-account-initials" aria-hidden="true">CL</span>
+            <span className="main-account-name">{lang === 'fr' ? 'Compte' : 'Account'}</span>
+            <span className={`main-account-chevron${accountMenuOpen ? ' is-open' : ''}`} aria-hidden="true" />
+          </button>
+          <div className="main-account-panel" id="main-account-panel" role="region" aria-label={labels.menu} hidden={!accountMenuOpen}>
+            <div className="main-account-identity">
+              <strong>{displayName}</strong>
+              {user?.email && user.email !== displayName && <span>{user.email}</span>}
+            </div>
+            <nav className="main-account-links" aria-label={labels.menu}>
+              <a href={accountPageHash('profile')} onClick={(event) => openAccountPage(event, 'profile')}>{labels.profile}</a>
+              <a href={accountPageHash('offer')} onClick={(event) => openAccountPage(event, 'offer')}>{labels.offer}</a>
+            </nav>
+            <div className="main-account-footer">
+              <button type="button" onClick={() => void signOut()} disabled={status === 'signingOut'}>
+                {status === 'signingOut' ? '…' : labels.logout}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div></header>
-    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <LandLaw lang={lang} />}{error && <p className="main-feedback main-error" role="status">{apiErrorMessage(error, lang) || error.message}</p>}</main>
+    <main className={`main-content${tab === 'crops' ? ' main-content-marketplace' : ''}`}>{accountPage
+      ? <AccountPage page={accountPage} lang={lang} request={request} localBackend={isLocalBackendConfigured()} onBack={returnToParcels}/>
+      : tab === 'dashboard' ? <Dashboard lang={lang} /> : tab === 'crops' ? <Marketplace lang={lang} /> : tab === 'tasks' ? <Chat lang={lang} /> : <LandLaw lang={lang} />}{error && <p className="main-feedback main-error" role="status">{apiErrorMessage(error, lang) || error.message}</p>}</main>
     <nav className="main-mobile-nav" aria-label={lang === 'fr' ? 'Navigation mobile' : 'Mobile navigation'}>{nav()}</nav>
   </div>
 }

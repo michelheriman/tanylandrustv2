@@ -31,7 +31,7 @@ function MarketError({ error, onRetry, lang }) {
   return <div className="market-react-error" role="alert"><p>{message}</p>{onRetry && <button type="button" onClick={onRetry}>{text[lang].retry}</button>}</div>
 }
 
-function ProductInterest({ uuid, lang, onBack }) {
+function ProductInterest({ uuid, parcelId, lang, onBack }) {
   const { request, user } = useAuth()
   const labels = text[lang]
   const [product, setProduct] = useState(null)
@@ -43,12 +43,12 @@ function ProductInterest({ uuid, lang, onBack }) {
 
   useEffect(() => {
     let live = true
-    request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid)) })
+    request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid, parcelId)) })
       .then((response) => { if (live) setProduct(productFromResponse(response)) })
       .catch((failure) => { if (live) setError(failure) })
       .finally(() => { if (live) setLoading(false) })
     return () => { live = false }
-  }, [request, uuid])
+  }, [request, uuid, parcelId])
 
   async function sendInterest(event) {
     event.preventDefault()
@@ -64,7 +64,7 @@ function ProductInterest({ uuid, lang, onBack }) {
   return <section className="market-react-detail" aria-labelledby="market-product-title">
     <button className="market-react-back" type="button" onClick={onBack}><Icon name="arrow-left" size={15}/>{labels.back}</button>
     {loading && <p role="status">{labels.loadProduct}</p>}
-    {!loading && error && <MarketError error={error} onRetry={() => { setProduct(null); setLoading(true); setError(null); request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid)) }).then((response) => setProduct(productFromResponse(response))).catch((failure) => setError(failure)).finally(() => setLoading(false)) }} lang={lang} />}
+    {!loading && error && <MarketError error={error} onRetry={() => { setProduct(null); setLoading(true); setError(null); request('/getprodd', { method: 'POST', body: JSON.stringify(productLookupBody(uuid, parcelId)) }).then((response) => setProduct(productFromResponse(response))).catch((failure) => setError(failure)).finally(() => setLoading(false)) }} lang={lang} />}
     {!loading && !error && !product && <p role="status">{labels.missing}</p>}
     {product && <>
       <h2 id="market-product-title">{product.parcel_name || '—'}</h2>
@@ -100,7 +100,7 @@ export default function Marketplace({ lang = 'en' }) {
   const [selectedId, setSelectedId] = useState(null)
   const [focusVersion, setFocusVersion] = useState(0)
   const [view, setView] = useState(null)
-  const [targetUuid, setTargetUuid] = useState(null)
+  const [targetParcel, setTargetParcel] = useState(null)
   const [mapError, setMapError] = useState(null)
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function Marketplace({ lang = 'en' }) {
   const selectedParcel = parcels.find((row) => String(row.id) === String(selectedId)) || null
   function openAction(nextView, row) {
     if (!hasMarketplaceUuid(row)) return
-    setTargetUuid(row.uuid)
+    setTargetParcel({ uuid: row.uuid, id: row.id })
     setView(nextView)
   }
   function selectParcel(row) { setSelectedId(row.id); setFocusVersion((value) => value + 1) }
@@ -144,7 +144,7 @@ export default function Marketplace({ lang = 'en' }) {
     : '—'
 
   return <section className="main-section main-market-section" aria-labelledby="market-react-title">
-    {view === 'interest' ? <div className="market-react-detail-pane"><ProductInterest key={`${view}-${targetUuid}`} uuid={targetUuid} lang={lang} onBack={() => setView(null)} /></div> : <>
+    {view === 'interest' ? <div className="market-react-detail-pane"><ProductInterest key={`${view}-${targetParcel?.id ?? targetParcel?.uuid}`} uuid={targetParcel?.uuid} parcelId={targetParcel?.id} lang={lang} onBack={() => setView(null)} /></div> : <>
       <header className="market-react-page-heading"><h1>{labels.pageTitle}</h1><p>{labels.subtitle}</p></header>
       <div className="market-react-workspace">
         <header className="market-react-manager-header">{labels.fieldDataManager}</header>

@@ -144,10 +144,54 @@ test('Marketplace actions preserve legacy endpoint payloads and use the React se
 
   const messageBody = interestMessageBody(product, { email: 'buyer@example.test' }, 'Interested')
   assert.deepEqual(messageBody, { sender_id: 'buyer@example.test', receiver_id: 'owner@example.test', content: 'Interested', uuid_post: 'parcel-uuid', objet: 'buyer@example.test | Plot | owner@example.test' })
+  assert.equal(Object.hasOwn(messageBody, 'parcel_id'), false)
   await auth.request('/messages_w', { method: 'POST', body: JSON.stringify(messageBody) })
   assert.equal(calls[2].path, '/api/messages_w')
   assert.equal(new Headers(calls[2].options.headers).get('Authorization'), 'Bearer access-token')
   assert.deepEqual(geoReportLookupBody('parcel-uuid'), { data: 'parcel-uuid' })
+})
+
+test('Marketplace carries the selected stable parcel ID through detail lookup and first message', async () => {
+  let session = { accessToken: 'access-token', refreshToken: 'refresh-token', user: null }
+  const calls = []
+  const auth = createAuthService({
+    storage: { read: () => session, write: (next) => { session = next }, clear: () => { session = null } },
+    fetchImpl: async (path, options = {}) => {
+      calls.push({ path, options })
+      if (path === '/api/current_user') return Response.json({ success: true, data: { id: 7, email: 'buyer@example.test' } })
+      if (path === '/api/getprodd') return Response.json({ success: true, data: [{ id: '17', uuid: 'duplicate-uuid', owner_uuid: 'owner@example.test', parcel_name: 'Plot' }] })
+      if (path === '/api/messages_w') return Response.json({ success: true }, { status: 201 })
+      throw new Error(`Unexpected request ${path}`)
+    },
+  })
+  await auth.restore()
+
+  const lookupBody = productLookupBody('duplicate-uuid', 17)
+  assert.deepEqual(lookupBody, { data: 'duplicate-uuid', parcel_id: '17' })
+  const product = productFromResponse(await auth.request('/getprodd', {
+    method: 'POST', body: JSON.stringify(lookupBody),
+  }))
+  const messageBody = interestMessageBody(product, { email: 'buyer@example.test' }, 'Interested')
+  assert.equal(messageBody.parcel_id, '17')
+  await auth.request('/messages_w', { method: 'POST', body: JSON.stringify(messageBody) })
+
+  assert.deepEqual(JSON.parse(calls[1].options.body), { data: 'duplicate-uuid', parcel_id: '17' })
+  assert.deepEqual(JSON.parse(calls[2].options.body), {
+    sender_id: 'buyer@example.test',
+    receiver_id: 'owner@example.test',
+    content: 'Interested',
+    uuid_post: 'duplicate-uuid',
+    objet: 'buyer@example.test | Plot | owner@example.test',
+    parcel_id: '17',
+  })
+  assert.match(marketplaceComponent, /setTargetParcel\(\{ uuid: row\.uuid, id: row\.id \}\)/)
+  assert.match(marketplaceComponent, /productLookupBody\(uuid, parcelId\)/)
+})
+
+test('Marketplace refuses to turn an imprecise or out-of-range number into a parcel ID', () => {
+  assert.deepEqual(productLookupBody('parcel-uuid', Number.MAX_SAFE_INTEGER + 1), { data: 'parcel-uuid' })
+  assert.deepEqual(productLookupBody('parcel-uuid', '9223372036854775808'), { data: 'parcel-uuid' })
+  assert.throws(() => productLookupBody('', Number.MAX_SAFE_INTEGER + 1), /stable parcel identity/i)
 })
 
 test('Marketplace retries one 401 through the shared refresh flow and replaces both tokens', async () => {
@@ -190,7 +234,7 @@ test('Marketplace keeps id-only listings but neutralizes UUID-dependent actions'
   assert.equal(row.id, 17)
   assert.equal(hasMarketplaceUuid(row), false)
   assert.equal(hasMarketplaceUuid({ ...row, uuid: 'parcel-uuid' }), true)
-  assert.throws(() => productLookupBody(undefined), /parcel UUID is required/)
+  assert.throws(() => productLookupBody(undefined), /stable parcel identity is required/)
   assert.match(marketplaceComponent, /if \(!hasMarketplaceUuid\(row\)\) return/)
   assert.match(marketplaceComponent, /disabled=\{!hasMarketplaceUuid\(row\)\}/)
   assert.match(marketplaceComponent, /hasMarketplaceUuid\(row\)\s*\?\s*<a className="market-react-report-link"/)

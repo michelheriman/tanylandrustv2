@@ -93,17 +93,44 @@ export function productFromResponse(response) {
   return response.data[0] ?? null
 }
 
-export function productLookupBody(uuid) {
-  if (typeof uuid !== 'string' || uuid.trim() === '') throw new Error('A parcel UUID is required to look up its product.')
-  return { data: uuid }
+function positiveBigintText(value) {
+  let text
+  if (typeof value === 'number') {
+    if (!Number.isSafeInteger(value) || value < 1) return null
+    text = String(value)
+  } else if (typeof value === 'string' && /^[1-9]\d*$/.test(value)) {
+    text = value
+  } else {
+    return null
+  }
+
+  try {
+    const parsed = BigInt(text)
+    return parsed <= 9223372036854775807n ? text : null
+  } catch {
+    return null
+  }
+}
+
+export function productLookupBody(uuid, parcelId) {
+  const stableId = positiveBigintText(parcelId)
+  const hasUuid = typeof uuid === 'string' && uuid.trim() !== ''
+  if (!hasUuid && !stableId) throw new Error('A stable parcel identity is required to look up its product.')
+  return {
+    ...(hasUuid ? { data: uuid } : {}),
+    ...(stableId ? { parcel_id: stableId } : {}),
+  }
 }
 
 export function interestMessageBody(product, user, content) {
-  return {
+  const body = {
     sender_id: user.email,
     receiver_id: product.owner_uuid,
     content,
     uuid_post: product.uuid,
     objet: `${user.email} | ${product.parcel_name} | ${product.owner_uuid}`,
   }
+  const stableId = positiveBigintText(product?.id)
+  if (stableId) body.parcel_id = stableId
+  return body
 }

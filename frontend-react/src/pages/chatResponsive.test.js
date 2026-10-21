@@ -8,6 +8,7 @@ const chatSource = await readFile(fileURLToPath(new URL('./Chat.jsx', import.met
 const mainCss = await readFile(fileURLToPath(new URL('./Main.css', import.meta.url)), 'utf8')
 const mobileChat = cssBlock(chatCss, '@media (max-width: 700px)')
 const mobileMain = cssBlock(mainCss, '@media (max-width: 700px)')
+const mobileNavMain = cssBlock(mainCss, '@media (max-width: 860px)')
 
 function cssBlock(source, marker) {
   const start = source.indexOf(marker)
@@ -98,5 +99,5 @@ test('mobile conversation carousel, message history, composer and navigation cle
   assert.match(cssRule(chatCss, '.chat-react-messages'), /overflow-y:\s*auto/)
   assert.match(cssRule(chatCss, '.chat-react-compose input'), /height:\s*40px/)
   assert.match(cssRule(mobileMain, '.main-content'), /padding:\s*10px\s+10px\s+88px/)
-  assert.match(cssRule(mobileMain, '.main-mobile-nav'), /position:\s*fixed[^}]*z-index:\s*25/)
+  assert.match(cssRule(mobileNavMain, '.main-mobile-nav'), /position:\s*fixed[^}]*z-index:\s*25/)
 })

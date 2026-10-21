@@ -41,6 +41,43 @@ test('GeoReport parses the backend envelope and JSON geoinfos without inventing 
   assert.throws(() => geoReportFromResponse({ success: true, data: [] }, 'parcel-uuid'), /no record for parcel UUID "parcel-uuid"/)
   assert.throws(() => geoReportFromResponse({ success: true, data: [{ geoinfos: '{' }] }), /not valid JSON/)
   assert.throws(() => geoReportFromResponse({ success: true, data: [{ geoinfos: '{}' }] }), /incomplete or unsupported/)
+  assert.throws(() => geoReportFromResponse({ success: true, data: [{ geoinfos: { ...report, proximity: { results: {} } } }] }), /incomplete or unsupported/)
+})
+
+test('GeoReport loads partial backend data and renders unavailable proximity and soil states', async () => {
+  const partialReport = { ...report, proximity: null, soil_value: [] }
+  let requestedPath
+  const loaded = await loadGeoReport(async (path) => {
+    requestedPath = path
+    return {
+      success: true,
+      data: [{ uuid_parcel: 'partial-report-parcel', geoinfos: JSON.stringify(partialReport) }],
+    }
+  }, 'partial-report-parcel')
+
+  assert.equal(requestedPath, '/get_infos')
+  assert.equal(loaded.proximity, null)
+  assert.deepEqual(loaded.soil_value, [])
+  assert.deepEqual(loaded.climates, report.climates)
+  assert.match(pageSource, /proximity === null\s*\? <p className="georeport-no-data" role="status">\{t\.unavailable\}/)
+  assert.match(pageSource, /report\.soil_value\.length > 0/)
+  assert.match(pageSource, /className="georeport-no-data" role="status">\{t\.unavailable\}/)
+  assert.match(pageSource, /unavailable: 'Données indisponibles'/)
+
+  const otherPartial = geoReportFromResponse({ success: true, data: [{ geoinfos: {
+    ...partialReport,
+    elevation: null,
+    max_slope: null,
+    avg_slope: null,
+    individual_slopes: [],
+    flood: null,
+    climates: null,
+  } }] })
+  assert.equal(otherPartial.flood, null)
+  assert.equal(otherPartial.climates, null)
+  assert.equal(otherPartial.elevation, null)
+  assert.match(pageSource, /\{flood\s*\?\s*<div className="georeport-location-grid"/)
+  assert.match(pageSource, /\{climate\s*\? <>/)
 })
 
 test('GeoReport normalizes finite numeric coordinate strings and rejects invalid coordinate values', () => {

@@ -92,6 +92,6 @@ test('Chat admin dialog uses the shared focus lifecycle and preserves its succes
 
   assert.match(chatSource, /await postAdminMessage\(request, user\.email, adminSubject, adminContent, globalThis\.crypto\.randomUUID\(\)\)/)
   assert.match(chatSource, /setAdminSubject\(''\)\s*setAdminContent\(''\)\s*setAdminOpen\(false\)\s*setConversationsLoading\(true\)\s*setConversationRetry/)
-  assert.match(chatSource, /setMessages\(\(current\) => \[\.\.\.current, \{ \.\.\.body, created_at: t\.now, localEcho: true \}\]\)/)
+  assert.match(chatSource, /setMessages\(\(current\) => \[\.\.\.current, \{\s*\.\.\.sentMessage,\s*created_at: sentMessage\.created_at \|\| t\.now,\s*localEcho: !sentMessage\.id/)
   assert.match(chatSource, /endOfMessages\.current\?\.scrollIntoView/)
 })

@@ -82,11 +82,3 @@ export function findInvalidAddParcelControl(form) {
 export function addParcelStepForField(fieldName) {
   return ['parcel_name', 'owner', 'location_name', 'description'].includes(fieldName) ? 1 : 2
 }
-
-export function checkParcelLimit(accountResponse, currentCount) {
-  const profile = accountResponse?.data?.[0]
-  if (!profile?.account) throw new Error('The account plan could not be checked.')
-  const limits = { free: 2, pro5: 5, pro10: 15 }
-  const limit = limits[profile.account]
-  return { allowed: limit == null || currentCount < limit, limit, plan: profile.account }
-}

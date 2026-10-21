@@ -29,11 +29,52 @@ export function conversationsRequestBody(email) {
   return { data: email }
 }
 
+function positiveIdText(value) {
+  let text
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value > 0) {
+    text = String(value)
+  } else if (typeof value === 'string' && /^[1-9]\d*$/.test(value)) {
+    text = value
+  } else {
+    return null
+  }
+  try {
+    const parsed = BigInt(text)
+    return parsed <= 9223372036854775807n ? text : null
+  } catch {
+    return null
+  }
+}
+
 export function messagesRequestBody(conversation) {
+  if (conversation?.conversation_id != null) {
+    const conversationId = positiveIdText(conversation.conversation_id)
+    if (!conversationId) throw new Error('The selected conversation has an invalid ID.')
+    return { conversation_id: conversationId }
+  }
   return { data: conversation?.objet }
 }
 
 export function conversationReplyBody(conversation, messages, sender, content) {
+  if (conversation?.conversation_id != null) {
+    const conversationId = positiveIdText(conversation.conversation_id)
+    const senderProfileId = positiveIdText(conversation.current_profile_id)
+    const receiverProfileId = positiveIdText(conversation.other_profile_id)
+    const receiver = cleanText(conversation.other_user_email)
+    if (!conversationId || !senderProfileId || !receiverProfileId
+        || senderProfileId === receiverProfileId || !sender || !String(content ?? '').trim()) {
+      throw new Error('Select a valid conversation and enter a reply before sending.')
+    }
+    return {
+      conversation_id: conversationId,
+      sender_profile_id: senderProfileId,
+      receiver_profile_id: receiverProfileId,
+      sender_id: sender,
+      ...(receiver ? { receiver_id: receiver } : {}),
+      content,
+    }
+  }
+
   const firstMessage = Array.isArray(messages) ? messages[0] : null
   if (!conversation || !firstMessage || !sender || !String(content ?? '').trim()) {
     throw new Error('Select a conversation with messages and enter a reply before sending.')
@@ -74,6 +115,9 @@ function isEmailLike(value) {
 }
 
 export function otherUserEmail(conversation, currentUserEmail) {
+  if (conversation?.conversation_id != null) {
+    return cleanText(conversation?.other_user_email)
+  }
   const currentEmail = cleanText(currentUserEmail)
   if (!currentEmail) return ''
 
@@ -129,6 +173,10 @@ export function conversationMatchesSearch(conversation, query, currentUserEmail)
 }
 
 function conversationIdentity(conversation) {
+  if (conversation?.conversation_id != null) {
+    const conversationId = positiveIdText(conversation.conversation_id)
+    return conversationId ? JSON.stringify(['conversation_id', conversationId]) : null
+  }
   const uuidPost = String(conversation?.uuid_post ?? '').trim()
   const subject = String(conversation?.objet ?? '').trim()
   const participant = String(conversation?.main_user ?? '').trim()
@@ -152,7 +200,10 @@ export function loadConversations(request, email) {
   const flight = request('/load_object', {
     method: 'POST',
     body: JSON.stringify(conversationsRequestBody(email)),
-  }).then(conversationsFromResponse)
+  }).then((response) => ({
+    conversations: conversationsFromResponse(response),
+    unlinkedHistoryExcluded: response?.unlinked_history_excluded === true,
+  }))
     .finally(() => conversationFlights.delete(email))
 
   conversationFlights.set(email, flight)
@@ -160,7 +211,12 @@ export function loadConversations(request, email) {
 }
 
 export function loadMessages(request, conversation) {
-  const key = String(conversation?.objet ?? '')
+  const hasConversationId = conversation?.conversation_id != null
+  const conversationId = hasConversationId ? positiveIdText(conversation.conversation_id) : null
+  if (hasConversationId && !conversationId) {
+    return Promise.reject(new Error('The selected conversation has an invalid ID.'))
+  }
+  const key = hasConversationId ? `conversation:${conversationId}` : String(conversation?.objet ?? '')
   if (!key) return Promise.reject(new Error('The selected conversation has no subject.'))
   if (messageFlights.has(key)) return messageFlights.get(key)
 
@@ -181,7 +237,9 @@ export async function sendConversationReply(request, conversation, messages, sen
     body: JSON.stringify(body),
   })
   messageSent(response)
-  return body
+  return Array.isArray(response?.data) && response.data.length > 0
+    ? response.data[0]
+    : body
 }
 
 export async function sendAdminMessage(request, sender, subject, content, uuid) {

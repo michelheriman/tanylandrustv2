@@ -26,6 +26,10 @@ function finiteCoordinate(value) {
   return Number.isFinite(number) ? number : null
 }
 
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 export function geoReportFromResponse(response, parcelUuid = null) {
   if (!Array.isArray(response?.data)) throw new Error('The GeoReport response did not contain a data list.')
   if (response.data.length === 0) {
@@ -55,25 +59,29 @@ export function geoReportFromResponse(response, parcelUuid = null) {
   }
   const latitude = finiteCoordinate(report?.flood?.coordinate?.latitude)
   const longitude = finiteCoordinate(report?.flood?.coordinate?.longitude)
-  if (!report || typeof report !== 'object' || Array.isArray(report) ||
-      !report.flood || typeof report.flood !== 'object' ||
-      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
-      !report.flood.forecast || typeof report.flood.forecast !== 'object' ||
-      !report.flood.statistics || typeof report.flood.statistics !== 'object' ||
-      !report.climates || typeof report.climates !== 'object' ||
-      !report.proximity?.query || !report.proximity?.results || typeof report.proximity.results !== 'object' ||
+  const floodValid = report?.flood === null || (
+    isRecord(report?.flood) &&
+    Number.isFinite(latitude) && Number.isFinite(longitude) &&
+    isRecord(report.flood.forecast) && isRecord(report.flood.statistics)
+  )
+  const climatesValid = report?.climates === null || isRecord(report?.climates)
+  const proximityValid = report?.proximity === null || (
+    isRecord(report?.proximity) &&
+    isRecord(report.proximity.query) &&
+    isRecord(report.proximity.results)
+  )
+  if (!isRecord(report) ||
+      !Object.prototype.hasOwnProperty.call(report, 'flood') || !floodValid ||
+      !Object.prototype.hasOwnProperty.call(report, 'climates') || !climatesValid ||
+      !Object.prototype.hasOwnProperty.call(report, 'proximity') || !proximityValid ||
       !Array.isArray(report.individual_slopes) || !Array.isArray(report.soil_value)) {
     throw new Error('The GeoReport geoinfos structure is incomplete or unsupported.')
   }
   return {
     ...report,
-    flood: {
+    flood: report.flood === null ? null : {
       ...report.flood,
-      coordinate: {
-        ...report.flood.coordinate,
-        latitude,
-        longitude,
-      },
+      coordinate: { ...report.flood.coordinate, latitude, longitude },
     },
   }
 }

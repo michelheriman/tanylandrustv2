@@ -21,6 +21,7 @@ const copy = {
     loading: 'Loading conversations…', loadingMessages: 'Loading messages…', retry: 'Retry', noConversations: 'No conversations yet.',
     conversationsError: 'Unable to load conversations.', messagesError: 'Unable to load messages.', sendMessageError: 'Unable to send this message.',
     noSearchResults: 'No conversations match this search.', noMessages: 'No messages in this conversation yet.',
+    unlinkedHistory: 'Older messages without a conversation link are kept separate and are not shown in these threads.',
     placeholder: 'Write a message…', send: 'Send message', sending: 'Sending…', now: 'Now',
     adminTitle: 'Write to Admin', adminDescription: 'Your message will be sent directly to the admin team.',
     adminUuidUnavailable: 'A secure UUID generator is unavailable in this browser.',
@@ -33,6 +34,7 @@ const copy = {
     loading: 'Chargement des conversations…', loadingMessages: 'Chargement des messages…', retry: 'Réessayer', noConversations: 'Aucune conversation pour le moment.',
     conversationsError: 'Impossible de charger les conversations.', messagesError: 'Impossible de charger les messages.', sendMessageError: 'Impossible d’envoyer ce message.',
     noSearchResults: 'Aucune conversation ne correspond à cette recherche.', noMessages: 'Aucun message dans cette conversation.',
+    unlinkedHistory: 'Les anciens messages sans lien de conversation sont conservés à part et ne sont pas affichés dans ces fils.',
     placeholder: 'Écrire un message…', send: 'Envoyer', sending: 'Envoi…', now: 'À l’instant',
     adminTitle: 'Écrire à l’administration', adminDescription: 'Votre message sera envoyé directement à l’équipe d’administration.',
     adminUuidUnavailable: 'Un générateur d’UUID sécurisé n’est pas disponible dans ce navigateur.',
@@ -65,6 +67,7 @@ export default function Chat({ lang = 'en' }) {
   const [conversations, setConversations] = useState([])
   const [conversationsLoading, setConversationsLoading] = useState(true)
   const [conversationsError, setConversationsError] = useState('')
+  const [unlinkedHistoryExcluded, setUnlinkedHistoryExcluded] = useState(false)
   const [conversationRetry, setConversationRetry] = useState(0)
   const [query, setQuery] = useState('')
   const [selectedConversation, setSelectedConversation] = useState(null)
@@ -90,9 +93,10 @@ export default function Chat({ lang = 'en' }) {
     if (!user?.email) return () => { active = false }
 
     loadConversations(request, user.email)
-      .then((rows) => {
+      .then(({ conversations: rows, unlinkedHistoryExcluded: historyExcluded }) => {
         if (active) {
           setConversations(rows)
+          setUnlinkedHistoryExcluded(historyExcluded)
           const refreshedSelection = findRefreshedConversation(selectedConversationRef.current, rows)
           selectedConversationRef.current = refreshedSelection
           setSelectedConversation(refreshedSelection)
@@ -180,8 +184,12 @@ export default function Chat({ lang = 'en' }) {
     setSending(true)
     setSendError('')
     try {
-      const body = await sendConversationReply(request, selectedConversation, messages, user.email, draft)
-      setMessages((current) => [...current, { ...body, created_at: t.now, localEcho: true }])
+      const sentMessage = await sendConversationReply(request, selectedConversation, messages, user.email, draft)
+      setMessages((current) => [...current, {
+        ...sentMessage,
+        created_at: sentMessage.created_at || t.now,
+        localEcho: !sentMessage.id,
+      }])
       setDraft('')
     } catch (failure) {
       setSendError(failure || { fallbackKey: 'sendMessageError' })
@@ -230,13 +238,16 @@ export default function Chat({ lang = 'en' }) {
         </label>
 
         <div className="chat-react-conversation-list" aria-live="polite" aria-busy={conversationsLoading}>
+          {!conversationsLoading && !conversationsError && unlinkedHistoryExcluded && <p className="chat-react-list-state" role="note">{t.unlinkedHistory}</p>}
           {conversationsLoading && <p className="chat-react-list-state" role="status">{t.loading}</p>}
           {!conversationsLoading && conversationsError && <ChatError error={chatErrorText(conversationsError, t, 'conversationsError', lang)} retryLabel={t.retry} onRetry={() => { setConversationsLoading(true); setConversationsError(''); setConversationRetry((value) => value + 1) }} />}
           {!conversationsLoading && !conversationsError && conversations.length === 0 && <p className="chat-react-list-state">{t.noConversations}</p>}
           {!conversationsLoading && !conversationsError && conversations.length > 0 && visibleConversations.length === 0 && <p className="chat-react-list-state">{t.noSearchResults}</p>}
           {!conversationsLoading && !conversationsError && visibleConversations.map((conversation, index) => {
             const isSelected = selectedConversation === conversation
-            const key = `${conversation.uuid_post ?? ''}:${conversation.objet ?? ''}:${conversation.main_user ?? ''}:${index}`
+            const key = conversation.conversation_id != null
+              ? `conversation:${conversation.conversation_id}`
+              : `${conversation.uuid_post ?? ''}:${conversation.objet ?? ''}:${conversation.main_user ?? ''}:${index}`
             const display = conversationDisplay(conversation, user?.email)
             return <button key={key} type="button" className={`chat-react-conversation${isSelected ? ' is-selected' : ''}`} aria-pressed={isSelected} onClick={() => selectConversation(conversation)}>
               <span className="chat-react-avatar chat-react-conversation-avatar" aria-hidden="true">{initials(display.title)}</span>
@@ -261,8 +272,10 @@ export default function Chat({ lang = 'en' }) {
             {!messagesLoading && messagesError && <ChatError error={chatErrorText(messagesError, t, 'messagesError', lang)} retryLabel={t.retry} onRetry={() => { setMessagesLoading(true); setMessagesError(''); setMessageRetry((value) => value + 1) }} />}
             {!messagesLoading && !messagesError && messages.length === 0 && <p className="chat-react-thread-state">{t.noMessages}</p>}
             {!messagesLoading && !messagesError && messages.map((message, index) => {
-              const outgoing = message.sender_id === user?.email
-              return <article className={`chat-react-message${outgoing ? ' is-outgoing' : ''}`} key={`${message.uuid_post ?? selectedConversation.uuid_post ?? 'message'}:${message.created_at ?? index}:${index}`}>
+              const outgoing = message.sender_profile_id != null && selectedConversation.current_profile_id != null
+                ? String(message.sender_profile_id) === String(selectedConversation.current_profile_id)
+                : message.sender_id === user?.email
+              return <article className={`chat-react-message${outgoing ? ' is-outgoing' : ''}`} key={message.id != null ? `message:${message.id}` : `${message.uuid_post ?? selectedConversation.uuid_post ?? 'message'}:${message.created_at ?? index}:${index}`}>
                 {!outgoing && <span className="chat-react-avatar chat-react-message-avatar" aria-hidden="true">{initials(message.sender_id)}</span>}
                 <div className="chat-react-bubble">
                   <strong>{message.sender_id || '—'}</strong>

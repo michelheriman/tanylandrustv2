@@ -21,6 +21,14 @@ import {
 const chatSource = await readFile(new URL('./Chat.jsx', import.meta.url), 'utf8')
 
 const conversation = { objet: 'Parcel enquiry', main_user: 'buyer@example.test', uuid_post: 'parcel-42' }
+const localConversation = {
+  conversation_id: '73',
+  current_profile_id: '12',
+  other_profile_id: '27',
+  other_user_email: 'seller@example.test',
+  other_user_profile: { username: 'Seller' },
+  parcel_name: 'Parcel 42',
+}
 const thread = [
   { sender_id: 'seller@example.test', receiver_id: 'buyer@example.test', uuid_post: 'parcel-42', content: 'Hello' },
   { sender_id: 'buyer@example.test', receiver_id: 'seller@example.test', uuid_post: 'parcel-42', content: 'Thanks' },
@@ -37,7 +45,7 @@ test('loads conversations through the authenticated React request with the legac
   assert.equal(call.path, '/load_object')
   assert.equal(call.options.method, 'POST')
   assert.deepEqual(JSON.parse(call.options.body), { data: 'seller@example.test' })
-  assert.deepEqual(result, rows)
+  assert.deepEqual(result, { conversations: rows, unlinkedHistoryExcluded: false })
 })
 
 test('resolves the other participant when the signed-in user is the sender or receiver', () => {
@@ -93,7 +101,10 @@ test('loads the conversation list with the React session bearer token', async ()
   })
   await auth.restore()
 
-  assert.deepEqual(await loadConversations(auth.request, 'seller@example.test'), [conversation])
+  assert.deepEqual(await loadConversations(auth.request, 'seller@example.test'), {
+    conversations: [conversation],
+    unlinkedHistoryExcluded: false,
+  })
 })
 
 test('loads a selected conversation using its subject and parses the message list', async () => {
@@ -107,6 +118,28 @@ test('loads a selected conversation using its subject and parses the message lis
   assert.equal(call.options.method, 'POST')
   assert.deepEqual(JSON.parse(call.options.body), { data: 'Parcel enquiry' })
   assert.deepEqual(result, thread)
+})
+
+test('loads local conversation messages by stable ID rather than any legacy grouping field', async () => {
+  let call
+  const result = await loadMessages(async (path, options) => {
+    call = { path, options }
+    return { success: true, data: thread }
+  }, { ...localConversation, objet: 'same legacy subject', uuid_post: 'same legacy UUID' })
+
+  assert.equal(call.path, '/load_message')
+  assert.deepEqual(JSON.parse(call.options.body), { conversation_id: '73' })
+  assert.deepEqual(result, thread)
+})
+
+test('uses conversation_id as selection identity and refuses malformed local IDs', async () => {
+  const selected = { ...localConversation, objet: 'old subject', uuid_post: 'old uuid' }
+  const refreshed = { ...localConversation, objet: 'changed legacy subject', uuid_post: 'changed legacy uuid' }
+  assert.strictEqual(findRefreshedConversation(selected, [refreshed]), refreshed)
+  await assert.rejects(loadMessages(async () => ({ success: true, data: [] }), {
+    conversation_id: 'not-a-bigint',
+  }), /invalid ID/)
+  assert.match(chatSource, /conversation_id != null/)
 })
 
 test('prevents duplicate in-flight loads for a conversation', async () => {
@@ -157,6 +190,48 @@ test('builds and sends a reply to the other participant with the existing parcel
     objet: 'Parcel enquiry',
   })
   assert.deepEqual(body, JSON.parse(call.options.body))
+})
+
+test('builds and sends a local reply with the selected thread and participant IDs', async () => {
+  let call
+  const persisted = {
+    id: '44', conversation_id: '73', sender_profile_id: '12', receiver_profile_id: '27',
+    sender_id: 'buyer@example.test', receiver_id: 'seller@example.test', content: 'Reply',
+    created_at: '2026-07-01T10:00:00+00:00',
+  }
+  const result = await sendConversationReply(async (path, options) => {
+    call = { path, options }
+    return { success: true, data: [persisted] }
+  }, localConversation, [], 'buyer@example.test', 'Reply')
+
+  assert.equal(call.path, '/messages_w')
+  assert.deepEqual(JSON.parse(call.options.body), {
+    conversation_id: '73',
+    sender_profile_id: '12',
+    receiver_profile_id: '27',
+    sender_id: 'buyer@example.test',
+    receiver_id: 'seller@example.test',
+    content: 'Reply',
+  })
+  assert.deepEqual(result, persisted)
+})
+
+test('local thread display and list explain that unlinked history is excluded without merging it', async () => {
+  assert.deepEqual(conversationDisplay(localConversation, 'buyer@example.test'), {
+    email: 'seller@example.test', title: 'Seller', subtitle: 'Parcel 42',
+  })
+  let result
+  result = await loadConversations(async () => ({
+    success: true,
+    data: [localConversation],
+    unlinked_history_excluded: true,
+  }), 'buyer@example.test')
+  assert.equal(result.unlinkedHistoryExcluded, true)
+  assert.deepEqual(result.conversations, [localConversation])
+  assert.match(chatSource, /unlinkedHistory: 'Les anciens messages sans lien de conversation sont conservés à part/)
+  assert.match(chatSource, /role="note">\{t\.unlinkedHistory\}/)
+  assert.match(chatSource, /conversation\.conversation_id != null/)
+  assert.match(chatSource, /String\(message\.sender_profile_id\) === String\(selectedConversation\.current_profile_id\)/)
 })
 
 test('sends an admin message with the existing recipient and rejects unsuccessful API results', async () => {
