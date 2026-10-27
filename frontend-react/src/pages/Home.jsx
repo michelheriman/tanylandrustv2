@@ -181,7 +181,7 @@ function Home() {
 
         <section className="home-section negotiation-section" id="negotiation">
           <div className="home-container negotiation-grid">
-            <article className="thread-card home-reveal"><header><div><strong>{t('neg_thread_title')}</strong><span>{t('neg_thread_sub')}</span></div><span className="thread-status"><span className="thread-status-indicator" aria-hidden="true" />{t('neg_active')}</span></header>
+            <article className="thread-card home-reveal"><header><div><strong>{t('neg_thread_title')}</strong><span>{t('neg_thread_sub')}</span></div><span className="thread-status">{t('neg_example')}</span></header>
               <div className="thread-messages"><div className="thread-message"><span className="avatar seller">{t('neg_seller_initial')}</span><div><small>{t('neg_msg1_meta')}</small><p dangerouslySetInnerHTML={rich('neg_msg1')}/></div></div>
                 <div className="thread-message message-right"><div><small>{t('neg_msg2_meta')}</small><p dangerouslySetInnerHTML={rich('neg_msg2')}/></div><span className="avatar buyer">{t('neg_buyer_initial')}</span></div>
                 <div className="thread-message"><span className="avatar seller">{t('neg_seller_initial2')}</span><div><small>{t('neg_msg3_meta')}</small><p dangerouslySetInnerHTML={rich('neg_msg3')}/></div></div>

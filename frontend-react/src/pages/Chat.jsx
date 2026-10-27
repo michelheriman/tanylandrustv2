@@ -237,8 +237,8 @@ export default function Chat({ lang = 'en' }) {
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} />
         </label>
 
+        {!conversationsLoading && !conversationsError && unlinkedHistoryExcluded && <p className="chat-react-history-note" role="note">{t.unlinkedHistory}</p>}
         <div className="chat-react-conversation-list" aria-live="polite" aria-busy={conversationsLoading}>
-          {!conversationsLoading && !conversationsError && unlinkedHistoryExcluded && <p className="chat-react-list-state" role="note">{t.unlinkedHistory}</p>}
           {conversationsLoading && <p className="chat-react-list-state" role="status">{t.loading}</p>}
           {!conversationsLoading && conversationsError && <ChatError error={chatErrorText(conversationsError, t, 'conversationsError', lang)} retryLabel={t.retry} onRetry={() => { setConversationsLoading(true); setConversationsError(''); setConversationRetry((value) => value + 1) }} />}
           {!conversationsLoading && !conversationsError && conversations.length === 0 && <p className="chat-react-list-state">{t.noConversations}</p>}

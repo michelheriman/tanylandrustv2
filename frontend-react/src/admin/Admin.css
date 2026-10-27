@@ -361,6 +361,16 @@
   .admin-metric-icon { width: 30px; height: 30px; flex-basis: 30px; }
   .admin-page-content { padding-inline: 11px; }
   .admin-page-panel { padding: 17px; }
+  .admin-dashboard-panel .admin-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-dashboard-panel .admin-metric-card:nth-child(n) { grid-column: auto; }
+  .admin-dashboard-panel .admin-metric-label { font-size: 11px; }
+  .admin-dashboard-panel .admin-metric-card .admin-data-unavailable,
+  .admin-dashboard-panel .admin-metric-period,
+  .admin-dashboard-panel .admin-metric-zero,
+  .admin-dashboard-panel .admin-metric-open { font-size: 10px; }
+  .admin-dashboard-definition,
+  .admin-dashboard-panel .admin-metric-filter-note,
+  .admin-dashboard-panel .admin-metric-definition { font-size: 11px; }
 }
 
 @media (max-width: 680px) {

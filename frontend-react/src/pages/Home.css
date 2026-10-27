@@ -124,8 +124,7 @@
 .thread-card > header > div { display: grid; gap: 2px; }
 .thread-card > header strong { color: var(--home-ink); font-size: 12px; }
 .thread-card > header > div > span { color: #798178; font-size: var(--text-caption); }
-.thread-status { flex-shrink: 0; color: var(--home-green); font-size: var(--text-caption); font-weight: 600; }
-.thread-status-indicator { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: currentColor; vertical-align: middle; }
+.thread-status { flex-shrink: 0; padding: 3px 6px; border: 1px solid #d1d8cd; border-radius: 4px; color: #566857; background: #f7f8f3; font-size: var(--text-caption); font-weight: 600; }
 .thread-messages { display: grid; gap: 16px; padding: clamp(17px, 3vw, 25px); }
 .thread-message { display: flex; align-items: flex-start; gap: 10px; }
 .thread-message > div { min-width: 0; }

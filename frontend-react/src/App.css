@@ -95,6 +95,10 @@
 .signup-terms a { color: #f1cd82; text-underline-offset: 2px; }
 .signup-success { color: #d7f4d4; }
 
+@media (min-width: 701px) and (max-width: 900px) {
+  .signup-form { grid-template-columns: minmax(0, 1fr); }
+}
+
 .account-panel { align-self: center; text-align: center; }
 .account-kicker { margin: 0 0 20px; color: #f1cd82; font-size: var(--text-small); font-weight: 600; }
 .account-panel h1 { overflow-wrap: anywhere; }

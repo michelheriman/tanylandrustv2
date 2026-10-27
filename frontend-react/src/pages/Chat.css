@@ -16,7 +16,7 @@
   overflow: hidden;
   border: 1px solid rgb(214 232 219 / 44%);
   border-radius: 10px;
-  background: linear-gradient(115deg, rgb(4 49 35 / 78%), rgb(3 46 34 / 84%)), url('../assets/main.jpeg') center 48% / cover;
+  background: linear-gradient(115deg, rgb(4 49 35 / 78%), rgb(3 46 34 / 84%)), url('../assets/client-cadastral-sage.png') center 48% / cover;
   box-shadow: 0 8px 24px rgb(2 32 23 / 25%);
 }
 
@@ -63,6 +63,7 @@
 .chat-react-conversation-copy strong, .chat-react-conversation-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat-react-conversation-copy strong { color: #fff; font-size: var(--text-small); font-weight: 650; }
 .chat-react-conversation-copy small { color: rgb(232 239 229 / 67%); font-size: var(--text-caption); }
+.chat-react-history-note { flex: 0 0 auto; margin: 0 0 8px; padding: 0 7px; color: rgb(241 246 238 / 80%); font-size: var(--text-caption); line-height: 1.45; }
 .chat-react-list-state { margin: 0; padding: 12px 7px; color: rgb(241 246 238 / 80%); font-size: var(--text-caption); line-height: 1.45; }
 .chat-react-error { margin: 3px; padding: 10px; border: 1px solid rgb(255 214 205 / 60%); border-radius: 6px; color: #ffe7e0; background: rgb(104 33 26 / 48%); font-size: var(--text-caption); line-height: 1.4; overflow-wrap: anywhere; }
 .chat-react-error p { margin: 0 0 7px; }

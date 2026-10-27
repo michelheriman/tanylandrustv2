@@ -3,11 +3,11 @@
   --main-accent: #d8b658;
   min-height: 100svh;
   color: #f8f7ef;
-  background: linear-gradient(rgb(7 35 25 / 18%), rgb(7 35 25 / 18%)), url('../assets/main.jpeg') center 46% / cover fixed;
+  background: linear-gradient(rgb(7 35 25 / 18%), rgb(7 35 25 / 18%)), url('../assets/client-cadastral-sage.png') center 46% / cover fixed;
   font-family: var(--font-ui);
   font-size: var(--text-body);
 }
-.main-page-marketplace { background-image: url('../assets/main.jpeg'); }
+.main-page-marketplace { background-image: url('../assets/client-cadastral-sage.png'); }
 .main-page button, .main-page input, .main-page select { font: inherit; }
 .main-page .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .main-page a { color: inherit; text-decoration: none; }
@@ -87,7 +87,7 @@
 .main-list-error button { padding: 3px 8px; border: 1px solid #f2c3b4; border-radius: 12px; color: #fff; background: transparent; cursor: pointer; }
 .main-notice { margin: 3px 0; color: #e8d489; font-size: var(--text-caption); }
 .main-parcel-list { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: 7px; overflow-y: auto; padding: 3px 5px 4px 0; scrollbar-color: rgb(222 229 215 / 65%) transparent; scrollbar-width: thin; }
-.main-parcel-card { overflow: hidden; border: 1px solid rgb(231 238 225 / 75%); border-radius: 8px; background: rgb(4 48 34 / 30%); }
+.main-parcel-card { flex: 0 0 auto; overflow: hidden; border: 1px solid rgb(231 238 225 / 75%); border-radius: 8px; background: rgb(4 48 34 / 30%); }
 .main-parcel-card.is-selected { border-color: #d8b658; box-shadow: 0 0 0 1px rgb(216 182 88 / 35%); }
 .main-parcel-summary { display: flex; width: 100%; min-height: 43px; align-items: center; gap: 8px; padding: 5px 7px; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
 .main-parcel-summary:hover, .main-parcel-summary[aria-expanded="true"] { background: rgb(247 246 237 / 10%); }
