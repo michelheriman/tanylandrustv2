@@ -19,6 +19,7 @@
 .home-nav.is-scrolled { box-shadow: 0 5px 17px rgb(22 46 31 / 9%); }
 .home-nav-inner { display: flex; width: min(1280px, calc(100% - 52px)); min-height: 70px; align-items: center; justify-content: space-between; gap: 26px; margin-inline: auto; }
 .home-brand { display: inline-flex; flex-shrink: 0; align-items: center; gap: 9px; color: var(--home-ink); font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.home-brand-logo { display: block; width: auto; max-width: 100%; height: 46px; object-fit: contain; }
 .home-brand em { color: var(--home-green); font-size: .86em; font-weight: 400; }
 .brand-mark { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 7px; color: #f8f4e8; background: var(--home-green); }
 .brand-mark svg { width: 18px; height: 18px; }
@@ -530,6 +531,7 @@
 @media (max-width: 640px) {
   .home-nav-inner { min-width: 0; }
   .home-brand { min-width: 0; flex-shrink: 1; font-size: 16px; }
+  .home-brand-logo { height: 40px; }
   .brand-mark { width: 27px; height: 27px; flex: 0 0 27px; }
   .home-nav-actions { flex: 0 0 auto; gap: 8px; }
   .nav-signin { min-width: 0; min-height: 44px; padding-inline: 10px; white-space: nowrap; }

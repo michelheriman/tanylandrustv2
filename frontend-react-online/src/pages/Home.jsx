@@ -3,6 +3,7 @@ import { HOME_TRANSLATIONS } from '../homeTranslations.js'
 import { readLanguage, writeLanguage } from '../languageStorage.js'
 import { applyPageMetadata } from '../seoMetadata.js'
 import AppIcon from '../components/Icon.jsx'
+import officialLogo from '../assets/logo-officiel-transparent.png'
 import './Home.css'
 
 const numbers = [12400, 98, 34]
@@ -30,8 +31,9 @@ const plans = [
 function Brand({ footer = false, ariaLabel }) {
   return (
     <a className={`home-brand${footer ? ' home-brand-footer' : ''}`} href="/" aria-label={ariaLabel}>
-      {!footer && <span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none"><path d="M9 1.5 15.5 5.25v7.5L9 16.5l-6.5-3.75v-7.5L9 1.5Z" stroke="currentColor" strokeWidth="1.35"/><path d="M9 1.5v15m-6.5-11.25L9 9l6.5-3.75" stroke="currentColor" strokeWidth="1"/></svg></span>}
-      <span>{footer ? <>Tany <em>Landtrust</em></> : <>tany <em>Landtrust</em></>}</span>
+      {footer
+        ? <span>Tany <em>Landtrust</em></span>
+        : <img className="home-brand-logo" src={officialLogo} alt="" />}
     </a>
   )
 }

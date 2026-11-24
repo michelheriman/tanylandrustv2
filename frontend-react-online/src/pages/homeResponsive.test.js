@@ -4,6 +4,8 @@ import test from 'node:test'
 import { HOME_TRANSLATIONS } from '../homeTranslations.js'
 
 const cssUrl = new URL('./Home.css', import.meta.url)
+const homeUrl = new URL('./Home.jsx', import.meta.url)
+const logoUrl = new URL('../assets/logo-officiel-transparent.png', import.meta.url)
 
 function mediaBlock(css, query) {
   const start = css.lastIndexOf(query)
@@ -17,6 +19,26 @@ function mediaBlock(css, query) {
   }
   assert.fail(`unclosed ${query}`)
 }
+
+test('Home navigation uses the transparent official logo image and keeps its home link', async () => {
+  const [source, css, logo] = await Promise.all([
+    readFile(homeUrl, 'utf8'),
+    readFile(cssUrl, 'utf8'),
+    readFile(logoUrl),
+  ])
+  const brand = source.slice(source.indexOf('function Brand'), source.indexOf('\nfunction Icon'))
+  const mobile = mediaBlock(css, '@media (max-width: 640px) {')
+
+  assert.match(source, /import officialLogo from '\.\.\/assets\/logo-officiel-transparent\.png'/)
+  assert.deepEqual([...logo.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], 'logo asset is a PNG')
+  assert.equal(logo[25], 6, 'logo PNG stores an alpha channel')
+  assert.match(brand, /href="\/"/)
+  assert.match(brand, /<img className="home-brand-logo" src=\{officialLogo\} alt="" \/>/)
+  assert.doesNotMatch(brand, /brand-mark/)
+  assert.match(brand, /<span>Tany <em>Landtrust<\/em><\/span>/, 'footer branding remains unchanged')
+  assert.match(css, /\.home-brand-logo\s*\{[^}]*width:\s*auto;[^}]*max-width:\s*100%;[^}]*height:\s*46px;[^}]*object-fit:\s*contain;/s)
+  assert.match(mobile, /\.home-brand-logo\s*\{[^}]*height:\s*40px;/s)
+})
 
 test('Home mobile header reflows below 380px instead of relying on clipped overflow', async () => {
   const css = await readFile(cssUrl, 'utf8')
